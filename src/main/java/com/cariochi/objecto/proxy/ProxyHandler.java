@@ -1,5 +1,6 @@
 package com.cariochi.objecto.proxy;
 
+import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.Param;
 import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.ObjectUtils;
@@ -16,12 +17,12 @@ public class ProxyHandler<T> implements MethodHandler {
     private final RandomObjectGenerator randomObjectGenerator;
     private final Class<T> targetClass;
     private final Map<String, Object> parameters = new LinkedHashMap<>();
-    private final int depth;
+    private final ObjectoSettings settings;
 
-    public ProxyHandler(RandomObjectGenerator randomObjectGenerator, Class<T> targetClass, int depth) {
+    public ProxyHandler(RandomObjectGenerator randomObjectGenerator, Class<T> targetClass, ObjectoSettings settings) {
         this.randomObjectGenerator = randomObjectGenerator;
         this.targetClass = targetClass;
-        this.depth = depth;
+        this.settings = settings;
     }
 
     @Override
@@ -34,12 +35,12 @@ public class ProxyHandler<T> implements MethodHandler {
         if (proceed == null) {
             final Map<String, Object> methodParameters = readMethodParameters(method, args);
             if (method.getReturnType().equals(method.getDeclaringClass())) {
-                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(randomObjectGenerator, targetClass, depth);
+                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(randomObjectGenerator, targetClass, settings);
                 childMethodHandler.parameters.putAll(parameters);
                 childMethodHandler.parameters.putAll(methodParameters);
                 return ProxyFactory.createInstance(childMethodHandler, targetClass);
             } else {
-                final Object instance = randomObjectGenerator.generateRandomObject(method.getGenericReturnType(), 1 + depth);
+                final Object instance = randomObjectGenerator.generateRandomObject(method.getGenericReturnType(), settings);
                 final Map<String, Object> tmpMap = new LinkedHashMap<>();
                 tmpMap.putAll(parameters);
                 tmpMap.putAll(methodParameters);

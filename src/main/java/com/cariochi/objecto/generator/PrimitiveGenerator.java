@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generator;
 
+import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
@@ -16,21 +17,21 @@ public class PrimitiveGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, int depth) {
+    public Object create(Type type, ObjectoSettings settings) {
         if (type.equals(int.class)) {
-            return Random.nextInt(1, 10000);
+            return Random.nextInt(settings.integers());
         } else if (type.equals(double.class)) {
-            return Random.nextDouble(1, 10000);
+            return Random.nextDouble(settings.doubles());
         } else if (type.equals(float.class)) {
-            return Random.nextFloat(1, 10000);
+            return Random.nextFloat(settings.floats());
         } else if (type.equals(long.class)) {
-            return Random.nextLong(1, 10000);
+            return Random.nextLong(settings.longs());
         } else if (type.equals(short.class)) {
-            return (short) Random.nextInt(1, 10000);
+            return (short) Random.nextInt(settings.integers());
         } else if (type.equals(byte.class)) {
-            return (byte) Random.nextInt(65, 91);
+            return (byte) Random.nextInt(settings.bytes());
         } else if (type.equals(char.class)) {
-            return (char) Random.nextInt(65, 91);
+            return (char) Random.nextInt(settings.bytes());
         } else if (type.equals(boolean.class)) {
             return Random.nextBoolean();
         } else {

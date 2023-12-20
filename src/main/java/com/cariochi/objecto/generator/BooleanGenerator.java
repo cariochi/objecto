@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generator;
 
+import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
@@ -16,7 +17,7 @@ public class BooleanGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, int depth) {
+    public Object create(Type type, ObjectoSettings settings) {
         return Random.nextBoolean();
     }
 

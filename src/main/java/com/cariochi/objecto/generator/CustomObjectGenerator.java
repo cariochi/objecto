@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generator;
 
+import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.reflecto.Reflecto;
 import com.cariochi.reflecto.fields.JavaField;
@@ -19,8 +20,8 @@ public class CustomObjectGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, int depth) {
-        if (depth == 1) {
+    public Object create(Type type, ObjectoSettings settings) {
+        if (settings.depth() == 1) {
             return null;
         }
         final Object instance = createInstance(type);
@@ -36,7 +37,7 @@ public class CustomObjectGenerator extends Generator {
                         continue;
                     }
                 }
-                Object fieldValue = generateFiledValue(type, genericType, field.getName(), depth - 1);
+                Object fieldValue = generateFiledValue(type, genericType, field.getName(), settings.withDepth(settings.depth() - 1));
                 field.setValue(fieldValue);
             }
         }
