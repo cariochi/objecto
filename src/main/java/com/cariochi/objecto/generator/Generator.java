@@ -18,14 +18,11 @@ public abstract class Generator {
     }
 
     protected <T> T generateRandomObject(Type type, int depth) {
-        return randomObjectGenerator.generateRandomObject(type, depth - 1);
+        return randomObjectGenerator.generateRandomObject(type, depth);
     }
 
     protected <T> T generateFiledValue(Type objectType, Type fieldType, String fieldName, int depth) {
-        if (depth == 0) {
-            return null;
-        }
-        return randomObjectGenerator.generateFiledValue(objectType, fieldType, fieldName, depth - 1);
+        return randomObjectGenerator.generateFiledValue(objectType, fieldType, fieldName, depth);
     }
 
 }

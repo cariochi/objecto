@@ -20,6 +20,9 @@ public class CustomObjectGenerator extends Generator {
 
     @Override
     public Object create(Type type, int depth) {
+        if (depth == 1) {
+            return null;
+        }
         final Object instance = createInstance(type);
         if (instance != null) {
             final List<JavaField> fields = Reflecto.reflect(instance).fields().asList();
@@ -33,12 +36,8 @@ public class CustomObjectGenerator extends Generator {
                         continue;
                     }
                 }
-                Object fieldValue = generateFiledValue(type, genericType, field.getName(), depth);
-                try {
-                    field.setValue(fieldValue);
-                } catch (Exception e) {
-
-                }
+                Object fieldValue = generateFiledValue(type, genericType, field.getName(), depth - 1);
+                field.setValue(fieldValue);
             }
         }
         return instance;

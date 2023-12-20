@@ -6,8 +6,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 public class MapGenerator extends Generator {
 
     public MapGenerator(RandomObjectGenerator randomObjectGenerator) {
@@ -29,8 +30,8 @@ public class MapGenerator extends Generator {
         final Class<?> rawType = (Class<?>) parameterizedType.getRawType();
         final Type keyType = parameterizedType.getActualTypeArguments()[0];
         final Type valueType = parameterizedType.getActualTypeArguments()[1];
-        final Map<Object, Object> map = createMap(rawType);
-        if (depth == 0) {
+        final Map<Object, Object> map = rawType.isInterface() ? new HashMap<>() : createInstance(rawType);
+        if (depth == 1) {
             return map;
         }
         if (map != null) {
@@ -39,16 +40,6 @@ public class MapGenerator extends Generator {
             }
         }
         return map;
-    }
-
-    private static Map<Object, Object> createMap(Class<?> rawType) {
-        try {
-            return rawType.isInterface()
-                    ? new HashMap<>()
-                    : (Map<Object, Object>) rawType.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            return null;
-        }
     }
 
 }

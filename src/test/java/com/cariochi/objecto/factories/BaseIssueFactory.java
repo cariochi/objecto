@@ -1,8 +1,8 @@
 package com.cariochi.objecto.factories;
 
 import com.cariochi.objecto.FieldGenerator;
+import com.cariochi.objecto.InstanceCreator;
 import com.cariochi.objecto.Param;
-import com.cariochi.objecto.TypeConstructor;
 import com.cariochi.objecto.model.Attachment;
 import com.cariochi.objecto.model.Comment;
 import com.cariochi.objecto.model.Issue;
@@ -35,7 +35,7 @@ public interface BaseIssueFactory extends BaseFactory {
 
     BaseIssueFactory wrongCommenter(@Param("comments[100].commenter") User commenter);
 
-    @TypeConstructor
+    @InstanceCreator
     default Attachment<?> newAttachment() {
         return Attachment.builder().fileContent(new byte[0]).build();
     }

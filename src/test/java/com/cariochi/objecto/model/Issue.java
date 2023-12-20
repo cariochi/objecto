@@ -31,6 +31,7 @@ public class Issue {
     private User createdBy;
 
     private List<Issue> subtasks;
+    private Issue parent;
 
     public enum Type {
         STORY,
