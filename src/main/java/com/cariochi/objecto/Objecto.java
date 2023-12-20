@@ -15,12 +15,13 @@ import static java.util.stream.Collectors.toList;
 public class Objecto {
 
     public static <T> T create(Class<T> targetClass) {
+        return create(targetClass, 2);
+    }
+
+    public static <T> T create(Class<T> targetClass, int depth) {
         final RandomObjectGenerator randomObjectGenerator = new RandomObjectGenerator();
-        final T proxy = ProxyFactory.builder()
-                .extendsClass(targetClass)
-                .methodInterceptor(() -> new ProxyHandler<>(randomObjectGenerator, targetClass))
-                .build()
-                .create();
+        final ProxyHandler<T> methodHandler = new ProxyHandler<>(randomObjectGenerator, targetClass, depth);
+        final T proxy = ProxyFactory.createInstance(methodHandler, targetClass);
         randomObjectGenerator.setTypeConstructors(getTypeSeed(proxy));
         randomObjectGenerator.setTypeGenerators(getTypeGenerators(proxy));
         randomObjectGenerator.setFieldGenerators(getFieldGenerators(proxy));
@@ -28,7 +29,7 @@ public class Objecto {
     }
 
     private static List<ExternalTypeGenerator> getTypeSeed(Object proxy) {
-        return reflect(proxy).methods().withAnnotation(TypeConstructor.class).stream()
+        return reflect(proxy).methods().withAnnotation(InstanceCreator.class).stream()
                 .map(method -> new ExternalTypeGenerator(method.getReturnType(), method::invoke))
                 .collect(toList());
     }

@@ -20,7 +20,7 @@ public class GenericArrayTypeGenerator extends Generator {
     @Override
     public Object create(Type type, int depth) {
         Type componentType = ((GenericArrayType) type).getGenericComponentType();
-        if (depth == 0) {
+        if (depth == 1) {
             return Array.newInstance((Class<?>) componentType, 0);
         }
         int arrayLength = Random.nextInt(1, 5);

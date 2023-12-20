@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class RandomObjectGenerator {
 
@@ -63,6 +65,9 @@ public class RandomObjectGenerator {
     }
 
     public <T> T generateFiledValue(Type objectType, Type fieldType, String fieldName, int depth) {
+        if (depth == 0) {
+            return null;
+        }
         return (T) Optional.empty()
                 .or(() -> useFieldGenerator(objectType, fieldType, fieldName))
                 .or(() -> useTypeGenerator(fieldType))
@@ -113,6 +118,7 @@ public class RandomObjectGenerator {
             }
             return aClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
+            log.info("Cannot create an instance of {}. Please create an @InstanceCreator method to specify how to instantiate this class.",  type);
             return null;
         }
     }

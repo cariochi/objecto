@@ -9,7 +9,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class CollectionGenerator extends Generator {
 
     public CollectionGenerator(RandomObjectGenerator randomObjectGenerator) {
@@ -32,11 +34,11 @@ public class CollectionGenerator extends Generator {
         final Type elementType = parameterizedType.getActualTypeArguments()[0];
         Collection<Object> collection = null;
         if (List.class.isAssignableFrom(rawType)) {
-            collection = createList(rawType);
+            collection = rawType.isInterface() ? new ArrayList<>() : createInstance(rawType);
         } else if (Set.class.isAssignableFrom(rawType)) {
-            collection = createSet(rawType);
+            collection = rawType.isInterface() ? new HashSet<>() : createInstance(rawType);
         }
-        if (depth == 0) {
+        if (depth == 1) {
             return collection;
         }
         if (collection != null) {
@@ -45,26 +47,6 @@ public class CollectionGenerator extends Generator {
             }
         }
         return collection;
-    }
-
-    private List<Object> createList(Class<?> rawType) {
-        try {
-            return rawType.isInterface()
-                    ? new ArrayList<>()
-                    : createInstance(rawType);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private Set<Object> createSet(Class<?> rawType) {
-        try {
-            return rawType.isInterface()
-                    ? new HashSet<>()
-                    : createInstance(rawType);
-        } catch (Exception e) {
-            return null;
-        }
     }
 
 }

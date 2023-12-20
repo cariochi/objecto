@@ -39,11 +39,14 @@
         <java.version>11</java.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <reflecto.version>1.1.5</reflecto.version>
+        <reflecto.version>1.1.6</reflecto.version>
         <lombok.version>1.18.30</lombok.version>
         <instancio.version>3.7.1</instancio.version>
         <junit.version>5.10.1</junit.version>
         <assertj.version>3.24.2</assertj.version>
+        <slf4j.version>2.0.9</slf4j.version>
+        <logback.version>1.4.14</logback.version>
+        <datafaker.version>1.9.0</datafaker.version>
     </properties>
 
     <dependencies>
@@ -64,11 +67,20 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
         <dependency>
             <groupId>net.datafaker</groupId>
             <artifactId>datafaker</artifactId>
-            <version>1.9.0</version>
+            <version>${datafaker.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

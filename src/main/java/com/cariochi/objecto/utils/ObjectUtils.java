@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.Collections.emptyMap;
@@ -14,6 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
+@Slf4j
 @UtilityClass
 public class ObjectUtils {
 
@@ -31,6 +33,10 @@ public class ObjectUtils {
                     try {
                         reflection.get(e.getKey()).setValue(e.getValue());
                     } catch (Exception ex) {
+                        log.info(
+                                "Invalid @Param value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
+                                e.getKey(), object.getClass().getName()
+                        );
                     }
                 });
 
@@ -58,6 +64,10 @@ public class ObjectUtils {
                 return resultMap;
 
             } catch (Exception e) {
+                log.info(
+                        "Invalid @Param value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
+                        name, reflection.getValue().getClass().getName()
+                );
                 return emptyMap();
             }
         } else {
