@@ -60,18 +60,18 @@ public class RandomObjectGenerator {
         this.fieldGenerators.addAll(fieldGenerators);
     }
 
-    public <T> T generateRandomObject(Type type, int depth) {
-        return generateFiledValue(null, type, null, depth);
+    public <T> T generateRandomObject(Type type, ObjectoSettings settings) {
+        return generateFiledValue(null, type, null, settings);
     }
 
-    public <T> T generateFiledValue(Type objectType, Type fieldType, String fieldName, int depth) {
-        if (depth == 0) {
+    public <T> T generateFiledValue(Type objectType, Type fieldType, String fieldName, ObjectoSettings settings) {
+        if (settings.depth() == 0) {
             return null;
         }
         return (T) Optional.empty()
                 .or(() -> useFieldGenerator(objectType, fieldType, fieldName))
                 .or(() -> useTypeGenerator(fieldType))
-                .or(() -> useDefaultGenerator(fieldType, depth))
+                .or(() -> useDefaultGenerator(fieldType, settings))
                 .orElse(null);
     }
 
@@ -97,11 +97,11 @@ public class RandomObjectGenerator {
                 .map(ExternalFieldGenerator::create);
     }
 
-    private <T> Optional<T> useDefaultGenerator(Type type, int depth) {
+    private <T> Optional<T> useDefaultGenerator(Type type, ObjectoSettings settings) {
         return (Optional<T>) defaultGenerators.stream()
                 .filter(generator -> generator.isSupported(type))
                 .findFirst()
-                .map(generator -> generator.create(type, depth));
+                .map(generator -> generator.create(type, settings));
     }
 
     private <T> T createInstanceDefault(Type type) {
@@ -118,7 +118,7 @@ public class RandomObjectGenerator {
             }
             return aClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            log.info("Cannot create an instance of {}. Please create an @InstanceCreator method to specify how to instantiate this class.",  type);
+            log.info("Cannot create an instance of {}. Please create an @InstanceCreator method to specify how to instantiate this class.", type);
             return null;
         }
     }

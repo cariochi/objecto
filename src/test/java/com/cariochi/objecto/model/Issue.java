@@ -2,6 +2,7 @@ package com.cariochi.objecto.model;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,6 +33,7 @@ public class Issue {
 
     private List<Issue> subtasks;
     private Issue parent;
+    private Map<DependencyType, Issue> dependencies;
 
     public enum Type {
         STORY,
@@ -46,5 +48,19 @@ public class Issue {
         CLOSED
     }
 
+    public enum DependencyType {
+        BLOCK,
+        BLOCKED_BY,
+        RELATES_TO,
+        DUPLICATE,
+        DUPLICATED_BY,
+        LINKED,
+        CLONES,
+        IS_CLONED_BY,
+        DEPENDS_ON,
+        IS_DEPENDENCY_OF,
+        EPIC_LINKS,
+        HAS_EPIC
+    }
 
 }

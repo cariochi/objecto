@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generator;
 
+import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.ParameterizedType;
@@ -28,7 +29,7 @@ public class CollectionGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, int depth) {
+    public Object create(Type type, ObjectoSettings settings) {
         final ParameterizedType parameterizedType = (ParameterizedType) type;
         final Class<?> rawType = (Class<?>) parameterizedType.getRawType();
         final Type elementType = parameterizedType.getActualTypeArguments()[0];
@@ -38,12 +39,12 @@ public class CollectionGenerator extends Generator {
         } else if (Set.class.isAssignableFrom(rawType)) {
             collection = rawType.isInterface() ? new HashSet<>() : createInstance(rawType);
         }
-        if (depth == 1) {
+        if (settings.depth() == 1) {
             return collection;
         }
         if (collection != null) {
-            for (int i = 0; i < Random.nextInt(1, 5); i++) {
-                collection.add(generateRandomObject(elementType, depth));
+            for (int i = 0; i < Random.nextInt(settings.collections()); i++) {
+                collection.add(generateRandomObject(elementType, settings));
             }
         }
         return collection;

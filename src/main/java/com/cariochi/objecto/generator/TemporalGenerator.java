@@ -1,7 +1,9 @@
 package com.cariochi.objecto.generator;
 
+import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
+import com.cariochi.objecto.utils.Range;
 import java.lang.reflect.Type;
 import java.time.Duration;
 import java.time.Instant;
@@ -27,7 +29,7 @@ public class TemporalGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, int depth) {
+    public Object create(Type type, ObjectoSettings settings) {
         if (type.equals(Date.class)) {
             return Date.from(generateInstant());
         } else if (type.equals(Instant.class)) {
@@ -49,7 +51,7 @@ public class TemporalGenerator extends Generator {
 
     private Instant generateInstant() {
         long fiveYearsInSeconds = Duration.ofDays(365).getSeconds();
-        long randomSeconds = (long) ((Random.nextDouble(-5, 1)) * fiveYearsInSeconds);
+        long randomSeconds = (long) ((Random.nextDouble(Range.of(-5.0, 1.0))) * fiveYearsInSeconds);
         return Instant.now().plusSeconds(randomSeconds);
     }
 

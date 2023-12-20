@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generator;
 
+import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Array;
@@ -17,15 +18,15 @@ public class ArrayGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, int depth) {
+    public Object create(Type type, ObjectoSettings settings) {
         Class<?> componentType = ((Class<?>) type).getComponentType();
-        if (depth == 1) {
+        if (settings.depth() == 1) {
             return Array.newInstance(componentType, 0);
         }
-        int arrayLength = Random.nextInt(2, 5);
+        int arrayLength = Random.nextInt(settings.arrays());
         Object array = Array.newInstance(componentType, arrayLength);
         for (int i = 0; i < arrayLength; i++) {
-            Array.set(array, i, generateRandomObject(componentType, depth));
+            Array.set(array, i, generateRandomObject(componentType, settings));
         }
         return array;
     }

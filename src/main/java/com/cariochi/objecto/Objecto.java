@@ -8,6 +8,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import lombok.experimental.UtilityClass;
 
+import static com.cariochi.objecto.ObjectoSettings.settings;
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.stream.Collectors.toList;
 
@@ -15,12 +16,12 @@ import static java.util.stream.Collectors.toList;
 public class Objecto {
 
     public static <T> T create(Class<T> targetClass) {
-        return create(targetClass, 2);
+        return create(targetClass, settings());
     }
 
-    public static <T> T create(Class<T> targetClass, int depth) {
+    public static <T> T create(Class<T> targetClass, ObjectoSettings settings) {
         final RandomObjectGenerator randomObjectGenerator = new RandomObjectGenerator();
-        final ProxyHandler<T> methodHandler = new ProxyHandler<>(randomObjectGenerator, targetClass, depth);
+        final ProxyHandler<T> methodHandler = new ProxyHandler<>(randomObjectGenerator, targetClass, settings);
         final T proxy = ProxyFactory.createInstance(methodHandler, targetClass);
         randomObjectGenerator.setTypeConstructors(getTypeSeed(proxy));
         randomObjectGenerator.setTypeGenerators(getTypeGenerators(proxy));

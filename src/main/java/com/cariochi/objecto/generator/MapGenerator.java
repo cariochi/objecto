@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generator;
 
+import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.ParameterizedType;
@@ -25,18 +26,18 @@ public class MapGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, int depth) {
+    public Object create(Type type, ObjectoSettings settings) {
         final ParameterizedType parameterizedType = (ParameterizedType) type;
         final Class<?> rawType = (Class<?>) parameterizedType.getRawType();
         final Type keyType = parameterizedType.getActualTypeArguments()[0];
         final Type valueType = parameterizedType.getActualTypeArguments()[1];
         final Map<Object, Object> map = rawType.isInterface() ? new HashMap<>() : createInstance(rawType);
-        if (depth == 1) {
+        if (settings.depth() == 1) {
             return map;
         }
         if (map != null) {
-            for (int i = 0; i < Random.nextInt(1, 5); i++) {
-                map.put(generateRandomObject(keyType, depth), generateRandomObject(valueType, depth));
+            for (int i = 0; i < Random.nextInt(settings.maps()); i++) {
+                map.put(generateRandomObject(keyType, settings), generateRandomObject(valueType, settings));
             }
         }
         return map;
