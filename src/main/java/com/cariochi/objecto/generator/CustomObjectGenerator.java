@@ -23,7 +23,7 @@ public class CustomObjectGenerator extends Generator {
         if (settings.depth() == 1) {
             return null;
         }
-        final Object instance = createInstance(type);
+        final Object instance = createInstance(type, settings);
         if (instance != null) {
 
             final List<JavaField> fields = Reflecto.reflect(instance).fields().asList();

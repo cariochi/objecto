@@ -21,12 +21,12 @@ public class ArrayGenerator extends Generator {
 
     @Override
     public Object create(Type type, Type ownerType, ObjectoSettings settings) {
-        if (settings.depth() == 1) {
-            return null;
-        }
         int arrayLength = Random.nextInt(settings.arrays());
         final Type componentType = getComponentType(type);
         final Object firstItem = generateRandomObject(componentType, ownerType, null, settings);
+        if (firstItem == null) {
+            return null;
+        }
         Object array = Array.newInstance(firstItem.getClass(), arrayLength);
         Array.set(array, 0, firstItem);
         for (int i = 1; i < arrayLength; i++) {

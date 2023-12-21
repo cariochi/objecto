@@ -1,6 +1,7 @@
 package com.cariochi.objecto;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ class GenericTypeGeneratorTest {
     @Test
     void should_generate_dto() {
         final DtoFactory factory = Objecto.create(DtoFactory.class);
-        final Dto<Integer, String> dto = factory.dto();
+        final Dto<Integer, List<String>> dto = factory.dto();
 
         assertThat(dto).isNotNull()
                 .extracting(Dto::getObjectI, Dto::getObjectS, Dto::getParentObjectD, Dto::getParentObjectS, Dto::getParentObjectC)
@@ -34,7 +35,7 @@ class GenericTypeGeneratorTest {
 
     public interface DtoFactory {
 
-        Dto<Integer, String> dto();
+        Dto<Integer, List<String>> dto();
 
     }
 

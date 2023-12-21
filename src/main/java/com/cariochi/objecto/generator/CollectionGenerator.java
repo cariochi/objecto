@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -24,31 +25,40 @@ public class CollectionGenerator extends Generator {
             return false;
         }
         final ParameterizedType parameterizedType = (ParameterizedType) type;
-        return Collection.class.isAssignableFrom((Class<?>) parameterizedType.getRawType());
+        final Class<?> rawType = (Class<?>) parameterizedType.getRawType();
+        return Iterable.class.isAssignableFrom(rawType);
     }
 
     @Override
     public Object create(Type type, Type ownerType, ObjectoSettings settings) {
         final ParameterizedType parameterizedType = (ParameterizedType) type;
-        final Class<?> rawType = (Class<?>) parameterizedType.getRawType();
         final Type elementType = parameterizedType.getActualTypeArguments()[0];
-        Collection<Object> collection = null;
-        if (List.class.isAssignableFrom(rawType)) {
-            collection = rawType.isInterface() ? new ArrayList<>() : createInstance(rawType);
-        } else if (Set.class.isAssignableFrom(rawType)) {
-            collection = rawType.isInterface() ? new HashSet<>() : createInstance(rawType);
-        } else {
-            collection = rawType.isInterface() ? new ArrayList<>() : createInstance(rawType);
-        }
-        if (settings.depth() == 1) {
-            return collection;
-        }
+        final Collection<Object> collection = createCollectionInstance(parameterizedType, settings);
         if (collection != null) {
             for (int i = 0; i < Random.nextInt(settings.collections()); i++) {
-                collection.add(generateRandomObject(elementType, ownerType, null, settings));
+                final Object item = generateRandomObject(elementType, ownerType, null, settings);
+                if (item == null) {
+                    return collection;
+                }
+                collection.add(item);
             }
         }
         return collection;
+    }
+
+    private Collection<Object> createCollectionInstance(ParameterizedType parameterizedType, ObjectoSettings settings) {
+        final Class<?> rawType = (Class<?>) parameterizedType.getRawType();
+        if (rawType.isInterface()) {
+            if (Set.class.isAssignableFrom(rawType)) {
+                return new HashSet<>();
+            } else if (List.class.isAssignableFrom(rawType)) {
+                return new ArrayList<>();
+            } else {
+                return new LinkedList<>();
+            }
+        } else {
+            return createInstance(parameterizedType, settings);
+        }
     }
 
 }
