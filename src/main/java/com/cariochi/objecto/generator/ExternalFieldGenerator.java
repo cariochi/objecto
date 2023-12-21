@@ -10,7 +10,7 @@ public class ExternalFieldGenerator {
     private final Type objectType;
     private final Type fieldType;
     private final String fieldName;
-    private final Supplier<Object> generator;
+    private final Supplier<?> generator;
 
     public boolean isSupported(Type objectType, Type fieldType, String fieldName) {
         return this.objectType.equals(objectType) && this.fieldType.equals(fieldType) && this.fieldName.equals(fieldName);

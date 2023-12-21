@@ -35,11 +35,11 @@ public class RandomObjectGenerator {
         this.fieldGenerators = fieldGenerators;
     }
 
-    public <T> T generateRandomObject(Type type, ObjectoSettings settings) {
+    public Object generateRandomObject(Type type, ObjectoSettings settings) {
         return generateRandomObject(type, null, null, settings);
     }
 
-    <T> T generateRandomObject(Type type, Type ownerType, String fieldName, ObjectoSettings settings) {
+    Object generateRandomObject(Type type, Type ownerType, String fieldName, ObjectoSettings settings) {
         if (settings.depth() == 0) {
             return null;
         }
@@ -47,35 +47,35 @@ public class RandomObjectGenerator {
         if (actualType == null) {
             return null;
         }
-        return (T) Optional.empty()
+        return Optional.empty()
                 .or(() -> useFieldGenerator(ownerType, actualType, fieldName))
                 .or(() -> useTypeGenerator(actualType))
                 .or(() -> useDefaultGenerator(actualType, ownerType, settings))
                 .orElse(null);
     }
 
-    private <T> Optional<T> useTypeGenerator(Type fieldType) {
-        return (Optional<T>) typeGenerators.stream()
+    private Optional<?> useTypeGenerator(Type fieldType) {
+        return typeGenerators.stream()
                 .filter(generator -> generator.isSupported(fieldType))
                 .findFirst()
                 .map(ExternalTypeGenerator::create);
     }
 
-    private <T> Optional<T> useFieldGenerator(Type objectType, Type fieldType, String fieldName) {
-        return (Optional<T>) fieldGenerators.stream()
+    private Optional<?> useFieldGenerator(Type objectType, Type fieldType, String fieldName) {
+        return fieldGenerators.stream()
                 .filter(generator -> generator.isSupported(objectType, fieldType, fieldName))
                 .findFirst()
                 .map(ExternalFieldGenerator::create);
     }
 
-    private <T> Optional<T> useDefaultGenerator(Type type, Type ownerType, ObjectoSettings settings) {
-        return (Optional<T>) defaultGenerators.stream()
+    private Optional<?> useDefaultGenerator(Type type, Type ownerType, ObjectoSettings settings) {
+        return defaultGenerators.stream()
                 .filter(generator -> generator.isSupported(type))
                 .findFirst()
                 .map(generator -> generator.create(type, ownerType, settings));
     }
 
-    public <T> T createInstance(Type type, ObjectoSettings settings) {
+    public Object createInstance(Type type, ObjectoSettings settings) {
         return objectCreator.createInstance(type, settings);
     }
 
