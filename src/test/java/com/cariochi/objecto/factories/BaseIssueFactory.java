@@ -36,17 +36,17 @@ public interface BaseIssueFactory extends BaseFactory {
     BaseIssueFactory wrongCommenter(@Param("comments[100].commenter") User commenter);
 
     @InstanceCreator
-    default Attachment<?> newAttachment() {
+    private Attachment<?> newAttachment() {
         return Attachment.builder().fileContent(new byte[0]).build();
     }
 
     @FieldGenerator(type = Issue.class, field = Issue.Fields.key)
-    default String issueKey() {
+    private String issueKey() {
         return "ID-" + new Faker().number().randomNumber(4, true);
     }
 
     @FieldGenerator(type = Comment.class, field = Comment.Fields.commenter)
-    default User commenter() {
+    private User commenter() {
         Faker faker = new Faker();
         return User.builder()
                 .fullName("Vadym Deineka")

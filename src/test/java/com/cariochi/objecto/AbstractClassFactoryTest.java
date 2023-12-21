@@ -1,6 +1,7 @@
 package com.cariochi.objecto;
 
 
+import com.cariochi.objecto.ObjectoSettings.Strings;
 import com.cariochi.objecto.factories.IssueAbstractFactory;
 import com.cariochi.objecto.factories.UserFactory;
 import com.cariochi.objecto.model.Attachment;
@@ -9,6 +10,7 @@ import com.cariochi.objecto.model.Issue;
 import com.cariochi.objecto.model.Issue.Status;
 import com.cariochi.objecto.model.Issue.Type;
 import com.cariochi.objecto.model.User;
+import com.cariochi.objecto.utils.Range;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -19,8 +21,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AbstractClassFactoryTest {
 
+    private final ObjectoSettings settings = ObjectoSettings.builder()
+            .depth(4)
+            .longs(Range.of(1L, 100_000L))
+            .integers(Range.of(1, 100_000))
+            .bytes(Range.of(65, 91))
+            .doubles(Range.of(1D, 100_000D))
+            .floats(Range.of(1F, 100_000F))
+            .collections(Range.of(2, 5))
+            .arrays(Range.of(2, 5))
+            .maps(Range.of(2, 5))
+            .strings(Strings.builder()
+                    .type(Strings.Type.ALPHABETIC)
+                    .size(Range.of(8, 16))
+                    .uppercase(true)
+                    .build())
+            .build();
+
     private final IssueAbstractFactory issueFactory = Objecto.create(IssueAbstractFactory.class);
-    private final UserFactory userFactory = Objecto.create(UserFactory.class);
+    private final UserFactory userFactory = Objecto.create(UserFactory.class, settings);
 
     @Test
     void should_generate_issue() {

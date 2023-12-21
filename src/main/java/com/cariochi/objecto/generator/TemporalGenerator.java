@@ -1,7 +1,6 @@
 package com.cariochi.objecto.generator;
 
 import com.cariochi.objecto.ObjectoSettings;
-import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
 import com.cariochi.objecto.utils.Range;
 import java.lang.reflect.Type;
@@ -29,7 +28,7 @@ public class TemporalGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, ObjectoSettings settings) {
+    public Object create(Type type, Type ownerType, ObjectoSettings settings) {
         if (type.equals(Date.class)) {
             return Date.from(generateInstant());
         } else if (type.equals(Instant.class)) {

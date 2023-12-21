@@ -1,23 +1,10 @@
-package com.cariochi.objecto;
+package com.cariochi.objecto.generator;
 
-import com.cariochi.objecto.generator.ArrayGenerator;
-import com.cariochi.objecto.generator.BooleanGenerator;
-import com.cariochi.objecto.generator.CollectionGenerator;
-import com.cariochi.objecto.generator.CustomObjectGenerator;
-import com.cariochi.objecto.generator.EnumGenerator;
-import com.cariochi.objecto.generator.ExternalFieldGenerator;
-import com.cariochi.objecto.generator.ExternalTypeGenerator;
-import com.cariochi.objecto.generator.Generator;
-import com.cariochi.objecto.generator.GenericArrayTypeGenerator;
-import com.cariochi.objecto.generator.MapGenerator;
-import com.cariochi.objecto.generator.NumberGenerator;
-import com.cariochi.objecto.generator.PrimitiveGenerator;
-import com.cariochi.objecto.generator.StringGenerator;
-import com.cariochi.objecto.generator.TemporalGenerator;
+import com.cariochi.objecto.ObjectoSettings;
+import com.cariochi.objecto.utils.GenericTypeUtils;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RandomObjectGenerator {
 
-    private final List<ExternalTypeGenerator> typeConstructors = new ArrayList<>();
-    private final List<ExternalTypeGenerator> typeGenerators = new ArrayList<>();
-    private final List<ExternalFieldGenerator> fieldGenerators = new ArrayList<>();
+    private final List<ExternalTypeGenerator> instanceCreators;
+    private final List<ExternalTypeGenerator> typeGenerators;
+    private final List<ExternalFieldGenerator> fieldGenerators;
 
     private final List<Generator> defaultGenerators = List.of(
             new StringGenerator(this),
@@ -39,48 +26,28 @@ public class RandomObjectGenerator {
             new MapGenerator(this),
             new ArrayGenerator(this),
             new TemporalGenerator(this),
-            new GenericArrayTypeGenerator(this),
             new PrimitiveGenerator(this),
             new EnumGenerator(this),
             new CustomObjectGenerator(this)
     );
 
-    public void setTypeConstructors(List<ExternalTypeGenerator> typeConstructors) {
-        this.typeConstructors.clear();
-        this.typeConstructors.addAll(typeConstructors);
-    }
-
-    public void setTypeGenerators(List<ExternalTypeGenerator> typeGenerators) {
-        this.typeGenerators.clear();
-        this.typeGenerators.addAll(typeGenerators);
-    }
-
-    public void setFieldGenerators(List<ExternalFieldGenerator> fieldGenerators) {
-        this.fieldGenerators.clear();
-        this.fieldGenerators.addAll(fieldGenerators);
-    }
-
     public <T> T generateRandomObject(Type type, ObjectoSettings settings) {
-        return generateFiledValue(null, type, null, settings);
+        return generateRandomObject(type, null, null, settings);
     }
 
-    public <T> T generateFiledValue(Type objectType, Type fieldType, String fieldName, ObjectoSettings settings) {
+    <T> T generateRandomObject(Type type, Type ownerType, String fieldName, ObjectoSettings settings) {
         if (settings.depth() == 0) {
             return null;
         }
+        final Type actualType = GenericTypeUtils.getActualType(type, ownerType);
+        if (actualType == null) {
+            return null;
+        }
         return (T) Optional.empty()
-                .or(() -> useFieldGenerator(objectType, fieldType, fieldName))
-                .or(() -> useTypeGenerator(fieldType))
-                .or(() -> useDefaultGenerator(fieldType, settings))
+                .or(() -> useFieldGenerator(ownerType, actualType, fieldName))
+                .or(() -> useTypeGenerator(actualType))
+                .or(() -> useDefaultGenerator(actualType, ownerType, settings))
                 .orElse(null);
-    }
-
-    public <T> T createInstance(Type type) {
-        return (T) typeConstructors.stream()
-                .filter(generator -> generator.isSupported(type))
-                .findFirst()
-                .map(ExternalTypeGenerator::create)
-                .orElseGet(() -> createInstanceDefault(type));
     }
 
     private <T> Optional<T> useTypeGenerator(Type fieldType) {
@@ -97,11 +64,19 @@ public class RandomObjectGenerator {
                 .map(ExternalFieldGenerator::create);
     }
 
-    private <T> Optional<T> useDefaultGenerator(Type type, ObjectoSettings settings) {
+    private <T> Optional<T> useDefaultGenerator(Type type, Type ownerType, ObjectoSettings settings) {
         return (Optional<T>) defaultGenerators.stream()
                 .filter(generator -> generator.isSupported(type))
                 .findFirst()
-                .map(generator -> generator.create(type, settings));
+                .map(generator -> generator.create(type, ownerType, settings));
+    }
+
+    public <T> T createInstance(Type type) {
+        return (T) instanceCreators.stream()
+                .filter(generator -> generator.isSupported(type))
+                .findFirst()
+                .map(ExternalTypeGenerator::create)
+                .orElseGet(() -> createInstanceDefault(type));
     }
 
     private <T> T createInstanceDefault(Type type) {

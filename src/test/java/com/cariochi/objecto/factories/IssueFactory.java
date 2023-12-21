@@ -22,7 +22,7 @@ public interface IssueFactory extends BaseIssueFactory, BaseUserGenerators {
     IssueFactory assignee(@Param("assignee") User assignee);
 
     @FieldGenerator(type = Issue.class, field = Fields.labels)
-    default List<String> labels() {
+    private List<String> labels() {
         Faker faker = new Faker();
         return List.of("LABEL1", faker.lorem().word().toUpperCase());
     }
