@@ -1,7 +1,6 @@
 package com.cariochi.objecto.generator;
 
 import com.cariochi.objecto.ObjectoSettings;
-import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -20,7 +19,7 @@ public class NumberGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, ObjectoSettings settings) {
+    public Object create(Type type, Type ownerType, ObjectoSettings settings) {
         if (type.equals(Integer.class)) {
             return Random.nextInt(settings.integers());
         } else if (type.equals(Double.class)) {

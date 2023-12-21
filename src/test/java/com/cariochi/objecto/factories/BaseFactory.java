@@ -10,7 +10,7 @@ import static java.time.ZoneOffset.UTC;
 public interface BaseFactory {
 
     @TypeGenerator
-    default Instant instantGenerator() {
+    private Instant instantGenerator() {
         return LocalDateTime.of(1978, Month.FEBRUARY, 20, 12, 0).atZone(UTC).toInstant();
     }
 

@@ -2,7 +2,7 @@ package com.cariochi.objecto.proxy;
 
 import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.Param;
-import com.cariochi.objecto.RandomObjectGenerator;
+import com.cariochi.objecto.generator.RandomObjectGenerator;
 import com.cariochi.objecto.utils.ObjectUtils;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
@@ -11,16 +11,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import lombok.Setter;
 
 public class ProxyHandler<T> implements MethodHandler {
 
-    private final RandomObjectGenerator randomObjectGenerator;
     private final Class<T> targetClass;
     private final Map<String, Object> parameters = new LinkedHashMap<>();
     private final ObjectoSettings settings;
 
-    public ProxyHandler(RandomObjectGenerator randomObjectGenerator, Class<T> targetClass, ObjectoSettings settings) {
-        this.randomObjectGenerator = randomObjectGenerator;
+    @Setter
+    private RandomObjectGenerator randomObjectGenerator;
+
+    public ProxyHandler(Class<T> targetClass, ObjectoSettings settings) {
         this.targetClass = targetClass;
         this.settings = settings;
     }
@@ -35,9 +37,10 @@ public class ProxyHandler<T> implements MethodHandler {
         if (proceed == null) {
             final Map<String, Object> methodParameters = readMethodParameters(method, args);
             if (method.getReturnType().equals(method.getDeclaringClass())) {
-                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(randomObjectGenerator, targetClass, settings);
+                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(targetClass, settings);
                 childMethodHandler.parameters.putAll(parameters);
                 childMethodHandler.parameters.putAll(methodParameters);
+                childMethodHandler.setRandomObjectGenerator(randomObjectGenerator);
                 return ProxyFactory.createInstance(childMethodHandler, targetClass);
             } else {
                 final Object instance = randomObjectGenerator.generateRandomObject(method.getGenericReturnType(), settings);

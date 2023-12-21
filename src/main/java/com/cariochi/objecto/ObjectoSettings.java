@@ -13,13 +13,13 @@ import static lombok.AccessLevel.PRIVATE;
 @Value
 @Accessors(fluent = true)
 @With
-@Builder(access = PRIVATE)
-@NoArgsConstructor(access = PRIVATE)
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
 public class ObjectoSettings {
 
     @Builder.Default
-    int depth = 3;
+    int depth = 4;
 
     @Builder.Default
     Range<Long> longs = Range.of(1L, 100_000L);
@@ -46,16 +46,12 @@ public class ObjectoSettings {
     Range<Integer> maps = Range.of(2, 5);
 
     @Builder.Default
-    Strings strings = Strings.strings();
-
-    public static ObjectoSettings settings() {
-        return new ObjectoSettings();
-    }
+    Strings strings = new Strings();
 
     @Value
     @Accessors(fluent = true)
     @With
-    @Builder(access = PRIVATE)
+    @Builder
     @NoArgsConstructor(access = PRIVATE)
     @AllArgsConstructor(access = PRIVATE)
     public static class Strings {
@@ -68,10 +64,6 @@ public class ObjectoSettings {
 
         @Builder.Default
         Type type = Type.ALPHABETIC;
-
-        public static Strings strings() {
-            return new Strings();
-        }
 
         public enum Type {
             ALPHABETIC,

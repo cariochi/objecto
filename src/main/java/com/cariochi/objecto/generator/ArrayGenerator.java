@@ -1,10 +1,11 @@
 package com.cariochi.objecto.generator;
 
 import com.cariochi.objecto.ObjectoSettings;
-import com.cariochi.objecto.RandomObjectGenerator;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
+import org.apache.commons.lang3.reflect.TypeUtils;
 
 public class ArrayGenerator extends Generator {
 
@@ -14,21 +15,34 @@ public class ArrayGenerator extends Generator {
 
     @Override
     public boolean isSupported(Type type) {
-        return type instanceof Class && ((Class<?>) type).isArray();
+        final Class<?> rawType = TypeUtils.getRawType(type, null);
+        return rawType != null && rawType.isArray();
     }
 
     @Override
-    public Object create(Type type, ObjectoSettings settings) {
-        Class<?> componentType = ((Class<?>) type).getComponentType();
+    public Object create(Type type, Type ownerType, ObjectoSettings settings) {
         if (settings.depth() == 1) {
-            return Array.newInstance(componentType, 0);
+            return null;
         }
         int arrayLength = Random.nextInt(settings.arrays());
-        Object array = Array.newInstance(componentType, arrayLength);
-        for (int i = 0; i < arrayLength; i++) {
-            Array.set(array, i, generateRandomObject(componentType, settings));
+        final Type componentType = getComponentType(type);
+        final Object firstItem = generateRandomObject(componentType, ownerType, null, settings);
+        Object array = Array.newInstance(firstItem.getClass(), arrayLength);
+        Array.set(array, 0, firstItem);
+        for (int i = 1; i < arrayLength; i++) {
+            final Object item = generateRandomObject(componentType, ownerType, null, settings);
+            Array.set(array, i, item);
         }
         return array;
+    }
+
+    private Type getComponentType(Type arrayType) {
+        if (arrayType instanceof GenericArrayType) {
+            return ((GenericArrayType) arrayType).getGenericComponentType();
+        } else {
+            return ((Class<?>) arrayType).getComponentType();
+        }
+
     }
 
 }
