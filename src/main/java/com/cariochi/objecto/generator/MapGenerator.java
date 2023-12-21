@@ -49,7 +49,7 @@ public class MapGenerator extends Generator {
         if (rawType.isInterface()) {
             return new HashMap<>();
         } else {
-            return createInstance(parameterizedType, settings);
+            return (Map<Object, Object>) createInstance(parameterizedType, settings);
         }
     }
 

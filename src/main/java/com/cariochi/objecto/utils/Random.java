@@ -34,9 +34,6 @@ public class Random {
     public static String nextString(Strings strings) {
         String string;
         switch (strings.type()) {
-            case ALPHABETIC:
-                string = RandomStringUtils.randomAlphabetic(strings.size().min(), strings.size().max());
-                break;
             case ALPHANUMERIC:
                 string = RandomStringUtils.randomAlphanumeric(strings.size().min(), strings.size().max());
                 break;
@@ -52,6 +49,7 @@ public class Random {
             case PRINT:
                 string = RandomStringUtils.randomPrint(strings.size().min(), strings.size().max());
                 break;
+            case ALPHABETIC:
             default:
                 string = RandomStringUtils.randomAlphabetic(strings.size().min(), strings.size().max());
                 break;

@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public class ExternalTypeGenerator {
 
     private final Type type;
-    private final Supplier<Object> generator;
+    private final Supplier<?> generator;
 
     public boolean isSupported(Type type) {
         return this.type.equals(type);

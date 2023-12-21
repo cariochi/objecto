@@ -25,21 +25,22 @@ public class ObjectCreator {
     private final List<ExternalTypeGenerator> instanceCreators;
     private final RandomObjectGenerator randomObjectGenerator;
 
-    public <T> T createInstance(Type type, ObjectoSettings settings) {
-        return (T) instanceCreators.stream()
+    public Object createInstance(Type type, ObjectoSettings settings) {
+        return instanceCreators.stream()
                 .filter(generator -> generator.isSupported(type))
                 .findFirst()
                 .map(ExternalTypeGenerator::create)
                 .orElseGet(() -> createInstanceDefault(type, settings));
     }
 
-    private <T> T createInstanceDefault(Type type, ObjectoSettings settings) {
-        final Class<T> aClass = getRawtype(type);
+    private Object createInstanceDefault(Type type, ObjectoSettings settings) {
+        final Class<?> aClass = getRawType(type);
         if (aClass == null || aClass.isInterface() || Modifier.isAbstract(aClass.getModifiers())) {
             return null;
         }
 
-        return createByStaticConstructor(type, aClass, settings)
+        return Optional.empty()
+                .or(() -> createByStaticConstructor(type, aClass, settings))
                 .or(() -> createByPublicConstructor(type, aClass, settings))
                 .orElseGet(() -> {
                     log.info("Cannot create an instance of {}. Please create an @InstanceCreator method to specify how to instantiate this class.", type);
@@ -47,18 +48,18 @@ public class ObjectCreator {
                 });
     }
 
-    private <T> Class<T> getRawtype(Type type) {
-        Class<T> aClass = null;
+    private Class<?> getRawType(Type type) {
+        Class<?> aClass = null;
         if (type instanceof Class) {
-            aClass = ((Class<T>) type);
+            aClass = ((Class<?>) type);
         } else if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
-            aClass = (Class<T>) parameterizedType.getRawType();
+            aClass = (Class<?>) parameterizedType.getRawType();
         }
         return aClass;
     }
 
-    private <T> Optional<T> createByStaticConstructor(Type type, Class<T> aClass, ObjectoSettings settings) {
+    private Optional<?> createByStaticConstructor(Type type, Class<?> aClass, ObjectoSettings settings) {
         final List<Method> methods = Stream.of(aClass.getDeclaredMethods())
                 .filter(m -> Modifier.isPublic(m.getModifiers()))
                 .filter(m -> Modifier.isStatic(m.getModifiers()))
@@ -68,14 +69,12 @@ public class ObjectCreator {
         return methods.stream()
                 .map(c -> newInstance(c, type, settings))
                 .filter(Objects::nonNull)
-                .map(aClass::cast)
                 .findFirst();
     }
 
-    private <T> Optional<T> createByPublicConstructor(Type type, Class<T> aClass, ObjectoSettings settings) {
-        final List<Constructor<T>> constructors = Stream.of(aClass.getDeclaredConstructors())
+    private Optional<?> createByPublicConstructor(Type type, Class<?> aClass, ObjectoSettings settings) {
+        final List<Constructor<?>> constructors = Stream.of(aClass.getDeclaredConstructors())
                 .sorted(comparingInt((Constructor<?> c) -> getAccessibilityOrder(c.getModifiers())).thenComparingInt(Constructor::getParameterCount))
-                .map(c -> (Constructor<T>) c)
                 .collect(toList());
         return constructors.stream()
                 .map(c -> newInstance(c, type, settings))
@@ -83,7 +82,7 @@ public class ObjectCreator {
                 .findFirst();
     }
 
-    private <T> T newInstance(Constructor<T> constructor, Type ownerType, ObjectoSettings settings) {
+    private Object newInstance(Constructor<?> constructor, Type ownerType, ObjectoSettings settings) {
         try {
             if (settings.depth() == 0) {
                 return null;
@@ -96,13 +95,13 @@ public class ObjectCreator {
         }
     }
 
-    private <T> T newInstance(Method staticConstructor, Type ownerType, ObjectoSettings settings) {
+    private Object newInstance(Method staticConstructor, Type ownerType, ObjectoSettings settings) {
         try {
             if (settings.depth() == 0) {
                 return null;
             }
             final Object[] args = generateRandomParameters(staticConstructor.getParameters(), ownerType, settings);
-            return (T) staticConstructor.invoke(null, args);
+            return staticConstructor.invoke(null, args);
         } catch (Exception e) {
             return null;
         }

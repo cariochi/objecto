@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,13 +51,13 @@ public class CollectionGenerator extends Generator {
         if (rawType.isInterface()) {
             if (Set.class.isAssignableFrom(rawType)) {
                 return new HashSet<>();
-            } else if (List.class.isAssignableFrom(rawType)) {
-                return new ArrayList<>();
-            } else {
+            } else if (Queue.class.isAssignableFrom(rawType)) {
                 return new LinkedList<>();
+            } else {
+                return new ArrayList<>();
             }
         } else {
-            return createInstance(parameterizedType, settings);
+            return (Collection<Object>) createInstance(parameterizedType, settings);
         }
     }
 
