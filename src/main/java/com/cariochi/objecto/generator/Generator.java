@@ -13,8 +13,8 @@ public abstract class Generator {
 
     public abstract Object create(Type type, Type ownerType, ObjectoSettings settings);
 
-    protected <T> T createInstance(Type type) {
-        return randomObjectGenerator.createInstance(type);
+    protected <T> T createInstance(Type type, ObjectoSettings settings) {
+        return randomObjectGenerator.createInstance(type, settings);
     }
 
     protected <T> T generateRandomObject(Type type, Type ownerType, String fieldName, ObjectoSettings settings) {

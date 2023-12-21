@@ -20,6 +20,9 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 public class ObjectUtils {
 
     public static <T> T modifyObject(T object, Map<String, Object> fieldValues) {
+        if (object == null) {
+            return null;
+        }
         final Reflection reflection = reflect(object);
 
         final Map<String, Object> values = isCollection(object) || isArray(object)

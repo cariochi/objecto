@@ -6,17 +6,18 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.experimental.FieldNameConstants;
 
 @FieldNameConstants
 @Data
 @Builder
-@NoArgsConstructor
+@RequiredArgsConstructor
 @AllArgsConstructor
 public class Issue {
 
-    private String key;
+    private final String key;
     private String summary;
     private String description;
     private List<String> labels;
@@ -34,6 +35,8 @@ public class Issue {
     private List<Issue> subtasks;
     private Issue parent;
     private Map<DependencyType, Issue> dependencies;
+
+    private Properties properties;
 
     public enum Type {
         STORY,
@@ -61,6 +64,15 @@ public class Issue {
         IS_DEPENDENCY_OF,
         EPIC_LINKS,
         HAS_EPIC
+    }
+
+
+    @Value
+    @RequiredArgsConstructor(staticName = "of")
+    public static class Properties {
+
+        String prop;
+
     }
 
 }

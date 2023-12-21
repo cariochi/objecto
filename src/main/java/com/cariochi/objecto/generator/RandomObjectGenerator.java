@@ -2,19 +2,15 @@ package com.cariochi.objecto.generator;
 
 import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.utils.GenericTypeUtils;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
 public class RandomObjectGenerator {
 
-    private final List<ExternalTypeGenerator> instanceCreators;
+    private final ObjectCreator objectCreator;
     private final List<ExternalTypeGenerator> typeGenerators;
     private final List<ExternalFieldGenerator> fieldGenerators;
 
@@ -30,6 +26,14 @@ public class RandomObjectGenerator {
             new EnumGenerator(this),
             new CustomObjectGenerator(this)
     );
+
+    public RandomObjectGenerator(List<ExternalTypeGenerator> instanceCreators,
+                                 List<ExternalTypeGenerator> typeGenerators,
+                                 List<ExternalFieldGenerator> fieldGenerators) {
+        this.objectCreator = new ObjectCreator(instanceCreators, this);
+        this.typeGenerators = typeGenerators;
+        this.fieldGenerators = fieldGenerators;
+    }
 
     public <T> T generateRandomObject(Type type, ObjectoSettings settings) {
         return generateRandomObject(type, null, null, settings);
@@ -71,31 +75,8 @@ public class RandomObjectGenerator {
                 .map(generator -> generator.create(type, ownerType, settings));
     }
 
-    public <T> T createInstance(Type type) {
-        return (T) instanceCreators.stream()
-                .filter(generator -> generator.isSupported(type))
-                .findFirst()
-                .map(ExternalTypeGenerator::create)
-                .orElseGet(() -> createInstanceDefault(type));
-    }
-
-    private <T> T createInstanceDefault(Type type) {
-        try {
-            Class<T> aClass = null;
-            if (type instanceof Class) {
-                aClass = ((Class<T>) type);
-            } else if (type instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType) type;
-                aClass = (Class<T>) parameterizedType.getRawType();
-            }
-            if (aClass == null || aClass.isInterface() || Modifier.isAbstract(aClass.getModifiers())) {
-                return null;
-            }
-            return aClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            log.info("Cannot create an instance of {}. Please create an @InstanceCreator method to specify how to instantiate this class.", type);
-            return null;
-        }
+    public <T> T createInstance(Type type, ObjectoSettings settings) {
+        return objectCreator.createInstance(type, settings);
     }
 
 }
