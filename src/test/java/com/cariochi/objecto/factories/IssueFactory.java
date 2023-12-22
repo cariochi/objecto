@@ -3,6 +3,7 @@ package com.cariochi.objecto.factories;
 
 import com.cariochi.objecto.FieldGenerator;
 import com.cariochi.objecto.Param;
+import com.cariochi.objecto.TypeGenerator;
 import com.cariochi.objecto.model.Issue;
 import com.cariochi.objecto.model.Issue.Fields;
 import com.cariochi.objecto.model.Issue.Status;
@@ -23,8 +24,12 @@ public interface IssueFactory extends BaseIssueFactory, BaseUserGenerators {
 
     @FieldGenerator(type = Issue.class, field = Fields.labels)
     private List<String> labels() {
-        Faker faker = new Faker();
-        return List.of("LABEL1", faker.lorem().word().toUpperCase());
+        return List.of("LABEL1", new Faker().lorem().word().toUpperCase());
+    }
+
+    @TypeGenerator
+    private String strings() {
+        return new Faker().lorem().sentence();
     }
 
 }
