@@ -1,23 +1,22 @@
 package com.cariochi.objecto.generator;
 
-import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
 
-public class StringGenerator extends Generator {
+class StringGenerator extends Generator {
 
-    public StringGenerator(RandomObjectGenerator randomObjectGenerator) {
-        super(randomObjectGenerator);
+    public StringGenerator(ObjectoGenerator objectoGenerator) {
+        super(objectoGenerator);
     }
 
     @Override
-    public boolean isSupported(Type type) {
+    public boolean isSupported(Type type, GenerationContext context) {
         return type.equals(String.class);
     }
 
     @Override
-    public Object create(Type type, Type ownerType, ObjectoSettings settings) {
-        return Random.nextString(settings.strings());
+    public Object create(Type type, GenerationContext context) {
+        return Random.nextString(context.settings().strings());
     }
 
 

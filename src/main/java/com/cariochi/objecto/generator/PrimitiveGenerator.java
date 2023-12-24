@@ -4,19 +4,23 @@ import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
 
-public class PrimitiveGenerator extends Generator {
+import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
 
-    public PrimitiveGenerator(RandomObjectGenerator randomObjectGenerator) {
-        super(randomObjectGenerator);
+class PrimitiveGenerator extends Generator {
+
+    public PrimitiveGenerator(ObjectoGenerator objectoGenerator) {
+        super(objectoGenerator);
     }
 
     @Override
-    public boolean isSupported(Type type) {
-        return type instanceof Class && ((Class<?>) type).isPrimitive();
+    public boolean isSupported(Type type, GenerationContext context) {
+        final Class<?> rawType = getRawClass(type, context.ownerType());
+        return rawType != null && rawType.isPrimitive();
     }
 
     @Override
-    public Object create(Type type, Type ownerType, ObjectoSettings settings) {
+    public Object create(Type type, GenerationContext context) {
+        final ObjectoSettings settings = context.settings();
         if (type.equals(int.class)) {
             return Random.nextInt(settings.integers());
         } else if (type.equals(double.class)) {

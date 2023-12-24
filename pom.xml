@@ -7,10 +7,10 @@
 
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>Objecto</name>
     <description>A testing library for streamlined object creation and modification in test scenarios.</description>
-    <url>https://cariochi.com</url>
+    <url>https://cariochi.com/objecto</url>
 
     <licenses>
         <license>
@@ -52,15 +52,14 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-rng-simple</artifactId>
-            <version>1.5</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.cariochi.reflecto</groupId>
             <artifactId>reflecto</artifactId>
             <version>${reflecto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-rng-simple</artifactId>
+            <version>1.5</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -77,6 +76,7 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
+
         <dependency>
             <groupId>net.datafaker</groupId>
             <artifactId>datafaker</artifactId>
@@ -85,7 +85,7 @@
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
+            <artifactId>junit-jupiter-params</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>

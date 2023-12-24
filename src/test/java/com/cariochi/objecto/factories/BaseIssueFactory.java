@@ -2,7 +2,7 @@ package com.cariochi.objecto.factories;
 
 import com.cariochi.objecto.FieldGenerator;
 import com.cariochi.objecto.InstanceCreator;
-import com.cariochi.objecto.Param;
+import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.model.Attachment;
 import com.cariochi.objecto.model.Comment;
 import com.cariochi.objecto.model.Issue;
@@ -16,9 +16,9 @@ public interface BaseIssueFactory extends BaseFactory {
 
     Issue issue();
 
-    Issue issue(@Param("type") Type type);
+    Issue issue(@Modifier("type") Type type);
 
-    Issue issue(@Param("assignee") User assignee);
+    Issue issue(@Modifier("assignee") User assignee);
 
     default Issue defaultIssue() {
         return Issue.builder()
@@ -29,11 +29,14 @@ public interface BaseIssueFactory extends BaseFactory {
                 .build();
     }
 
-    BaseIssueFactory allCommenter(@Param("comments[*].commenter") User commenter);
+    @Modifier("comments[*].commenter")
+    BaseIssueFactory allCommenter(User commenter);
 
-    BaseIssueFactory firstCommenter(@Param("comments[0].commenter") User commenter);
+    @Modifier("comments[0].commenter")
+    BaseIssueFactory firstCommenter(User commenter);
 
-    BaseIssueFactory wrongCommenter(@Param("comments[100].commenter") User commenter);
+    @Modifier("comments[100].commenter")
+    BaseIssueFactory wrongCommenter(User commenter);
 
     @InstanceCreator
     private Attachment<?> newAttachment() {
