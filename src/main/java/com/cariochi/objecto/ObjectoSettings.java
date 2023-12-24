@@ -1,77 +1,66 @@
 package com.cariochi.objecto;
 
 import com.cariochi.objecto.utils.Range;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.With;
 import lombok.experimental.Accessors;
 
+import static com.cariochi.objecto.ObjectoSettings.Strings.defaultStrings;
 import static lombok.AccessLevel.PRIVATE;
 
 @Value
 @Accessors(fluent = true)
+@Builder(access = PRIVATE)
 @With
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor(access = PRIVATE)
 public class ObjectoSettings {
 
-    @Builder.Default
-    int depth = 4;
+    int depth;
+    Range<Long> longs;
+    Range<Integer> integers;
+    Range<Integer> bytes;
+    Range<Double> doubles;
+    Range<Float> floats;
+    Range<Integer> collections;
+    Range<Integer> arrays;
+    Range<Integer> maps;
+    Strings strings;
 
-    @Builder.Default
-    Range<Long> longs = Range.of(1L, 100_000L);
-
-    @Builder.Default
-    Range<Integer> integers = Range.of(1, 100_000);
-
-    @Builder.Default
-    Range<Integer> bytes = Range.of(65, 91);
-
-    @Builder.Default
-    Range<Double> doubles = Range.of(1D, 100_000D);
-
-    @Builder.Default
-    Range<Float> floats = Range.of(1F, 100_000F);
-
-    @Builder.Default
-    Range<Integer> collections = Range.of(2, 5);
-
-    @Builder.Default
-    Range<Integer> arrays = Range.of(2, 5);
-
-    @Builder.Default
-    Range<Integer> maps = Range.of(2, 5);
-
-    @Builder.Default
-    Strings strings = new Strings();
+    public static ObjectoSettings defaultSettings() {
+        return ObjectoSettings.builder()
+                .depth(3)
+                .longs(Range.of(1L, 100_000L))
+                .integers(Range.of(1, 100_000))
+                .bytes(Range.of(65, 91))
+                .doubles(Range.of(1D, 100_000D))
+                .floats(Range.of(1F, 100_000F))
+                .collections(Range.of(2, 5))
+                .arrays(Range.of(2, 5))
+                .maps(Range.of(2, 5))
+                .strings(defaultStrings())
+                .build();
+    }
 
     @Value
     @Accessors(fluent = true)
+    @Builder(access = PRIVATE)
     @With
-    @Builder
-    @NoArgsConstructor(access = PRIVATE)
-    @AllArgsConstructor(access = PRIVATE)
     public static class Strings {
 
-        @Builder.Default
-        Range<Integer> size = Range.of(8, 16);
+        Range<Integer> size;
+        boolean uppercase;
+        Type type;
 
-        @Builder.Default
-        boolean uppercase = true;
-
-        @Builder.Default
-        Type type = Type.ALPHABETIC;
+        public static Strings defaultStrings() {
+            return Strings.builder()
+                    .type(Strings.Type.ALPHABETIC)
+                    .size(Range.of(8, 16))
+                    .uppercase(true)
+                    .build();
+        }
 
         public enum Type {
-            ALPHABETIC,
-            ALPHANUMERIC,
-            ASCII,
-            NUMERIC,
-            GRAPH,
-            PRINT
+            ALPHABETIC, ALPHANUMERIC, ASCII, NUMERIC, GRAPH, PRINT;
         }
 
     }

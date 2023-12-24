@@ -56,6 +56,8 @@ class GenericTypeGeneratorTest {
         private S[] arrayS;
         private Collection<S> collectionS;
 
+        private Dto<? extends S, Integer> bounded;
+
     }
 
     @Data

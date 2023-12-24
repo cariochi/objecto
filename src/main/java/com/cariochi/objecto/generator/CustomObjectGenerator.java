@@ -1,44 +1,58 @@
 package com.cariochi.objecto.generator;
 
-import com.cariochi.objecto.ObjectoSettings;
-import com.cariochi.reflecto.Reflecto;
 import com.cariochi.reflecto.fields.JavaField;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Optional;
 
-public class CustomObjectGenerator extends Generator {
+import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
+import static com.cariochi.reflecto.Reflecto.reflect;
+import static java.util.stream.Collectors.toList;
 
-    public CustomObjectGenerator(RandomObjectGenerator randomObjectGenerator) {
-        super(randomObjectGenerator);
+class CustomObjectGenerator extends Generator {
+
+    public CustomObjectGenerator(ObjectoGenerator objectoGenerator) {
+        super(objectoGenerator);
     }
 
     @Override
-    public boolean isSupported(Type type) {
+    public boolean isSupported(Type type, GenerationContext context) {
         return true;
     }
 
     @Override
-    public Object create(Type type, Type ownerType, ObjectoSettings settings) {
-        if (settings.depth() == 1) {
+    public Object create(Type type, GenerationContext context) {
+        if (context.depth() == 1) {
             return null;
         }
-        final Object instance = createInstance(type, settings);
+
+        final Object instance = getInstance(type, context);
+
         if (instance != null) {
 
-            final List<JavaField> fields = Reflecto.reflect(instance).fields().asList();
+            final List<JavaField> fields = reflect(instance).fields().asList().stream().filter(field -> !field.isStatic()).collect(toList());
             for (JavaField field : fields) {
-                final Type fieldType = Optional.ofNullable(field.getValue())
-                        .map(Object::getClass)
-                        .map(Type.class::cast)
-                        .orElseGet(field::getGenericType);
+                final Type fieldType = field.getGenericType();
                 if (fieldType != null) {
-                    Object fieldValue = generateRandomObject(fieldType, type, field.getName(), settings.withDepth(settings.depth() - 1));
+                    final GenerationContext fieldContext = context.next()
+                            .withOwnerType(type)
+                            .withField(field.getName())
+                            .withInstance(field.getValue());
+                    final Object fieldValue = generateRandomObject(fieldType, fieldContext);
                     field.setValue(fieldValue);
                 }
             }
         }
         return instance;
+    }
+
+    private Object getInstance(Type type, GenerationContext context) {
+        final Class<?> rawType = getRawClass(type, context.ownerType());
+        final Object instance = context.instance();
+        if (rawType != null && rawType.isInstance(instance)) {
+            return instance;
+        }
+
+        return createInstance(type, context);
     }
 
 

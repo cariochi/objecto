@@ -2,7 +2,7 @@ package com.cariochi.objecto.factories;
 
 
 import com.cariochi.objecto.FieldGenerator;
-import com.cariochi.objecto.Param;
+import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.model.Issue;
 import com.cariochi.objecto.model.Issue.Status;
 import com.cariochi.objecto.model.Issue.Type;
@@ -14,19 +14,26 @@ public abstract class IssueAbstractFactory implements BaseIssueFactory, BaseUser
 
     private final Faker faker = new Faker();
 
-    public abstract IssueAbstractFactory key(@Param("key") String key);
+    @Modifier("key")
+    public abstract IssueAbstractFactory key(String key);
 
-    public abstract IssueAbstractFactory type(@Param("type") Type type);
+    @Modifier("type")
+    public abstract IssueAbstractFactory type(Type type);
 
-    public abstract IssueAbstractFactory status(@Param("status") Status status);
+    @Modifier("status")
+    public abstract IssueAbstractFactory status(Status status);
 
-    public abstract IssueAbstractFactory assignee(@Param("assignee") User assignee);
+    @Modifier("assignee")
+    public abstract IssueAbstractFactory assignee(User assignee);
 
-    public abstract IssueAbstractFactory allCommenter(@Param("comments[*].commenter") User commenter);
+    @Modifier("comments[*].commenter")
+    public abstract IssueAbstractFactory allCommenter(User commenter);
 
-    public abstract IssueAbstractFactory firstCommenter(@Param("comments[0].commenter") User commenter);
+    @Modifier("comments[0].commenter")
+    public abstract IssueAbstractFactory firstCommenter(User commenter);
 
-    public abstract IssueAbstractFactory wrongCommenter(@Param("comments[100].commenter") User commenter);
+    @Modifier("comments[100].commenter")
+    public abstract IssueAbstractFactory wrongCommenter(User commenter);
 
     @FieldGenerator(type = Issue.class, field = Issue.Fields.labels)
     private List<String> labels() {

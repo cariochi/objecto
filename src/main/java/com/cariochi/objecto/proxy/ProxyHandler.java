@@ -1,8 +1,8 @@
 package com.cariochi.objecto.proxy;
 
+import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.ObjectoSettings;
-import com.cariochi.objecto.Param;
-import com.cariochi.objecto.generator.RandomObjectGenerator;
+import com.cariochi.objecto.generator.ObjectoGenerator;
 import com.cariochi.objecto.utils.ObjectUtils;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
@@ -11,21 +11,15 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class ProxyHandler<T> implements MethodHandler {
 
     private final Class<T> targetClass;
-    private final Map<String, Object> parameters = new LinkedHashMap<>();
+    private final ObjectoGenerator objectoGenerator;
     private final ObjectoSettings settings;
-
-    @Setter
-    private RandomObjectGenerator randomObjectGenerator;
-
-    public ProxyHandler(Class<T> targetClass, ObjectoSettings settings) {
-        this.targetClass = targetClass;
-        this.settings = settings;
-    }
+    private final Map<String, Object> parameters = new LinkedHashMap<>();
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args, MethodProceed proceed) throws Throwable {
@@ -34,16 +28,19 @@ public class ProxyHandler<T> implements MethodHandler {
             return proceed.proceed();
         }
 
+        if (method.getName().equals("modifyObject")) {
+            return ObjectUtils.modifyObject(args[0], parameters);
+        }
+
         if (proceed == null) {
             final Map<String, Object> methodParameters = readMethodParameters(method, args);
-            if (method.getReturnType().equals(method.getDeclaringClass())) {
-                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(targetClass, settings);
+            if (method.getAnnotation(Modifier.class) != null && method.getReturnType().equals(method.getDeclaringClass())) {
+                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(targetClass, objectoGenerator, settings);
                 childMethodHandler.parameters.putAll(parameters);
                 childMethodHandler.parameters.putAll(methodParameters);
-                childMethodHandler.setRandomObjectGenerator(randomObjectGenerator);
-                return ProxyFactory.createInstance(childMethodHandler, targetClass);
+                return ProxyFactory.createInstance(childMethodHandler, targetClass, ObjectModifier.class);
             } else {
-                final Object instance = randomObjectGenerator.generateRandomObject(method.getGenericReturnType(), settings);
+                final Object instance = objectoGenerator.generateInstance(method.getGenericReturnType(), settings);
                 final Map<String, Object> tmpMap = new LinkedHashMap<>();
                 tmpMap.putAll(parameters);
                 tmpMap.putAll(methodParameters);
@@ -57,19 +54,24 @@ public class ProxyHandler<T> implements MethodHandler {
 
     private Map<String, Object> readMethodParameters(Method method, Object[] args) {
         final Map<String, Object> methodParameters = new LinkedHashMap<>();
-        final Parameter[] params = method.getParameters();
-        for (int i = 0; i < params.length; i++) {
-            final Parameter param = params[i];
-            final Param annotation = param.getAnnotation(Param.class);
-            if (annotation == null) {
-                if (param.isNamePresent()) {
-                    final Object value = args[i];
-                    methodParameters.put(param.getName(), value);
+        final Modifier methodModifier = method.getAnnotation(Modifier.class);
+        if (methodModifier != null) {
+            methodParameters.put(methodModifier.value(), args[0]);
+        } else {
+            final Parameter[] params = method.getParameters();
+            for (int i = 0; i < params.length; i++) {
+                final Parameter param = params[i];
+                final Modifier modifierParameter = param.getAnnotation(Modifier.class);
+                if (modifierParameter == null) {
+                    if (param.isNamePresent()) {
+                        final Object value = args[i];
+                        methodParameters.put(param.getName(), value);
+                    } else {
+                        throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
+                    }
                 } else {
-                    throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Param annotation");
+                    methodParameters.put(modifierParameter.value(), args[i]);
                 }
-            } else {
-                methodParameters.put(annotation.value(), args[i]);
             }
         }
         return methodParameters;

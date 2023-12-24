@@ -37,7 +37,7 @@ public class ObjectUtils {
                         reflection.get(e.getKey()).setValue(e.getValue());
                     } catch (Exception ex) {
                         log.info(
-                                "Invalid @Param value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
+                                "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
                                 e.getKey(), object.getClass().getName()
                         );
                     }
@@ -68,7 +68,7 @@ public class ObjectUtils {
 
             } catch (Exception e) {
                 log.info(
-                        "Invalid @Param value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
+                        "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
                         name, reflection.getValue().getClass().getName()
                 );
                 return emptyMap();
