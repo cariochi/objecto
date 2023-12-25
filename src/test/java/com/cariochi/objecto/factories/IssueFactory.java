@@ -15,24 +15,24 @@ import net.datafaker.Faker;
 public interface IssueFactory extends BaseIssueFactory, BaseUserGenerators {
 
     @Modifier("key")
-    IssueFactory key(String key);
+    IssueFactory withKey(String key);
 
     @Modifier("type")
-    IssueFactory type(Type type);
+    IssueFactory withType(Type type);
 
     @Modifier("status")
-    IssueFactory status(Status status);
+    IssueFactory withStatus(Status status);
 
     @Modifier("assignee")
-    IssueFactory assignee(User assignee);
+    IssueFactory withAssignee(User assignee);
 
     @FieldGenerator(type = Issue.class, field = Fields.labels)
-    private List<String> labels() {
+    private List<String> labelsGenerator() {
         return List.of("LABEL1", new Faker().lorem().word().toUpperCase());
     }
 
     @TypeGenerator
-    private String strings() {
+    private String stringGenerator() {
         return new Faker().lorem().sentence();
     }
 

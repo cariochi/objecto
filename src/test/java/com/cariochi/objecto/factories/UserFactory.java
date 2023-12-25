@@ -6,9 +6,9 @@ import com.cariochi.objecto.model.User;
 
 public interface UserFactory extends BaseFactory, BaseUserGenerators {
 
-    User user();
+    User createUser();
 
     @Modifier("username")
-    UserFactory username(String username);
+    UserFactory withUsername(String username);
 
 }

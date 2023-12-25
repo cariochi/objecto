@@ -40,7 +40,7 @@ class InterfaceFactoryTest {
 
     @Test
     void should_generate_issue() {
-        final Issue issue = issueFactory.issue();
+        final Issue issue = issueFactory.createIssue();
         assertThat(issue).isNotNull();
 
         // Type Constructors
@@ -67,15 +67,31 @@ class InterfaceFactoryTest {
     }
 
     @Test
+    void should_generate_list() {
+        assertThat(issueFactory.createIssues())
+                .isNotEmpty();
+
+        assertThat(issueFactory.createIssues(Type.BUG))
+                .isNotEmpty()
+                .extracting(Issue::getType)
+                .containsOnly(Type.BUG);
+
+        assertThat(issueFactory.withType(Type.BUG).createIssues())
+                .isNotEmpty()
+                .extracting(Issue::getType)
+                .containsOnly(Type.BUG);
+    }
+
+    @Test
     void should_generate_issue_with_parameters() {
         final Type type = Type.BUG;
-        final User assignee = userFactory.user();
+        final User assignee = userFactory.createUser();
 
-        assertThat(issueFactory.issue(type))
+        assertThat(issueFactory.createIssue(type))
                 .extracting(Issue::getType)
                 .isEqualTo(type);
 
-        assertThat(issueFactory.issue(assignee))
+        assertThat(issueFactory.createIssue(assignee))
                 .extracting(Issue::getAssignee)
                 .isEqualTo(assignee);
     }
@@ -85,26 +101,26 @@ class InterfaceFactoryTest {
         final String key = "MY-KEY";
         final Type type = Type.BUG;
         final Status status = Status.CLOSED;
-        final User assignee = userFactory.user();
+        final User assignee = userFactory.createUser();
 
         final IssueFactory modifiedFactory = issueFactory
-                .key(key)
-                .type(type)
-                .status(status)
-                .assignee(assignee);
+                .withKey(key)
+                .withType(type)
+                .withStatus(status)
+                .withAssignee(assignee);
 
-        assertThat(modifiedFactory.issue())
+        assertThat(modifiedFactory.createIssue())
                 .extracting(Issue::getKey, Issue::getType, Issue::getStatus, Issue::getAssignee)
                 .containsExactly(key, type, status, assignee);
 
-        assertThat(modifiedFactory.defaultIssue())
+        assertThat(modifiedFactory.createDefaultIssue())
                 .extracting(Issue::getKey, Issue::getType, Issue::getStatus, Issue::getAssignee)
                 .containsExactly(key, type, status, assignee);
     }
 
     @Test
     void should_get_default_issue() {
-        final Issue issue = issueFactory.defaultIssue();
+        final Issue issue = issueFactory.createDefaultIssue();
         assertThat(issue)
                 .extracting(Issue::getKey, Issue::getType, Issue::getStatus)
                 .containsExactly("DEFAULT", Type.STORY, Status.OPEN);
@@ -112,39 +128,39 @@ class InterfaceFactoryTest {
 
     @Test
     void should_modify_simple_complex_paths() {
-        final User commenter = userFactory.user();
+        final User commenter = userFactory.createUser();
 
-        assertThat(issueFactory.firstCommenter(commenter).issue().getComments().get(0))
+        assertThat(issueFactory.withFirstCommenter(commenter).createIssue().getComments().get(0))
                 .extracting(Comment::getCommenter)
                 .isEqualTo(commenter);
 
-        assertThat(issueFactory.firstCommenter(commenter).defaultIssue().getComments().get(0))
+        assertThat(issueFactory.withFirstCommenter(commenter).createDefaultIssue().getComments().get(0))
                 .extracting(Comment::getCommenter)
                 .isEqualTo(commenter);
     }
 
     @Test
     void should_modify_multiple_complex_paths() {
-        final User commenter = userFactory.user();
+        final User commenter = userFactory.createUser();
 
-        assertThat(issueFactory.allCommenter(commenter).issue().getComments())
+        assertThat(issueFactory.withAllCommenter(commenter).createIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .containsOnly(commenter);
 
-        assertThat(issueFactory.allCommenter(commenter).defaultIssue().getComments())
+        assertThat(issueFactory.withAllCommenter(commenter).createDefaultIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .containsOnly(commenter);
     }
 
     @Test
     void should_not_fail_on_wrong_complex_paths() {
-        final User commenter = userFactory.user();
+        final User commenter = userFactory.createUser();
 
-        assertThat(issueFactory.wrongCommenter(commenter).issue().getComments())
+        assertThat(issueFactory.withWrongCommenter(commenter).createIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .doesNotContain(commenter);
 
-        assertThat(issueFactory.wrongCommenter(commenter).defaultIssue().getComments())
+        assertThat(issueFactory.withWrongCommenter(commenter).createDefaultIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .doesNotContain(commenter);
     }
