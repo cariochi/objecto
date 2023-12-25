@@ -1,32 +1,86 @@
 # Cariochi Objecto
 
-Objecto is a lightweight Java library designed to simplify and enhance the process of object creation and testing in unit tests. It provides a convenient way to generate complex objects with various configurations, making it easier for developers to focus on testing their logic rather than creating elaborate object setups.
+Objecto is a lightweight Java library designed to simplify and enhance the process of object creation and testing in unit tests. 
+It provides a convenient way to generate complex objects with various configurations, making it easier for developers to focus on testing their logic rather than creating elaborate object setups.
 
-## Features
+# Documentation
 
-- **Object Generation**: Easily create instances of complex objects with sensible default values.
-- **Parameterized Creation**: Generate objects with specific parameters to suit your testing needs.
-- **Type Constructors and Generators**: Define how certain types are constructed or generated to control the creation process.
-- **Field Generators**: Customize the generation of specific fields within your objects.
-- **Test-Friendly**: Streamline your unit tests by reducing boilerplate code related to object setup.
+Please, see the recently published documentation [here](https://www.cariochi.com/objecto).
 
-[//]: # (## Getting Started)
+# Installation
+To use **Objecto** in your project, add the following dependency to your build configuration:
+```xml
+<dependency>
+    <groupId>com.cariochi.objecto</groupId>
+    <artifactId>objecto</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```
 
-[//]: # ()
-[//]: # (### Installation)
+# Examples:
 
-[//]: # ()
-[//]: # (To use Objecto in your project, add the following dependency to your build configuration:)
+## Declaration
 
-[//]: # ()
-[//]: # (```xml)
+```java
+import com.cariochi.objecto.FieldGenerator;
+import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.TypeGenerator;
+import com.cariochi.objecto.model.Issue;
+import com.cariochi.objecto.model.Issue.Fields;
+import com.cariochi.objecto.model.Issue.Status;
+import com.cariochi.objecto.model.Issue.Type;
+import com.cariochi.objecto.model.User;
+import java.util.List;
+import net.datafaker.Faker;
 
-[//]: # (<dependency>)
+public interface IssueFactory {
 
-[//]: # (    <groupId>com.cariochi.objecto</groupId>)
+    Issue createIssue();
 
-[//]: # (    <artifactId>objecto</artifactId>)
+    Issue createIssue(@Modifier("type") Type type);
+    
+    @InstanceCreator
+    private Attachment<?> newAttachment() {
+        return new Attachment("", new byte[0]);
+    }
 
-[//]: # (    <version>1.0.0</version>)
+    @TypeGenerator
+    private String stringGenerator() {
+        return new Faker().lorem().sentence();
+    }
+    
+    @FieldGenerator(type = Issue.class, field = Issue.Fields.key)
+    private String issueKeyGenerator() {
+        return "ID-" + new Faker().number().randomNumber(4, true);
+    }
 
-[//]: # (</dependency>)
+    @Modifier("type")
+    IssueFactory withType(Type type);
+
+    @Modifier("status")
+    IssueFactory withStatus(Status status);
+    
+    @Modifier("subtasks[*].status") 
+    IssueFactory withAllSubtaskStatuses(Status status);
+
+}
+```
+## Usage
+
+```java
+// Creating a factory for generating Issue objects
+IssueFactory issueFactory = Objecto.create(IssueFactory.class);
+
+// Generating a random Issue object
+Issue randomIssue = issueFactory.createIssue();
+
+// Generating an Issue object with specific parameters
+Issue randomBug = issueFactory.createIssue(Type.BUG);
+
+// Using modifier methods for easy modification
+Issue randomOpenBug = issueFactory
+                          .withType(Type.BUG)
+                          .withStatus(Status.OPEN)
+                          .createIssue();
+
+```

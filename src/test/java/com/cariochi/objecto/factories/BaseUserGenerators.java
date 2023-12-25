@@ -8,27 +8,27 @@ import net.datafaker.Faker;
 public interface BaseUserGenerators {
 
     @FieldGenerator(type = User.class, field = User.Fields.email)
-    default String email() {
+    private String emailGenerator() {
         return new Faker().internet().emailAddress();
     }
 
     @FieldGenerator(type = User.class, field = Fields.phone)
-    default String phone() {
+    private String phoneGenerator() {
         return new Faker().phoneNumber().cellPhone();
     }
 
     @FieldGenerator(type = User.class, field = Fields.username)
-    default String username() {
+    private String usernameGenerator() {
         return new Faker().name().username();
     }
 
     @FieldGenerator(type = User.class, field = Fields.fullName)
-    default String fullName() {
+    private String fullNameGenerator() {
         return new Faker().name().fullName();
     }
 
     @FieldGenerator(type = User.class, field = Fields.companyName)
-    default String companyName() {
+    private String companyNameGenerator() {
         return new Faker().company().name();
     }
 
