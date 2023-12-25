@@ -13,8 +13,8 @@ class ObjectModifierTest {
 
     @Test
     void should_modify_object() {
-        final User user = userFactory.user();
-        final User modified = ((ObjectModifier) userFactory.username("TEST USER")).modifyObject(user);
+        final User user = userFactory.createUser();
+        final User modified = ((ObjectModifier) userFactory.withUsername("TEST USER")).modifyObject(user);
         assertThat(modified)
                 .extracting(User::getUsername)
                 .isEqualTo("TEST USER");

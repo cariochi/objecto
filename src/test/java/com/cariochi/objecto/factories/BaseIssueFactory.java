@@ -12,15 +12,19 @@ import com.cariochi.objecto.model.User;
 import java.util.List;
 import net.datafaker.Faker;
 
-public interface BaseIssueFactory extends BaseFactory {
+public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
 
-    Issue issue();
+    Issue createIssue();
 
-    Issue issue(@Modifier("type") Type type);
+    Issue createIssue(@Modifier("type") Type type);
 
-    Issue issue(@Modifier("assignee") User assignee);
+    Issue createIssue(@Modifier("assignee") User assignee);
 
-    default Issue defaultIssue() {
+    List<Issue> createIssues();
+
+    List<Issue> createIssues(@Modifier("type") Type type);
+
+    default Issue createDefaultIssue() {
         return Issue.builder()
                 .key("DEFAULT")
                 .type(Type.STORY)
@@ -30,13 +34,13 @@ public interface BaseIssueFactory extends BaseFactory {
     }
 
     @Modifier("comments[*].commenter")
-    BaseIssueFactory allCommenter(User commenter);
+    BaseIssueFactory withAllCommenter(User commenter);
 
     @Modifier("comments[0].commenter")
-    BaseIssueFactory firstCommenter(User commenter);
+    BaseIssueFactory withFirstCommenter(User commenter);
 
     @Modifier("comments[100].commenter")
-    BaseIssueFactory wrongCommenter(User commenter);
+    BaseIssueFactory withWrongCommenter(User commenter);
 
     @InstanceCreator
     private Attachment<?> newAttachment() {
@@ -44,12 +48,12 @@ public interface BaseIssueFactory extends BaseFactory {
     }
 
     @FieldGenerator(type = Issue.class, field = Issue.Fields.key)
-    private String issueKey() {
+    private String issueKeyGenerator() {
         return "ID-" + new Faker().number().randomNumber(4, true);
     }
 
     @FieldGenerator(type = Comment.class, field = Comment.Fields.commenter)
-    private User commenter() {
+    private User commenterGenerator() {
         Faker faker = new Faker();
         return User.builder()
                 .fullName("Vadym Deineka")

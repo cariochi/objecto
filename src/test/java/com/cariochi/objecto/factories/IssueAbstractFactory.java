@@ -10,33 +10,33 @@ import com.cariochi.objecto.model.User;
 import java.util.List;
 import net.datafaker.Faker;
 
-public abstract class IssueAbstractFactory implements BaseIssueFactory, BaseUserGenerators {
+public abstract class IssueAbstractFactory implements BaseIssueFactory {
 
     private final Faker faker = new Faker();
 
     @Modifier("key")
-    public abstract IssueAbstractFactory key(String key);
+    public abstract IssueAbstractFactory withKey(String key);
 
     @Modifier("type")
-    public abstract IssueAbstractFactory type(Type type);
+    public abstract IssueAbstractFactory withType(Type type);
 
     @Modifier("status")
-    public abstract IssueAbstractFactory status(Status status);
+    public abstract IssueAbstractFactory withStatus(Status status);
 
     @Modifier("assignee")
-    public abstract IssueAbstractFactory assignee(User assignee);
+    public abstract IssueAbstractFactory withAssignee(User assignee);
 
     @Modifier("comments[*].commenter")
-    public abstract IssueAbstractFactory allCommenter(User commenter);
+    public abstract IssueAbstractFactory withAllCommenter(User commenter);
 
     @Modifier("comments[0].commenter")
-    public abstract IssueAbstractFactory firstCommenter(User commenter);
+    public abstract IssueAbstractFactory withFirstCommenter(User commenter);
 
     @Modifier("comments[100].commenter")
-    public abstract IssueAbstractFactory wrongCommenter(User commenter);
+    public abstract IssueAbstractFactory withWrongCommenter(User commenter);
 
     @FieldGenerator(type = Issue.class, field = Issue.Fields.labels)
-    private List<String> labels() {
+    private List<String> labelsGenerator() {
         return List.of("LABEL1", faker.lorem().word().toUpperCase());
     }
 
