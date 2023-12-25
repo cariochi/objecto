@@ -10,7 +10,7 @@ import com.cariochi.objecto.model.User;
 import java.util.List;
 import net.datafaker.Faker;
 
-public abstract class IssueAbstractFactory implements BaseIssueFactory, BaseUserGenerators {
+public abstract class IssueAbstractFactory implements BaseIssueFactory {
 
     private final Faker faker = new Faker();
 

@@ -12,7 +12,7 @@ import com.cariochi.objecto.model.User;
 import java.util.List;
 import net.datafaker.Faker;
 
-public interface BaseIssueFactory extends BaseFactory {
+public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
 
     Issue createIssue();
 
