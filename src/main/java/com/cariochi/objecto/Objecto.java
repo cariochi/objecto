@@ -3,7 +3,6 @@ package com.cariochi.objecto;
 import com.cariochi.objecto.generator.ObjectoGenerator;
 import com.cariochi.objecto.proxy.ObjectModifier;
 import com.cariochi.objecto.proxy.ProxyHandler;
-import com.cariochi.objecto.utils.FieldKey;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import lombok.experimental.UtilityClass;
 
@@ -48,10 +47,7 @@ public class Objecto {
     private static void addFieldGenerators(Object proxy, ObjectoGenerator objectoGenerator) {
         reflect(proxy).methods().withAnnotation(FieldGenerator.class)
                 .forEach(method -> method.findAnnotation(FieldGenerator.class)
-                        .ifPresent(annotation -> {
-                            final FieldKey key = new FieldKey(annotation.type(), method.getReturnType(), annotation.field());
-                            objectoGenerator.addFieldGenerator(key, method::invoke);
-                        })
+                        .ifPresent(annotation -> objectoGenerator.addFieldGenerator(annotation.type(), method.getReturnType(), annotation.field(), method::invoke))
                 );
     }
 

@@ -45,9 +45,6 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
     @Modifier("comments[100].commenter")
     BaseIssueFactory withWrongCommenter(User commenter);
 
-    @Modifier("parent")
-    BaseIssueFactory withParent(Issue parent);
-
     @InstanceCreator
     private Attachment<?> newAttachment() {
         return Attachment.builder().fileContent(new byte[0]).build();
@@ -70,6 +67,11 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
     @FieldGenerator(type = Issue.class, field = Fields.labels)
     private List<String> labelsGenerator() {
         return List.of("LABEL1", new Faker().lorem().word().toUpperCase());
+    }
+
+    @FieldGenerator(type = Issue.class, field = Fields.parent)
+    private Issue issueParentGenerator() {
+        return null;
     }
 
     @PostProcessor

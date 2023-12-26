@@ -1,12 +1,12 @@
 package com.cariochi.objecto.generator;
 
 import com.cariochi.objecto.ObjectoSettings;
-import com.cariochi.objecto.utils.FieldKey;
 import com.cariochi.objecto.utils.GenericTypeUtils;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,29 +20,32 @@ import static com.cariochi.objecto.ObjectoSettings.defaultSettings;
 public class ObjectoGenerator {
 
     private final InstanceCreator instanceCreator = new InstanceCreator(this);
-    private final Map<Type, Supplier<Object>> typeGenerators = new HashMap<>();
-    private final Map<FieldKey, Supplier<Object>> fieldGenerators = new HashMap<>();
+    private final Map<String, List<Generator>> generators = new LinkedHashMap<>();
     private final Map<Type, List<Consumer<Object>>> postProcessors = new HashMap<>();
 
-    private final List<Generator> defaultGenerators = List.of(
-            new StringGenerator(this),
-            new NumberGenerator(this),
-            new BooleanGenerator(this),
-            new CollectionGenerator(this),
-            new MapGenerator(this),
-            new ArrayGenerator(this),
-            new TemporalGenerator(this),
-            new PrimitiveGenerator(this),
-            new EnumGenerator(this),
-            new CustomObjectGenerator(this)
-    );
-
-    public void addTypeGenerator(Type type, Supplier<Object> generator) {
-        typeGenerators.put(type, generator);
+    public ObjectoGenerator() {
+        generators.put("fields", new ArrayList<>());
+        generators.put("types", new ArrayList<>());
+        generators.put("default", List.of(
+                new StringGenerator(this),
+                new NumberGenerator(this),
+                new BooleanGenerator(this),
+                new CollectionGenerator(this),
+                new MapGenerator(this),
+                new ArrayGenerator(this),
+                new TemporalGenerator(this),
+                new PrimitiveGenerator(this),
+                new EnumGenerator(this),
+                new CustomObjectGenerator(this)
+        ));
     }
 
-    public void addFieldGenerator(FieldKey key, Supplier<Object> generator) {
-        fieldGenerators.put(key, generator);
+    public void addTypeGenerator(Type type, Supplier<Object> generator) {
+        generators.get("types").add(0, new CustomTypeGenerator(type, generator));
+    }
+
+    public void addFieldGenerator(Type objectType, Type fieldType, String fieldName, Supplier<Object> generator) {
+        generators.get("fields").add(0, new CustomFieldGenerator(objectType, fieldType, fieldName, generator));
     }
 
     public void addPostProcessor(Type type, Consumer<Object> postProcessor) {
@@ -73,9 +76,7 @@ public class ObjectoGenerator {
         }
         return rawType
                 .flatMap(actualType -> Optional.empty()
-                        .or(() -> useFieldGenerator(actualType, context))
-                        .or(() -> useTypeGenerator(actualType))
-                        .or(() -> useDefaultGenerator(actualType, context))
+                        .or(() -> generate(actualType, context))
                         .map(i -> postProcess(actualType, i))
                 )
                 .orElse(null);
@@ -86,17 +87,9 @@ public class ObjectoGenerator {
                 .or(() -> Optional.ofNullable(context.instance()).map(Object::getClass));
     }
 
-    private Optional<?> useTypeGenerator(Type fieldType) {
-        return Optional.ofNullable(typeGenerators.get(fieldType)).map(Supplier::get);
-    }
-
-    private Optional<?> useFieldGenerator(Type fieldType, GenerationContext context) {
-        final FieldKey key = FieldKey.builder().objectType(context.ownerType()).fieldType(fieldType).fieldName(context.fieldName()).build();
-        return Optional.ofNullable(fieldGenerators.get(key)).map(Supplier::get);
-    }
-
-    private Optional<?> useDefaultGenerator(Type type, GenerationContext context) {
-        return defaultGenerators.stream()
+    private Optional<?> generate(Type type, GenerationContext context) {
+        return generators.values().stream()
+                .flatMap(Collection::stream)
                 .filter(generator -> generator.isSupported(type, context))
                 .findFirst()
                 .map(generator -> generator.create(type, context));
@@ -111,6 +104,58 @@ public class ObjectoGenerator {
 
     Object createInstance(Type type, GenerationContext context) {
         return instanceCreator.createInstance(type, context);
+    }
+
+    private class CustomTypeGenerator extends Generator {
+
+        private final Type type;
+        private final Supplier<Object> generator;
+
+        public CustomTypeGenerator(Type type, Supplier<Object> generator) {
+            super(ObjectoGenerator.this);
+            this.type = type;
+            this.generator = generator;
+        }
+
+        @Override
+        public boolean isSupported(Type actualType, GenerationContext context) {
+            return type.equals(actualType);
+        }
+
+        @Override
+        public Object create(Type type, GenerationContext context) {
+            return generator.get();
+        }
+
+    }
+
+    private class CustomFieldGenerator extends Generator {
+
+        private final Type objectType;
+        private final Type fieldType;
+        private final String fieldName;
+        private final Supplier<Object> generator;
+
+        public CustomFieldGenerator(Type objectType, Type fieldType, String fieldName, Supplier<Object> generator) {
+            super(ObjectoGenerator.this);
+            this.objectType = objectType;
+            this.fieldType = fieldType;
+            this.fieldName = fieldName;
+            this.generator = generator;
+        }
+
+        @Override
+        public boolean isSupported(Type actualType, GenerationContext context) {
+            return objectType.equals(context.ownerType())
+                    && fieldType.equals(actualType)
+                    && fieldName.equals(context.fieldName());
+        }
+
+        @Override
+        public Object create(Type type, GenerationContext context) {
+            return generator.get();
+        }
+
     }
 
 }
