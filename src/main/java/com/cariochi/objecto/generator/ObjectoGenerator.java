@@ -73,13 +73,9 @@ public class ObjectoGenerator {
         final Optional<Type> rawType = getRawType(type, context);
         if (rawType.isEmpty()) {
             log.info("Cannot recognize a raw type `{}` of field `{}` of type `{}`. Please create an @InstanceCreator method to specify how to instantiate this class.", type, context.fieldName(), context.ownerType());
+            return null;
         }
-        return rawType
-                .flatMap(actualType -> Optional.empty()
-                        .or(() -> generate(actualType, context))
-                        .map(i -> postProcess(actualType, i))
-                )
-                .orElse(null);
+        return generate(rawType.get(), context);
     }
 
     private Optional<Type> getRawType(Type type, GenerationContext context) {
@@ -87,19 +83,19 @@ public class ObjectoGenerator {
                 .or(() -> Optional.ofNullable(context.instance()).map(Object::getClass));
     }
 
-    private Optional<?> generate(Type type, GenerationContext context) {
-        return generators.values().stream()
-                .flatMap(Collection::stream)
-                .filter(generator -> generator.isSupported(type, context))
-                .findFirst()
-                .map(generator -> generator.create(type, context));
+    private Object generate(Type type, GenerationContext context) {
+        return generators.values().stream().flatMap(Collection::stream)
+                .filter(generator -> generator.isSupported(type, context)).findFirst()
+                .map(generator -> generator.create(type, context))
+                .map(instance -> postProcess(type, instance))
+                .orElse(null);
     }
 
-    private Object postProcess(Type actualType, Object i) {
+    private Object postProcess(Type actualType, Object instance) {
         Optional.ofNullable(postProcessors.get(actualType)).stream()
                 .flatMap(Collection::stream)
-                .forEach(postProcessor -> postProcessor.accept(i));
-        return i;
+                .forEach(postProcessor -> postProcessor.accept(instance));
+        return instance;
     }
 
     Object createInstance(Type type, GenerationContext context) {
