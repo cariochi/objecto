@@ -41,11 +41,11 @@ public class ObjectoGenerator {
     }
 
     public void addTypeGenerator(Type type, Supplier<Object> generator) {
-        generators.get("types").add(0, new CustomTypeGenerator(type, generator));
+        generators.get("types").add(new CustomTypeGenerator(type, generator));
     }
 
     public void addFieldGenerator(Type objectType, Type fieldType, String fieldName, Supplier<Object> generator) {
-        generators.get("fields").add(0, new CustomFieldGenerator(objectType, fieldType, fieldName, generator));
+        generators.get("fields").add(new CustomFieldGenerator(objectType, fieldType, fieldName, generator));
     }
 
     public void addPostProcessor(Type type, Consumer<Object> postProcessor) {
