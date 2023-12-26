@@ -4,10 +4,13 @@ import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.utils.FieldKey;
 import com.cariochi.objecto.utils.GenericTypeUtils;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +22,7 @@ public class ObjectoGenerator {
     private final InstanceCreator instanceCreator = new InstanceCreator(this);
     private final Map<Type, Supplier<Object>> typeGenerators = new HashMap<>();
     private final Map<FieldKey, Supplier<Object>> fieldGenerators = new HashMap<>();
+    private final Map<Type, List<Consumer<Object>>> postProcessors = new HashMap<>();
 
     private final List<Generator> defaultGenerators = List.of(
             new StringGenerator(this),
@@ -39,6 +43,10 @@ public class ObjectoGenerator {
 
     public void addFieldGenerator(FieldKey key, Supplier<Object> generator) {
         fieldGenerators.put(key, generator);
+    }
+
+    public void addPostProcessor(Type type, Consumer<Object> postProcessor) {
+        postProcessors.computeIfAbsent(type, t -> new ArrayList<>()).add(postProcessor);
     }
 
     public void addInstanceCreator(Type type, Supplier<Object> creator) {
@@ -68,6 +76,7 @@ public class ObjectoGenerator {
                         .or(() -> useFieldGenerator(actualType, context))
                         .or(() -> useTypeGenerator(actualType))
                         .or(() -> useDefaultGenerator(actualType, context))
+                        .map(i -> postProcess(actualType, i))
                 )
                 .orElse(null);
     }
@@ -91,6 +100,13 @@ public class ObjectoGenerator {
                 .filter(generator -> generator.isSupported(type, context))
                 .findFirst()
                 .map(generator -> generator.create(type, context));
+    }
+
+    private Object postProcess(Type actualType, Object i) {
+        Optional.ofNullable(postProcessors.get(actualType)).stream()
+                .flatMap(Collection::stream)
+                .forEach(postProcessor -> postProcessor.accept(i));
+        return i;
     }
 
     Object createInstance(Type type, GenerationContext context) {

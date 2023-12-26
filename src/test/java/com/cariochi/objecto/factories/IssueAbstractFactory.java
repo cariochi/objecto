@@ -1,13 +1,10 @@
 package com.cariochi.objecto.factories;
 
 
-import com.cariochi.objecto.FieldGenerator;
 import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.model.Issue;
 import com.cariochi.objecto.model.Issue.Status;
 import com.cariochi.objecto.model.Issue.Type;
 import com.cariochi.objecto.model.User;
-import java.util.List;
 import net.datafaker.Faker;
 
 public abstract class IssueAbstractFactory implements BaseIssueFactory {
@@ -34,11 +31,5 @@ public abstract class IssueAbstractFactory implements BaseIssueFactory {
 
     @Modifier("comments[100].commenter")
     public abstract IssueAbstractFactory withWrongCommenter(User commenter);
-
-    @FieldGenerator(type = Issue.class, field = Issue.Fields.labels)
-    private List<String> labelsGenerator() {
-        return List.of("LABEL1", faker.lorem().word().toUpperCase());
-    }
-
 
 }

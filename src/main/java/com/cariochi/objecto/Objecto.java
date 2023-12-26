@@ -23,6 +23,7 @@ public class Objecto {
         final T proxy = ProxyFactory.createInstance(methodHandler, targetClass, ObjectModifier.class);
         addInstanceCreators(proxy, objectoGenerator);
         addTypeGenerators(proxy, objectoGenerator);
+        addPostProcessors(proxy, objectoGenerator);
         addFieldGenerators(proxy, objectoGenerator);
         return proxy;
     }
@@ -35,6 +36,13 @@ public class Objecto {
     private static void addTypeGenerators(Object proxy, ObjectoGenerator objectoGenerator) {
         reflect(proxy).methods().withAnnotation(TypeGenerator.class)
                 .forEach(method -> objectoGenerator.addTypeGenerator(method.getReturnType(), method::invoke));
+    }
+
+    private static void addPostProcessors(Object proxy, ObjectoGenerator objectoGenerator) {
+        reflect(proxy).methods().withAnnotation(PostProcessor.class).stream()
+                .filter(method -> void.class.equals(method.getReturnType()))
+                .filter(method -> method.getParameterTypes().length == 1)
+                .forEach(method -> objectoGenerator.addPostProcessor(method.getParameterTypes()[0], method::invoke));
     }
 
     private static void addFieldGenerators(Object proxy, ObjectoGenerator objectoGenerator) {
