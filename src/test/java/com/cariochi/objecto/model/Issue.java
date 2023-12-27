@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
 
@@ -32,7 +33,9 @@ public class Issue {
     private Instant creationDate;
     private User createdBy;
 
+    @ToString.Exclude
     private List<Issue> subtasks;
+
     private Issue parent;
     private Map<DependencyType, Issue> dependencies;
 

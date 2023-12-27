@@ -54,7 +54,8 @@ class AbstractClassFactoryTest {
                 .extracting(Comment::getCommenter)
                 .extracting(User::getFullName)
                 .containsOnly("Vadym Deineka");
-        assertThat(issue.getLabels().get(0)).isEqualTo("LABEL1");
+        assertThat(issue.getLabels().get(0)).isEqualTo(issue.getKey());
+        assertThat(issue.getLabels().get(1)).isEqualTo("LABEL1");
         assertThat(issue.getAssignee().getEmail()).contains("@");
 
         // Type Generators
@@ -64,6 +65,22 @@ class AbstractClassFactoryTest {
         assertThat(issue.getComments())
                 .extracting(Comment::getDate)
                 .containsOnly(expected);
+    }
+
+    @Test
+    void should_generate_list() {
+        assertThat(issueFactory.createIssues())
+                .isNotEmpty();
+
+        assertThat(issueFactory.createIssues(Type.BUG))
+                .isNotEmpty()
+                .extracting(Issue::getType)
+                .containsOnly(Type.BUG);
+
+        assertThat(issueFactory.withType(Type.BUG).createIssues())
+                .isNotEmpty()
+                .extracting(Issue::getType)
+                .containsOnly(Type.BUG);
     }
 
     @Test
@@ -149,5 +166,14 @@ class AbstractClassFactoryTest {
                 .doesNotContain(commenter);
     }
 
+    @Test
+    void should_use_post_processors() {
+        final Issue issue = issueFactory.createIssue();
+
+        assertThat(issue.getAssignee().getEmail())
+                .startsWith(issue.getAssignee().getUsername());
+
+        assertThat(issue.getLabels().get(0)).isEqualTo(issue.getKey());
+    }
 
 }

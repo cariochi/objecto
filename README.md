@@ -13,7 +13,7 @@ To use **Objecto** in your project, add the following dependency to your build c
 <dependency>
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -25,6 +25,7 @@ To use **Objecto** in your project, add the following dependency to your build c
 import com.cariochi.objecto.FieldGenerator;
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.TypeGenerator;
+import com.cariochi.objecto.PostProcessor;
 import com.cariochi.objecto.model.Issue;
 import com.cariochi.objecto.model.Issue.Fields;
 import com.cariochi.objecto.model.Issue.Status;
@@ -54,6 +55,16 @@ public interface IssueFactory {
         return "ID-" + new Faker().number().randomNumber(4, true);
     }
 
+    @FieldGenerator(type = Issue.class, field = Fields.parent)
+    private Issue issueParentGenerator() {
+        return null;
+    }
+    
+    @PostProcessor
+    private void issueParentProcessor(Issue issue) {
+        issue.getSubtasks().forEach(subtask -> subtask.setParent(issue));
+    }
+    
     @Modifier("type")
     IssueFactory withType(Type type);
 

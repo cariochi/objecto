@@ -54,7 +54,8 @@ class InterfaceFactoryTest {
                 .extracting(Comment::getCommenter)
                 .extracting(User::getFullName)
                 .containsOnly("Vadym Deineka");
-        assertThat(issue.getLabels().get(0)).isEqualTo("LABEL1");
+        assertThat(issue.getLabels().get(0)).isEqualTo(issue.getKey());
+        assertThat(issue.getLabels().get(1)).isEqualTo("LABEL1");
         assertThat(issue.getAssignee().getEmail()).contains("@");
 
         // Type Generators
@@ -163,6 +164,16 @@ class InterfaceFactoryTest {
         assertThat(issueFactory.withWrongCommenter(commenter).createDefaultIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .doesNotContain(commenter);
+    }
+
+    @Test
+    void should_use_post_processors() {
+        final Issue issue = issueFactory.createIssue();
+
+        assertThat(issue.getAssignee().getEmail())
+                .startsWith(issue.getAssignee().getUsername());
+
+        assertThat(issue.getLabels().get(0)).isEqualTo(issue.getKey());
     }
 
 }

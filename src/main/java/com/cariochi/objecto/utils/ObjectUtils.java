@@ -3,6 +3,7 @@ package com.cariochi.objecto.utils;
 import com.cariochi.reflecto.Reflection;
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.experimental.UtilityClass;
@@ -74,7 +75,9 @@ public class ObjectUtils {
                 return emptyMap();
             }
         } else {
-            return Map.of(name, value);
+            Map<String, Object> map = new HashMap<>();
+            map.put(name, value);
+            return map;
         }
     }
 
