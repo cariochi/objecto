@@ -3,7 +3,6 @@ package com.cariochi.objecto;
 import com.cariochi.objecto.generator.ObjectoGenerator;
 import com.cariochi.objecto.proxy.ObjectModifier;
 import com.cariochi.objecto.proxy.ProxyHandler;
-import com.cariochi.objecto.utils.FieldKey;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import lombok.experimental.UtilityClass;
 
@@ -23,6 +22,7 @@ public class Objecto {
         final T proxy = ProxyFactory.createInstance(methodHandler, targetClass, ObjectModifier.class);
         addInstanceCreators(proxy, objectoGenerator);
         addTypeGenerators(proxy, objectoGenerator);
+        addPostProcessors(proxy, objectoGenerator);
         addFieldGenerators(proxy, objectoGenerator);
         return proxy;
     }
@@ -37,13 +37,17 @@ public class Objecto {
                 .forEach(method -> objectoGenerator.addTypeGenerator(method.getReturnType(), method::invoke));
     }
 
+    private static void addPostProcessors(Object proxy, ObjectoGenerator objectoGenerator) {
+        reflect(proxy).methods().withAnnotation(PostProcessor.class).stream()
+                .filter(method -> void.class.equals(method.getReturnType()))
+                .filter(method -> method.getParameterTypes().length == 1)
+                .forEach(method -> objectoGenerator.addPostProcessor(method.getParameterTypes()[0], method::invoke));
+    }
+
     private static void addFieldGenerators(Object proxy, ObjectoGenerator objectoGenerator) {
         reflect(proxy).methods().withAnnotation(FieldGenerator.class)
                 .forEach(method -> method.findAnnotation(FieldGenerator.class)
-                        .ifPresent(annotation -> {
-                            final FieldKey key = new FieldKey(annotation.type(), method.getReturnType(), annotation.field());
-                            objectoGenerator.addFieldGenerator(key, method::invoke);
-                        })
+                        .ifPresent(annotation -> objectoGenerator.addFieldGenerator(annotation.type(), method.getReturnType(), annotation.field(), method::invoke))
                 );
     }
 

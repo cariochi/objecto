@@ -3,12 +3,15 @@ package com.cariochi.objecto.factories;
 import com.cariochi.objecto.FieldGenerator;
 import com.cariochi.objecto.InstanceCreator;
 import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.PostProcessor;
 import com.cariochi.objecto.model.Attachment;
 import com.cariochi.objecto.model.Comment;
 import com.cariochi.objecto.model.Issue;
+import com.cariochi.objecto.model.Issue.Fields;
 import com.cariochi.objecto.model.Issue.Status;
 import com.cariochi.objecto.model.Issue.Type;
 import com.cariochi.objecto.model.User;
+import java.util.ArrayList;
 import java.util.List;
 import net.datafaker.Faker;
 
@@ -59,6 +62,28 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
                 .fullName("Vadym Deineka")
                 .companyName(faker.company().name())
                 .build();
+    }
+
+    @FieldGenerator(type = Issue.class, field = Fields.labels)
+    private List<String> labelsGenerator() {
+        return List.of("LABEL1", new Faker().lorem().word().toUpperCase());
+    }
+
+    @FieldGenerator(type = Issue.class, field = Fields.parent)
+    private Issue issueParentGenerator() {
+        return null;
+    }
+
+    @PostProcessor
+    private void issueLabelsPostProcessor(Issue issue) {
+        final List<String> labels = new ArrayList<>(issue.getLabels());
+        labels.add(0, issue.getKey());
+        issue.setLabels(labels);
+    }
+
+    @PostProcessor
+    private void issueParentProcessor(Issue issue) {
+        issue.getSubtasks().forEach(subtask -> subtask.setParent(issue));
     }
 
 }
