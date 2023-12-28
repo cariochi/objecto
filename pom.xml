@@ -7,7 +7,7 @@
 
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>Objecto</name>
     <description>A testing library for streamlined object creation and modification in test scenarios.</description>
     <url>https://cariochi.com/objecto</url>
