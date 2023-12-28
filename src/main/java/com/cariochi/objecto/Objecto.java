@@ -1,6 +1,6 @@
 package com.cariochi.objecto;
 
-import com.cariochi.objecto.generator.ObjectoGenerator;
+import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.objecto.proxy.ObjectModifier;
 import com.cariochi.objecto.proxy.ProxyHandler;
 import com.cariochi.reflecto.proxy.ProxyFactory;
@@ -29,7 +29,7 @@ public class Objecto {
 
     private static void addInstanceCreators(Object proxy, ObjectoGenerator objectoGenerator) {
         reflect(proxy).methods().withAnnotation(InstanceCreator.class)
-                .forEach(method -> objectoGenerator.addInstanceCreator(method.getReturnType(), method::invoke));
+                .forEach(method -> objectoGenerator.addCustomInstanceCreator(method.getReturnType(), method::invoke));
     }
 
     private static void addTypeGenerators(Object proxy, ObjectoGenerator objectoGenerator) {

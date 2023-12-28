@@ -2,7 +2,7 @@ package com.cariochi.objecto.proxy;
 
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.ObjectoSettings;
-import com.cariochi.objecto.generator.ObjectoGenerator;
+import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.objecto.utils.ObjectUtils;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;

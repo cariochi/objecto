@@ -1,4 +1,4 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Array;
@@ -20,7 +20,7 @@ class ArrayGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, GenerationContext context) {
+    public Object generate(Type type, GenerationContext context) {
         int arrayLength = Random.nextInt(context.settings().arrays());
         final Type componentType = getComponentType(type);
         final Object firstItem = generateRandomObject(componentType, context.withField("[" + 0 + "]"));
