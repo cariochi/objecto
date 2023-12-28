@@ -3,10 +3,12 @@ package com.cariochi.objecto.generators;
 import com.cariochi.reflecto.fields.JavaField;
 import java.lang.reflect.Type;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 class CustomObjectGenerator extends Generator {
 
     public CustomObjectGenerator(ObjectoGenerator objectoGenerator) {
@@ -37,7 +39,11 @@ class CustomObjectGenerator extends Generator {
                             .withField(field.getName())
                             .withInstance(field.getValue());
                     final Object fieldValue = generateRandomObject(fieldType, fieldContext);
-                    field.setValue(fieldValue);
+                    try {
+                        field.setValue(fieldValue);
+                    } catch (Exception e) {
+                        log.error("Cannot set field value: {}", fieldContext.path());
+                    }
                 }
             }
         }
