@@ -1,13 +1,14 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import com.cariochi.reflecto.fields.JavaField;
 import java.lang.reflect.Type;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
-import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 class CustomObjectGenerator extends Generator {
 
     public CustomObjectGenerator(ObjectoGenerator objectoGenerator) {
@@ -20,12 +21,12 @@ class CustomObjectGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, GenerationContext context) {
+    public Object generate(Type type, GenerationContext context) {
         if (context.depth() == 1) {
             return null;
         }
 
-        final Object instance = getInstance(type, context);
+        final Object instance = createInstance(type, context);
 
         if (instance != null) {
 
@@ -38,21 +39,15 @@ class CustomObjectGenerator extends Generator {
                             .withField(field.getName())
                             .withInstance(field.getValue());
                     final Object fieldValue = generateRandomObject(fieldType, fieldContext);
-                    field.setValue(fieldValue);
+                    try {
+                        field.setValue(fieldValue);
+                    } catch (Exception e) {
+                        log.error("Cannot set field value: {}", fieldContext.path());
+                    }
                 }
             }
         }
         return instance;
-    }
-
-    private Object getInstance(Type type, GenerationContext context) {
-        final Class<?> rawType = getRawClass(type, context.ownerType());
-        final Object instance = context.instance();
-        if (rawType != null && rawType.isInstance(instance)) {
-            return instance;
-        }
-
-        return createInstance(type, context);
     }
 
 

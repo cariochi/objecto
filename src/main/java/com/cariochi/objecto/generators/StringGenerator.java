@@ -1,4 +1,4 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
@@ -15,7 +15,7 @@ class StringGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, GenerationContext context) {
+    public Object generate(Type type, GenerationContext context) {
         return Random.nextString(context.settings().strings());
     }
 

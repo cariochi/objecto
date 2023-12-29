@@ -1,4 +1,4 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.ObjectoSettings;
 import java.lang.reflect.Type;

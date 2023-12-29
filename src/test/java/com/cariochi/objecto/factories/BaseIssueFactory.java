@@ -82,7 +82,7 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
     }
 
     @PostProcessor
-    private void issueParentProcessor(Issue issue) {
+    private void issueParentPostProcessor(Issue issue) {
         issue.getSubtasks().forEach(subtask -> subtask.setParent(issue));
     }
 

@@ -23,13 +23,9 @@ public interface BaseUserGenerators {
         return new Faker().company().name();
     }
 
-    private String toUsername(String fullName) {
-        return fullName.toLowerCase().replace(".", "").replace(" ", ".");
-    }
-
     @PostProcessor
     private void userPostProcessor(User user) {
-        final String username = toUsername(user.getFullName());
+        final String username = user.getFullName().toLowerCase().replace(".", "").replace(" ", ".");
         user.setUsername(username);
         user.setEmail(username + "@" + new Faker().internet().domainName());
     }
