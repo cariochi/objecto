@@ -1,4 +1,4 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.utils.Random;
 import com.cariochi.objecto.utils.Range;
@@ -16,7 +16,7 @@ class EnumGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, GenerationContext context) {
+    public Object generate(Type type, GenerationContext context) {
         Object[] enumConstants = ((Class<?>) type).getEnumConstants();
         return enumConstants[Random.nextInt(Range.of(0, enumConstants.length))];
     }

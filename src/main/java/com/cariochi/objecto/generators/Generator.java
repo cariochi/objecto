@@ -1,4 +1,4 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import java.lang.reflect.Type;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ abstract class Generator {
 
     public abstract boolean isSupported(Type type, GenerationContext context);
 
-    public abstract Object create(Type type, GenerationContext context);
+    public abstract Object generate(Type type, GenerationContext context);
 
     protected Object createInstance(Type type, GenerationContext context) {
         return objectoGenerator.createInstance(type, context);

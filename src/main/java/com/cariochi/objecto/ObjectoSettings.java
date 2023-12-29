@@ -25,6 +25,7 @@ public class ObjectoSettings {
     Range<Integer> arrays;
     Range<Integer> maps;
     Strings strings;
+    Range<Double> years;
 
     public static ObjectoSettings defaultSettings() {
         return ObjectoSettings.builder()
@@ -38,6 +39,7 @@ public class ObjectoSettings {
                 .arrays(Range.of(2, 5))
                 .maps(Range.of(2, 5))
                 .strings(defaultStrings())
+                .years(Range.of(-5.0, 1.0))
                 .build();
     }
 

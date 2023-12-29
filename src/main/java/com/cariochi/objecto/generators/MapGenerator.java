@@ -1,9 +1,8 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,11 +22,11 @@ class MapGenerator extends Generator {
     }
 
     @Override
-    public Object create(Type type, GenerationContext context) {
+    public Object generate(Type type, GenerationContext context) {
         final ParameterizedType parameterizedType = (ParameterizedType) type;
         final Type keyType = parameterizedType.getActualTypeArguments()[0];
         final Type valueType = parameterizedType.getActualTypeArguments()[1];
-        final Map<Object, Object> map = createMapInstance(parameterizedType, context);
+        final Map<Object, Object> map = (Map<Object, Object>) createInstance(parameterizedType, context);
         if (map != null) {
             map.clear();
             for (int i = 0; i < Random.nextInt(context.settings().maps()); i++) {
@@ -40,18 +39,6 @@ class MapGenerator extends Generator {
             }
         }
         return map;
-    }
-
-    private Map<Object, Object> createMapInstance(ParameterizedType parameterizedType, GenerationContext context) {
-        final Class<?> rawType = (Class<?>) parameterizedType.getRawType();
-        if (rawType == null) {
-            return null;
-        }
-        if (rawType.isInterface()) {
-            return new HashMap<>();
-        } else {
-            return (Map<Object, Object>) createInstance(parameterizedType, context);
-        }
     }
 
 }

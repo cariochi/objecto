@@ -1,42 +1,42 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.ObjectoSettings;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
 
 import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
-import static java.math.RoundingMode.HALF_UP;
 
-class NumberGenerator extends Generator {
+class PrimitiveGenerator extends Generator {
 
-    public NumberGenerator(ObjectoGenerator objectoGenerator) {
+    public PrimitiveGenerator(ObjectoGenerator objectoGenerator) {
         super(objectoGenerator);
     }
 
     @Override
     public boolean isSupported(Type type, GenerationContext context) {
         final Class<?> rawType = getRawClass(type, context.ownerType());
-        return rawType != null && Number.class.isAssignableFrom(rawType);
+        return rawType != null && rawType.isPrimitive();
     }
 
     @Override
-    public Object create(Type type, GenerationContext context) {
+    public Object generate(Type type, GenerationContext context) {
         final ObjectoSettings settings = context.settings();
-        if (type.equals(Integer.class)) {
+        if (type.equals(int.class)) {
             return Random.nextInt(settings.integers());
-        } else if (type.equals(Double.class)) {
+        } else if (type.equals(double.class)) {
             return Random.nextDouble(settings.doubles());
-        } else if (type.equals(Float.class)) {
+        } else if (type.equals(float.class)) {
             return Random.nextFloat(settings.floats());
-        } else if (type.equals(Long.class)) {
+        } else if (type.equals(long.class)) {
             return Random.nextLong(settings.longs());
-        } else if (type.equals(Short.class)) {
+        } else if (type.equals(short.class)) {
             return (short) Random.nextInt(settings.integers());
-        } else if (type.equals(Byte.class)) {
+        } else if (type.equals(byte.class)) {
             return (byte) Random.nextInt(settings.bytes());
-        } else if (type.equals(BigDecimal.class)) {
-            return BigDecimal.valueOf(Random.nextDouble(settings.doubles())).setScale(4, HALF_UP);
+        } else if (type.equals(char.class)) {
+            return (char) Random.nextInt(settings.bytes());
+        } else if (type.equals(boolean.class)) {
+            return Random.nextBoolean();
         } else {
             return null;
         }

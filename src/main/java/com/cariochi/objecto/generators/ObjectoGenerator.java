@@ -1,6 +1,7 @@
-package com.cariochi.objecto.generator;
+package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.ObjectoSettings;
+import com.cariochi.objecto.creators.ObjectoInstanceCreator;
 import com.cariochi.objecto.utils.GenericTypeUtils;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import static com.cariochi.objecto.ObjectoSettings.defaultSettings;
 @Slf4j
 public class ObjectoGenerator {
 
-    private final InstanceCreator instanceCreator = new InstanceCreator(this);
+    private final ObjectoInstanceCreator instanceCreator = new ObjectoInstanceCreator(this);
     private final Map<String, List<Generator>> generators = new LinkedHashMap<>();
     private final Map<Type, List<Consumer<Object>>> postProcessors = new HashMap<>();
 
@@ -41,19 +42,19 @@ public class ObjectoGenerator {
     }
 
     public void addTypeGenerator(Type type, Supplier<Object> generator) {
-        generators.get("types").add(new CustomTypeGenerator(type, generator));
+        generators.get("types").add(new CustomTypeGenerator(this, type, generator));
     }
 
     public void addFieldGenerator(Type objectType, Type fieldType, String fieldName, Supplier<Object> generator) {
-        generators.get("fields").add(new CustomFieldGenerator(objectType, fieldType, fieldName, generator));
+        generators.get("fields").add(new CustomFieldGenerator(this, objectType, fieldType, fieldName, generator));
     }
 
     public void addPostProcessor(Type type, Consumer<Object> postProcessor) {
         postProcessors.computeIfAbsent(type, t -> new ArrayList<>()).add(postProcessor);
     }
 
-    public void addInstanceCreator(Type type, Supplier<Object> creator) {
-        this.instanceCreator.addInstanceCreator(type, creator);
+    public void addCustomInstanceCreator(Type type, Supplier<Object> creator) {
+        this.instanceCreator.addCustomCreator(type, creator);
     }
 
     public Object generateInstance(Type type) {
@@ -65,7 +66,7 @@ public class ObjectoGenerator {
         return generateInstance(type, context);
     }
 
-    Object generateInstance(Type type, GenerationContext context) {
+    public Object generateInstance(Type type, GenerationContext context) {
         if (context.depth() == 0) {
             return null;
         }
@@ -86,7 +87,7 @@ public class ObjectoGenerator {
     private Object generate(Type type, GenerationContext context) {
         return generators.values().stream().flatMap(Collection::stream)
                 .filter(generator -> generator.isSupported(type, context)).findFirst()
-                .map(generator -> generator.create(type, context))
+                .map(generator -> generator.generate(type, context))
                 .map(instance -> postProcess(type, instance))
                 .orElse(null);
     }
@@ -98,60 +99,8 @@ public class ObjectoGenerator {
         return instance;
     }
 
-    Object createInstance(Type type, GenerationContext context) {
+    public Object createInstance(Type type, GenerationContext context) {
         return instanceCreator.createInstance(type, context);
-    }
-
-    private class CustomTypeGenerator extends Generator {
-
-        private final Type type;
-        private final Supplier<Object> generator;
-
-        public CustomTypeGenerator(Type type, Supplier<Object> generator) {
-            super(ObjectoGenerator.this);
-            this.type = type;
-            this.generator = generator;
-        }
-
-        @Override
-        public boolean isSupported(Type actualType, GenerationContext context) {
-            return type.equals(actualType);
-        }
-
-        @Override
-        public Object create(Type type, GenerationContext context) {
-            return generator.get();
-        }
-
-    }
-
-    private class CustomFieldGenerator extends Generator {
-
-        private final Type objectType;
-        private final Type fieldType;
-        private final String fieldName;
-        private final Supplier<Object> generator;
-
-        public CustomFieldGenerator(Type objectType, Type fieldType, String fieldName, Supplier<Object> generator) {
-            super(ObjectoGenerator.this);
-            this.objectType = objectType;
-            this.fieldType = fieldType;
-            this.fieldName = fieldName;
-            this.generator = generator;
-        }
-
-        @Override
-        public boolean isSupported(Type actualType, GenerationContext context) {
-            return objectType.equals(context.ownerType())
-                    && fieldType.equals(actualType)
-                    && fieldName.equals(context.fieldName());
-        }
-
-        @Override
-        public Object create(Type type, GenerationContext context) {
-            return generator.get();
-        }
-
     }
 
 }
