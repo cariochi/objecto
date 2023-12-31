@@ -4,11 +4,11 @@ package com.cariochi.objecto.factories;
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.model.User;
 
-public interface UserFactory extends BaseFactory, BaseUserGenerators {
+public abstract class UserFactory implements BaseFactory, BaseUserGenerators {
 
-    User createUser();
+    public abstract User createUser();
 
-    @Modifier("username")
-    UserFactory withUsername(String username);
+    @Modifier("username=?")
+    public abstract UserFactory withUsername(String username);
 
 }

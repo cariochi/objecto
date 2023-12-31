@@ -2,7 +2,9 @@ package com.cariochi.objecto.generators;
 
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
+import lombok.Getter;
 
+@Getter
 class CustomFieldGenerator extends Generator {
 
     private final Type objectType;

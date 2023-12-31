@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -19,7 +20,7 @@ public class ProxyHandler<T> implements MethodHandler {
     private final Class<T> targetClass;
     private final ObjectoGenerator objectoGenerator;
     private final ObjectoSettings settings;
-    private final Map<String, Object> parameters = new LinkedHashMap<>();
+    private final Map<String, Object[]> parameters = new LinkedHashMap<>();
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args, MethodProceed proceed) throws Throwable {
@@ -32,18 +33,19 @@ public class ProxyHandler<T> implements MethodHandler {
             return ObjectUtils.modifyObject(args[0], parameters);
         }
 
+        final Map<String, Object[]> methodParameter = getMethodParameters(method, args);
+
         if (proceed == null) {
-            final Map<String, Object> methodParameters = readMethodParameters(method, args);
-            if (method.getAnnotation(Modifier.class) != null && method.getReturnType().equals(method.getDeclaringClass())) {
+            if (method.getReturnType().equals(method.getDeclaringClass())) {
                 final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(targetClass, objectoGenerator, settings);
                 childMethodHandler.parameters.putAll(parameters);
-                childMethodHandler.parameters.putAll(methodParameters);
+                childMethodHandler.parameters.putAll(methodParameter);
                 return ProxyFactory.createInstance(childMethodHandler, targetClass, ObjectModifier.class);
             } else {
                 final Object instance = objectoGenerator.generateInstance(method.getGenericReturnType(), settings);
-                final Map<String, Object> tmpMap = new LinkedHashMap<>();
+                final Map<String, Object[]> tmpMap = new LinkedHashMap<>();
                 tmpMap.putAll(parameters);
-                tmpMap.putAll(methodParameters);
+                tmpMap.putAll(methodParameter);
                 return ObjectUtils.modifyObject(instance, tmpMap);
             }
         } else {
@@ -52,26 +54,43 @@ public class ProxyHandler<T> implements MethodHandler {
 
     }
 
-    private Map<String, Object> readMethodParameters(Method method, Object[] args) {
-        final Map<String, Object> methodParameters = new LinkedHashMap<>();
+    private Map<String, Object[]> getMethodParameters(Method method, Object[] args) {
         final Modifier methodModifier = method.getAnnotation(Modifier.class);
         if (methodModifier != null) {
-            methodParameters.put(methodModifier.value(), args[0]);
+            return getParametersFromMethodAnnotation(methodModifier, method.getParameters(), args);
         } else {
-            final Parameter[] params = method.getParameters();
-            for (int i = 0; i < params.length; i++) {
-                final Parameter param = params[i];
-                final Modifier modifierParameter = param.getAnnotation(Modifier.class);
-                if (modifierParameter == null) {
-                    if (param.isNamePresent()) {
-                        final Object value = args[i];
-                        methodParameters.put(param.getName(), value);
-                    } else {
-                        throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
-                    }
+            return getParametersFromParametersAnnotations(method.getParameters(), args);
+        }
+    }
+
+    private Map<String, Object[]> getParametersFromMethodAnnotation(Modifier methodModifier, Parameter[] parameters, Object[] args) {
+        final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
+        if (methodModifier != null) {
+            methodParameters.put(methodModifier.value(), args);
+        } else {
+            final Parameter param = parameters[0];
+            if (param.isNamePresent()) {
+                methodParameters.put(param.getName(), args);
+            } else {
+                throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
+            }
+        }
+        return methodParameters;
+    }
+
+    private Map<String, Object[]> getParametersFromParametersAnnotations(Parameter[] parameters, Object[] args) {
+        final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
+        for (int i = 0; i < parameters.length; i++) {
+            final Parameter param = parameters[i];
+            final Modifier modifierParameter = param.getAnnotation(Modifier.class);
+            if (modifierParameter == null) {
+                if (param.isNamePresent()) {
+                    methodParameters.put(param.getName(), Stream.of(args[i]).toArray());
                 } else {
-                    methodParameters.put(modifierParameter.value(), args[i]);
+                    throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
                 }
+            } else {
+                methodParameters.put(modifierParameter.value(), Stream.of(args[i]).toArray());
             }
         }
         return methodParameters;

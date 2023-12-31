@@ -18,7 +18,7 @@ abstract class DefaultCreator implements Creator {
     protected Object[] generateRandomParameters(Parameter[] parameters, Type ownerType, GenerationContext context) {
         return Arrays.stream(parameters)
                 .map(parameter -> {
-                    final GenerationContext childContext = context.next()
+                    final GenerationContext childContext = context
                             .withOwnerType(ownerType)
                             .withFieldName(parameter.getName());
                     return objectoGenerator.generateInstance(parameter.getParameterizedType(), childContext);

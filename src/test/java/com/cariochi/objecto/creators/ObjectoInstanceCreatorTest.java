@@ -61,8 +61,7 @@ class ObjectoInstanceCreatorTest {
     @MethodSource("types")
     void should_create_instance(Type type) {
         ObjectoSettings settings = ObjectoSettings.defaultSettings();
-        final GenerationContext context = GenerationContext.builder().depth(settings.depth()).settings(settings).build();
-        final Object instance = instanceCreator.createInstance(type, context);
+        final Object instance = instanceCreator.createInstance(type, new GenerationContext(settings));
         assertThat(instance).isNotNull();
     }
 

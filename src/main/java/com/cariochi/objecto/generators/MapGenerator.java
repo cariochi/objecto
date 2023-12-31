@@ -30,8 +30,8 @@ class MapGenerator extends Generator {
         if (map != null) {
             map.clear();
             for (int i = 0; i < Random.nextInt(context.settings().maps()); i++) {
-                final Object key = generateRandomObject(keyType, context.withField("(key)"));
-                final Object value = generateRandomObject(valueType, context.withField("(value)"));
+                final Object key = generateRandomObject(keyType, context.withField("[key]"));
+                final Object value = generateRandomObject(valueType, context.withField("[value]"));
                 if (key == null || value == null) {
                     return map;
                 }

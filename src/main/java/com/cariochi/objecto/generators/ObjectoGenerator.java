@@ -62,21 +62,22 @@ public class ObjectoGenerator {
     }
 
     public Object generateInstance(Type type, ObjectoSettings settings) {
-        final GenerationContext context = GenerationContext.builder().depth(settings.depth()).settings(settings).build();
-        return generateInstance(type, context);
+        return generateInstance(type, new GenerationContext(settings));
     }
 
     public Object generateInstance(Type type, GenerationContext context) {
-        if (context.depth() == 0) {
+        final Optional<Type> rawTypeOptional = getRawType(type, context);
+        if (rawTypeOptional.isEmpty()) {
+            log.info("Cannot recognize a raw type `{}` of field `{}`. Please create an @InstanceCreator method to specify how to instantiate this class.", type.getTypeName(), context.path());
             return null;
         }
-        log.debug("Generate {}", context.path());
-        final Optional<Type> rawType = getRawType(type, context);
-        if (rawType.isEmpty()) {
-            log.info("Cannot recognize a raw type `{}` of field `{}` of type `{}`. Please create an @InstanceCreator method to specify how to instantiate this class.", type, context.fieldName(), context.ownerType());
+        final Type rawType = rawTypeOptional.get();
+        log.trace("Generating `{}` with type `{}`", context.path(), rawType.getTypeName());
+        if (context.isLimitReached(rawType)) {
+            log.trace("Limit is reached for `{}` ({} recursive instances)", type.getTypeName(), context.settings().depth());
             return null;
         }
-        return generate(rawType.get(), context);
+        return generate(rawType, context.withType(rawType));
     }
 
     private Optional<Type> getRawType(Type type, GenerationContext context) {

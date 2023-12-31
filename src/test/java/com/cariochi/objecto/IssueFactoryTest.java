@@ -1,7 +1,8 @@
 package com.cariochi.objecto;
 
 
-import com.cariochi.objecto.factories.IssueAbstractFactory;
+import com.cariochi.objecto.factories.BaseIssueFactory;
+import com.cariochi.objecto.factories.IssueFactory;
 import com.cariochi.objecto.factories.UserFactory;
 import com.cariochi.objecto.model.Attachment;
 import com.cariochi.objecto.model.Comment;
@@ -9,34 +10,20 @@ import com.cariochi.objecto.model.Issue;
 import com.cariochi.objecto.model.Issue.Status;
 import com.cariochi.objecto.model.Issue.Type;
 import com.cariochi.objecto.model.User;
-import com.cariochi.objecto.utils.Range;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
-import static com.cariochi.objecto.ObjectoSettings.Strings.Type.ALPHABETIC;
-import static com.cariochi.objecto.ObjectoSettings.Strings.defaultStrings;
-import static com.cariochi.objecto.ObjectoSettings.defaultSettings;
+import static com.cariochi.objecto.model.Issue.DependencyType.BLOCK;
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AbstractClassFactoryTest {
+class IssueFactoryTest {
 
-    private final ObjectoSettings settings = defaultSettings()
-            .withDepth(4)
-            .withLongs(Range.of(1L, 100_000L))
-            .withIntegers(Range.of(1, 100_000))
-            .withBytes(Range.of(65, 91))
-            .withDoubles(Range.of(1D, 100_000D))
-            .withFloats(Range.of(1F, 100_000F))
-            .withCollections(Range.of(2, 5))
-            .withArrays(Range.of(2, 5))
-            .withMaps(Range.of(2, 5))
-            .withStrings(defaultStrings().withType(ALPHABETIC).withSize(Range.of(8, 16)).withUppercase(true));
-
-    private final IssueAbstractFactory issueFactory = Objecto.create(IssueAbstractFactory.class);
-    private final UserFactory userFactory = Objecto.create(UserFactory.class, settings);
+    private final IssueFactory issueFactory = Objecto.create(IssueFactory.class);
+    private final UserFactory userFactory = Objecto.create(UserFactory.class);
 
     @Test
     void should_generate_issue() {
@@ -104,7 +91,7 @@ class AbstractClassFactoryTest {
         final Status status = Status.CLOSED;
         final User assignee = userFactory.createUser();
 
-        final IssueAbstractFactory modifiedFactory = issueFactory
+        final BaseIssueFactory modifiedFactory = issueFactory
                 .withKey(key)
                 .withType(type)
                 .withStatus(status)
@@ -131,17 +118,17 @@ class AbstractClassFactoryTest {
     void should_modify_simple_complex_paths() {
         final User commenter = userFactory.createUser();
 
-        assertThat(issueFactory.withFirstCommenter(commenter).createIssue().getComments().get(0))
+        assertThat(issueFactory.withCommenter(0, commenter).createIssue().getComments().get(0))
                 .extracting(Comment::getCommenter)
                 .isEqualTo(commenter);
 
-        assertThat(issueFactory.withFirstCommenter(commenter).createDefaultIssue().getComments().get(0))
+        assertThat(issueFactory.withCommenter(0, commenter).createDefaultIssue().getComments().get(0))
                 .extracting(Comment::getCommenter)
                 .isEqualTo(commenter);
     }
 
     @Test
-    void should_modify_multiple_complex_paths() {
+    void should_modify_complex_paths() {
         final User commenter = userFactory.createUser();
 
         assertThat(issueFactory.withAllCommenter(commenter).createIssue().getComments())
@@ -151,6 +138,31 @@ class AbstractClassFactoryTest {
         assertThat(issueFactory.withAllCommenter(commenter).createDefaultIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .containsOnly(commenter);
+    }
+
+    @Test
+    void should_modify_paths_with_method_call() {
+        final User commenter = userFactory.createUser();
+
+        assertThat(issueFactory.withAllCommenterByMethod(commenter).createIssue().getComments())
+                .extracting(Comment::getCommenter)
+                .containsOnly(commenter);
+
+        assertThat(issueFactory.withAllCommenterByMethod(commenter).createDefaultIssue().getComments())
+                .extracting(Comment::getCommenter)
+                .containsOnly(commenter);
+    }
+
+    @Test
+    void should_modify_paths_with_method_with_multiple_parameters() {
+        assertThat(issueFactory.withDependency(BLOCK, new Issue("BLOCK")).createIssue().getDependencies())
+                .containsEntry(BLOCK, new Issue("BLOCK"));
+
+        assertThat(issueFactory.withDependency(BLOCK, new Issue("BLOCK")).createDefaultIssue().getDependencies())
+                .containsEntry(BLOCK, new Issue("BLOCK"));
+
+        assertThat(issueFactory.createIssuesWithDependency(BLOCK, new Issue("BLOCK")).getDependencies())
+                .containsEntry(BLOCK, new Issue("BLOCK"));
     }
 
     @Test
@@ -174,6 +186,14 @@ class AbstractClassFactoryTest {
                 .startsWith(issue.getAssignee().getUsername());
 
         assertThat(issue.getLabels().get(0)).isEqualTo(issue.getKey());
+    }
+
+    @Test
+    void should_allow_null_for_modifiers() {
+        final List<Issue> issues = issueFactory.withType(null).createIssues();
+        assertThat(issues)
+                .extracting(Issue::getType)
+                .containsOnlyNulls();
     }
 
 }

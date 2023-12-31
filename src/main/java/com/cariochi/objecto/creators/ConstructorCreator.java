@@ -7,12 +7,15 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Comparator.comparingInt;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 class ConstructorCreator extends DefaultCreator {
 
     public ConstructorCreator(ObjectoGenerator objectoGenerator) {
@@ -34,10 +37,12 @@ class ConstructorCreator extends DefaultCreator {
 
     private Object newInstance(Constructor<?> constructor, Type ownerType, GenerationContext context) {
         try {
+            log.trace("Using constructor `{}`", constructor.toGenericString());
             final Object[] args = generateRandomParameters(constructor.getParameters(), ownerType, context);
             if (!isPublic(constructor.getModifiers())) {
                 constructor.setAccessible(true);
             }
+            log.trace("Constructor parameters: `{}({})`", constructor.getName(), Stream.of(args).map(String::valueOf).collect(joining(", ")));
             return constructor.newInstance(args);
         } catch (Exception e) {
             return null;

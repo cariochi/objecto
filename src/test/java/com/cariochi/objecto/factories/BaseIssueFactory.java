@@ -7,11 +7,13 @@ import com.cariochi.objecto.PostProcessor;
 import com.cariochi.objecto.model.Attachment;
 import com.cariochi.objecto.model.Comment;
 import com.cariochi.objecto.model.Issue;
+import com.cariochi.objecto.model.Issue.DependencyType;
 import com.cariochi.objecto.model.Issue.Fields;
 import com.cariochi.objecto.model.Issue.Status;
 import com.cariochi.objecto.model.Issue.Type;
 import com.cariochi.objecto.model.User;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import net.datafaker.Faker;
 
@@ -19,13 +21,17 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
 
     Issue createIssue();
 
-    Issue createIssue(@Modifier("type") Type type);
+    @Modifier("type=?")
+    Issue createIssue(Type type);
 
-    Issue createIssue(@Modifier("assignee") User assignee);
+    Issue createIssue(@Modifier("assignee=?") User assignee);
 
     List<Issue> createIssues();
 
-    List<Issue> createIssues(@Modifier("type") Type type);
+    List<Issue> createIssues(@Modifier("setType(?)") Type type);
+
+    @Modifier("dependencies.put(?, ?)")
+    Issue createIssuesWithDependency(DependencyType type, Issue issue);
 
     default Issue createDefaultIssue() {
         return Issue.builder()
@@ -33,17 +39,9 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
                 .type(Type.STORY)
                 .status(Status.OPEN)
                 .comments(List.of(Comment.builder().build()))
+                .dependencies(new HashMap<>())
                 .build();
     }
-
-    @Modifier("comments[*].commenter")
-    BaseIssueFactory withAllCommenter(User commenter);
-
-    @Modifier("comments[0].commenter")
-    BaseIssueFactory withFirstCommenter(User commenter);
-
-    @Modifier("comments[100].commenter")
-    BaseIssueFactory withWrongCommenter(User commenter);
 
     @InstanceCreator
     private Attachment<?> newAttachment() {

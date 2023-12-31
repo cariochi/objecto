@@ -29,7 +29,7 @@ public class ObjectoSettings {
 
     public static ObjectoSettings defaultSettings() {
         return ObjectoSettings.builder()
-                .depth(3)
+                .depth(2)
                 .longs(Range.of(1L, 100_000L))
                 .integers(Range.of(1, 100_000))
                 .bytes(Range.of(65, 91))

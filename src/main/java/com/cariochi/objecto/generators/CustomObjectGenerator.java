@@ -22,9 +22,6 @@ class CustomObjectGenerator extends Generator {
 
     @Override
     public Object generate(Type type, GenerationContext context) {
-        if (context.depth() == 1) {
-            return null;
-        }
 
         final Object instance = createInstance(type, context);
 
@@ -34,7 +31,7 @@ class CustomObjectGenerator extends Generator {
             for (JavaField field : fields) {
                 final Type fieldType = field.getGenericType();
                 if (fieldType != null) {
-                    final GenerationContext fieldContext = context.next()
+                    final GenerationContext fieldContext = context
                             .withOwnerType(type)
                             .withField(field.getName())
                             .withInstance(field.getValue());

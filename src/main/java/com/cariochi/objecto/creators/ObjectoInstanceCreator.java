@@ -26,6 +26,7 @@ public class ObjectoInstanceCreator {
     }
 
     public Object createInstance(Type type, GenerationContext context) {
+        log.trace("Creating instance of `{}` with type `{}`", context.path(), type.getTypeName());
         return creators.values().stream().flatMap(List::stream)
                 .map(creator -> creator.apply(type, context))
                 .filter(Objects::nonNull)
@@ -34,7 +35,14 @@ public class ObjectoInstanceCreator {
     }
 
     public void addCustomCreator(Type type, Supplier<Object> creator) {
-        creators.get("custom").add((actualType, context) -> type.equals(actualType) ? creator.get() : null);
+        creators.get("custom").add((actualType, context) -> {
+            if (type.equals(actualType)) {
+                log.trace("Using custom instance creator");
+                return creator.get();
+            } else {
+                return null;
+            }
+        });
     }
 
 }

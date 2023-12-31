@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
@@ -20,26 +19,32 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 @UtilityClass
 public class ObjectUtils {
 
-    public static <T> T modifyObject(T object, Map<String, Object> fieldValues) {
+    public static <T> T modifyObject(T object, Map<String, Object[]> fieldValues) {
         if (object == null) {
             return null;
         }
         final Reflection reflection = reflect(object);
 
-        final Map<String, Object> values = isCollection(object) || isArray(object)
-                ? fieldValues.entrySet().stream().map(e -> Map.entry("[*]." + e.getKey(), e.getValue())).collect(toMap(Map.Entry::getKey, Map.Entry::getValue))
-                : fieldValues;
+        final Map<String, Object[]> values;
+        if (isCollection(object) || isArray(object)) {
+            values = new HashMap<>();
+            fieldValues.forEach((key, value) -> values.put("[*]." + key, value));
+        } else {
+            values = fieldValues;
+        }
 
         values.entrySet().stream()
                 .map(e -> splitName(e.getKey(), e.getValue(), reflection))
                 .flatMap(map -> map.entrySet().stream())
                 .forEach(e -> {
+                    final String path = e.getKey();
                     try {
-                        reflection.get(e.getKey()).setValue(e.getValue());
+                        final String reflectoPath = path.endsWith(")") || path.endsWith("?") ? path : path + "=?";
+                        reflection.invoke(reflectoPath, (Object[]) e.getValue());
                     } catch (Exception ex) {
                         log.info(
                                 "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
-                                e.getKey(), object.getClass().getName()
+                                path, object.getClass().getName()
                         );
                     }
                 });
