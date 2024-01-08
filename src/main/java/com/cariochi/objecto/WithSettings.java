@@ -29,6 +29,8 @@ public @interface WithSettings {
 
     IntRange bytes() default @IntRange(min = 65, max = 91);
 
+    BigDecimals bigDecimals() default @BigDecimals;
+
     DoubleRange doubles() default @DoubleRange(min = 1.0, max = 100_000.0);
 
     FloatRange floats() default @FloatRange(min = 1F, max = 100_000F);
@@ -58,6 +60,16 @@ public @interface WithSettings {
     @interface Collections {
 
         IntRange size() default @IntRange(min = 2, max = 5);
+
+    }
+
+    @interface BigDecimals {
+
+        double min() default 0;
+
+        double max() default 100_000.0;
+
+        int scale() default 4;
 
     }
 

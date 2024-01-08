@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.settings.Range;
 import com.cariochi.objecto.settings.Settings;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
@@ -31,7 +32,8 @@ class NumberGenerator implements Generator {
         } else if (type.equals(Byte.class)) {
             return (byte) Random.nextInt(settings.bytes());
         } else if (type.equals(BigDecimal.class)) {
-            return BigDecimal.valueOf(Random.nextDouble(settings.doubles())).setScale(4, HALF_UP);
+            return BigDecimal.valueOf(Random.nextDouble(Range.of(settings.bigDecimals().min(), settings.bigDecimals().max())))
+                    .setScale(settings.bigDecimals().scale(), HALF_UP);
         } else {
             return null;
         }

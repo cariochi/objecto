@@ -15,6 +15,7 @@ public class Settings {
     Range<Long> longs;
     Range<Integer> integers;
     Range<Integer> bytes;
+    BigDecimals bigDecimals;
     Range<Double> doubles;
     Range<Float> floats;
     Range<Double> years;
@@ -44,6 +45,17 @@ public class Settings {
             PRINT;
 
         }
+
+    }
+
+    @Value
+    @Accessors(fluent = true)
+    @Builder(access = AccessLevel.PACKAGE)
+    public static class BigDecimals {
+
+        double min;
+        double max;
+        int scale;
 
     }
 

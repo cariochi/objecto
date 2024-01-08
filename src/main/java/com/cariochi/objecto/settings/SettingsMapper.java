@@ -5,6 +5,7 @@ import com.cariochi.objecto.WithSettings.DoubleRange;
 import com.cariochi.objecto.WithSettings.FloatRange;
 import com.cariochi.objecto.WithSettings.IntRange;
 import com.cariochi.objecto.WithSettings.LongRange;
+import com.cariochi.objecto.settings.Settings.BigDecimals;
 import com.cariochi.objecto.settings.Settings.Collections;
 import com.cariochi.objecto.settings.Settings.Strings;
 import lombok.experimental.UtilityClass;
@@ -19,6 +20,7 @@ public class SettingsMapper {
                 .longs(map(settings.longs()))
                 .integers(map(settings.integers()))
                 .bytes(map(settings.bytes()))
+                .bigDecimals(map(settings.bigDecimals()))
                 .doubles(map(settings.doubles()))
                 .floats(map(settings.floats()))
                 .years(map(settings.years()))
@@ -29,18 +31,26 @@ public class SettingsMapper {
                 .build();
     }
 
-    private static Collections map(WithSettings.Collections settings) {
-        return Collections.builder()
-                .size(map(settings.size()))
-                .build();
-    }
-
     private static Strings map(WithSettings.Strings settings) {
         return Strings.builder()
                 .size(map(settings.size()))
                 .uppercase(settings.uppercase())
                 .type(settings.type())
                 .fieldNamePrefix(settings.fieldNamePrefix())
+                .build();
+    }
+
+    private static Collections map(WithSettings.Collections settings) {
+        return Collections.builder()
+                .size(map(settings.size()))
+                .build();
+    }
+
+    private static BigDecimals map(WithSettings.BigDecimals settings) {
+        return BigDecimals.builder()
+                .min(settings.min())
+                .max(settings.max())
+                .scale(settings.scale())
                 .build();
     }
 
