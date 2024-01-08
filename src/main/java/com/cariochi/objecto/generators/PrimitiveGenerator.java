@@ -1,40 +1,34 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.ObjectoSettings;
+import com.cariochi.objecto.settings.Settings;
 import com.cariochi.objecto.utils.Random;
 import java.lang.reflect.Type;
 
-import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
+class PrimitiveGenerator implements Generator {
 
-class PrimitiveGenerator extends Generator {
-
-    public PrimitiveGenerator(ObjectoGenerator objectoGenerator) {
-        super(objectoGenerator);
+    @Override
+    public boolean isSupported(Context context) {
+        return context.getRawClass().isPrimitive();
     }
 
     @Override
-    public boolean isSupported(Type type, GenerationContext context) {
-        final Class<?> rawType = getRawClass(type, context.ownerType());
-        return rawType != null && rawType.isPrimitive();
-    }
-
-    @Override
-    public Object generate(Type type, GenerationContext context) {
-        final ObjectoSettings settings = context.settings();
+    public Object generate(Context context) {
+        final Type type = context.getType();
+        final Settings settings = context.getSettings();
         if (type.equals(int.class)) {
-            return Random.nextInt(settings.integers());
+            return Random.nextInt(settings.integersRange());
         } else if (type.equals(double.class)) {
-            return Random.nextDouble(settings.doubles());
+            return Random.nextDouble(settings.doublesRange());
         } else if (type.equals(float.class)) {
-            return Random.nextFloat(settings.floats());
+            return Random.nextFloat(settings.floatsRange());
         } else if (type.equals(long.class)) {
-            return Random.nextLong(settings.longs());
+            return Random.nextLong(settings.longsRange());
         } else if (type.equals(short.class)) {
-            return (short) Random.nextInt(settings.integers());
+            return (short) Random.nextInt(settings.integersRange());
         } else if (type.equals(byte.class)) {
-            return (byte) Random.nextInt(settings.bytes());
+            return (byte) Random.nextInt(settings.bytesRange());
         } else if (type.equals(char.class)) {
-            return (char) Random.nextInt(settings.bytes());
+            return (char) Random.nextInt(settings.bytesRange());
         } else if (type.equals(boolean.class)) {
             return Random.nextBoolean();
         } else {

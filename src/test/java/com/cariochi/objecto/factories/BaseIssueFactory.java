@@ -1,17 +1,18 @@
 package com.cariochi.objecto.factories;
 
-import com.cariochi.objecto.FieldGenerator;
-import com.cariochi.objecto.InstanceCreator;
+import com.cariochi.objecto.Generator;
+import com.cariochi.objecto.Instantiator;
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.PostProcessor;
-import com.cariochi.objecto.model.Attachment;
-import com.cariochi.objecto.model.Comment;
-import com.cariochi.objecto.model.Issue;
-import com.cariochi.objecto.model.Issue.DependencyType;
-import com.cariochi.objecto.model.Issue.Fields;
-import com.cariochi.objecto.model.Issue.Status;
-import com.cariochi.objecto.model.Issue.Type;
-import com.cariochi.objecto.model.User;
+import com.cariochi.objecto.References;
+import com.cariochi.objecto.issues.model.Attachment;
+import com.cariochi.objecto.issues.model.Comment;
+import com.cariochi.objecto.issues.model.Issue;
+import com.cariochi.objecto.issues.model.Issue.DependencyType;
+import com.cariochi.objecto.issues.model.Issue.Fields;
+import com.cariochi.objecto.issues.model.Issue.Status;
+import com.cariochi.objecto.issues.model.Issue.Type;
+import com.cariochi.objecto.issues.model.User;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,10 +20,10 @@ import net.datafaker.Faker;
 
 public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
 
+    @References({"subtasks[*].parent", "parent.subtasks[*]"})
     Issue createIssue();
 
-    @Modifier("type=?")
-    Issue createIssue(Type type);
+    Issue createIssue(@Modifier("type=?") Type type);
 
     Issue createIssue(@Modifier("assignee=?") User assignee);
 
@@ -43,17 +44,17 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
                 .build();
     }
 
-    @InstanceCreator
+    @Instantiator
     private Attachment<?> newAttachment() {
         return Attachment.builder().fileContent(new byte[0]).build();
     }
 
-    @FieldGenerator(type = Issue.class, field = Issue.Fields.key)
+    @Generator(type = Issue.class, expression = Issue.Fields.key)
     private String issueKeyGenerator() {
         return "ID-" + new Faker().number().randomNumber(4, true);
     }
 
-    @FieldGenerator(type = Comment.class, field = Comment.Fields.commenter)
+    @Generator(type = Comment.class, expression = Comment.Fields.commenter)
     private User commenterGenerator() {
         Faker faker = new Faker();
         return User.builder()
@@ -62,14 +63,19 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
                 .build();
     }
 
-    @FieldGenerator(type = Issue.class, field = Fields.labels)
+    @Generator(type = Issue.class, expression = Fields.labels)
     private List<String> labelsGenerator() {
         return List.of("LABEL1", new Faker().lorem().word().toUpperCase());
     }
 
-    @FieldGenerator(type = Issue.class, field = Fields.parent)
-    private Issue issueParentGenerator() {
-        return null;
+    @Generator(type = Issue.class, expression = "properties.value")
+    private String issuePropertyValue() {
+        return "PROP";
+    }
+
+    @Generator(type = Issue.class, expression = "properties.setSize(?)")
+    private int issuePropertySize() {
+        return 101;
     }
 
     @PostProcessor
@@ -77,11 +83,6 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
         final List<String> labels = new ArrayList<>(issue.getLabels());
         labels.add(0, issue.getKey());
         issue.setLabels(labels);
-    }
-
-    @PostProcessor
-    private void issueParentPostProcessor(Issue issue) {
-        issue.getSubtasks().forEach(subtask -> subtask.setParent(issue));
     }
 
 }

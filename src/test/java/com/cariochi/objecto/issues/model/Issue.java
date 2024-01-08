@@ -1,4 +1,4 @@
-package com.cariochi.objecto.model;
+package com.cariochi.objecto.issues.model;
 
 import java.time.Instant;
 import java.util.List;
@@ -6,9 +6,9 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import lombok.Value;
 import lombok.experimental.FieldNameConstants;
 
 @FieldNameConstants
@@ -34,9 +34,13 @@ public class Issue {
     private User createdBy;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Issue> subtasks;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Issue parent;
+
     private Map<DependencyType, Issue> dependencies;
 
     private Properties properties;
@@ -70,11 +74,12 @@ public class Issue {
     }
 
 
-    @Value
+    @Data
     @RequiredArgsConstructor(staticName = "of")
     public static class Properties {
 
-        String prop;
+        private final String value;
+        private int size;
 
     }
 

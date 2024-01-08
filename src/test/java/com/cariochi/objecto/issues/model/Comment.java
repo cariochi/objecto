@@ -1,4 +1,4 @@
-package com.cariochi.objecto.model;
+package com.cariochi.objecto.issues.model;
 
 import java.time.Instant;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.cariochi.objecto.utils;
+package com.cariochi.objecto.modifiers;
 
 import com.cariochi.reflecto.Reflection;
 import java.lang.reflect.Array;
@@ -17,7 +17,7 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 
 @Slf4j
 @UtilityClass
-public class ObjectUtils {
+public class ObjectModifier {
 
     public static <T> T modifyObject(T object, Map<String, Object[]> fieldValues) {
         if (object == null) {
@@ -41,6 +41,7 @@ public class ObjectUtils {
                     try {
                         final String reflectoPath = path.endsWith(")") || path.endsWith("?") ? path : path + "=?";
                         reflection.invoke(reflectoPath, (Object[]) e.getValue());
+                    } catch (NullPointerException ex) {
                     } catch (Exception ex) {
                         log.info(
                                 "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",

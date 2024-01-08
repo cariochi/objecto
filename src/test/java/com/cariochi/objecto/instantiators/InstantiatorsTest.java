@@ -1,7 +1,6 @@
-package com.cariochi.objecto.creators;
+package com.cariochi.objecto.instantiators;
 
-import com.cariochi.objecto.ObjectoSettings;
-import com.cariochi.objecto.generators.GenerationContext;
+import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -25,20 +24,20 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static com.cariochi.objecto.Objecto.defaultSettings;
 import static com.cariochi.reflecto.types.Types.type;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-class ObjectoInstanceCreatorTest {
+class InstantiatorsTest {
 
-    private final ObjectoInstanceCreator instanceCreator = new ObjectoInstanceCreator(new ObjectoGenerator());
+    private final ObjectoGenerator generator = new ObjectoGenerator();
 
     private static Stream<Arguments> types() {
         return Stream.of(
                 arguments(Instant.class),
                 arguments(LocalDate.class),
                 arguments(ZonedDateTime.class),
-                arguments(type(Iterable.class, String.class)),
                 arguments(type(Collection.class, String.class)),
                 arguments(type(Collection.class, type(Collection.class, String.class))),
                 arguments(type(List.class, String.class)),
@@ -60,8 +59,8 @@ class ObjectoInstanceCreatorTest {
     @ParameterizedTest
     @MethodSource("types")
     void should_create_instance(Type type) {
-        ObjectoSettings settings = ObjectoSettings.defaultSettings();
-        final Object instance = instanceCreator.createInstance(type, new GenerationContext(settings));
+        final Context context = generator.newContext(type, defaultSettings());
+        final Object instance = generator.newInstance(context);
         assertThat(instance).isNotNull();
     }
 

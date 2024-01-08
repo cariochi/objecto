@@ -1,9 +1,10 @@
 package com.cariochi.objecto.proxy;
 
 import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.ObjectoSettings;
+import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.ObjectoGenerator;
-import com.cariochi.objecto.utils.ObjectUtils;
+import com.cariochi.objecto.modifiers.ObjectModifier;
+import com.cariochi.objecto.settings.Settings;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodProceed;
@@ -18,8 +19,8 @@ import lombok.RequiredArgsConstructor;
 public class ProxyHandler<T> implements MethodHandler {
 
     private final Class<T> targetClass;
-    private final ObjectoGenerator objectoGenerator;
-    private final ObjectoSettings settings;
+    private final ObjectoGenerator generator;
+    private final Settings settings;
     private final Map<String, Object[]> parameters = new LinkedHashMap<>();
 
     @Override
@@ -30,28 +31,28 @@ public class ProxyHandler<T> implements MethodHandler {
         }
 
         if (method.getName().equals("modifyObject")) {
-            return ObjectUtils.modifyObject(args[0], parameters);
+            return ObjectModifier.modifyObject(args[0], parameters);
         }
 
         final Map<String, Object[]> methodParameter = getMethodParameters(method, args);
 
         if (proceed == null) {
             if (method.getReturnType().equals(method.getDeclaringClass())) {
-                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(targetClass, objectoGenerator, settings);
+                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(targetClass, generator, settings);
                 childMethodHandler.parameters.putAll(parameters);
                 childMethodHandler.parameters.putAll(methodParameter);
-                return ProxyFactory.createInstance(childMethodHandler, targetClass, ObjectModifier.class);
+                return ProxyFactory.createInstance(childMethodHandler, targetClass, com.cariochi.objecto.proxy.ObjectModifier.class);
             } else {
-                final Object instance = objectoGenerator.generateInstance(method.getGenericReturnType(), settings);
+                final Context context = generator.newContext(method.getGenericReturnType(), settings);
+                final Object instance = generator.generate(context);
                 final Map<String, Object[]> tmpMap = new LinkedHashMap<>();
                 tmpMap.putAll(parameters);
                 tmpMap.putAll(methodParameter);
-                return ObjectUtils.modifyObject(instance, tmpMap);
+                return ObjectModifier.modifyObject(instance, tmpMap);
             }
         } else {
-            return ObjectUtils.modifyObject(proceed.proceed(), parameters);
+            return ObjectModifier.modifyObject(proceed.proceed(), parameters);
         }
-
     }
 
     private Map<String, Object[]> getMethodParameters(Method method, Object[] args) {

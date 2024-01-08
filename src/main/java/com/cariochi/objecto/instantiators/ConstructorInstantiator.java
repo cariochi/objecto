@@ -1,44 +1,36 @@
-package com.cariochi.objecto.creators;
+package com.cariochi.objecto.instantiators;
 
-import com.cariochi.objecto.generators.GenerationContext;
-import com.cariochi.objecto.generators.ObjectoGenerator;
+import com.cariochi.objecto.generators.Context;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-class ConstructorCreator extends DefaultCreator {
-
-    public ConstructorCreator(ObjectoGenerator objectoGenerator) {
-        super(objectoGenerator);
-    }
+public class ConstructorInstantiator extends DefaultInstantiator {
 
     @Override
-    public Object apply(Type type, GenerationContext context) {
-        final Class<?> rawType = getRawClass(type, context.ownerType());
-        final List<Constructor<?>> constructors = Stream.of(rawType.getDeclaredConstructors())
+    public Object apply(Context context) {
+        final List<Constructor<?>> constructors = Stream.of(context.getRawClass().getDeclaredConstructors())
                 .sorted(comparingInt((Constructor<?> c) -> getAccessibilityOrder(c.getModifiers())).thenComparingInt(Constructor::getParameterCount))
                 .collect(toList());
         return constructors.stream()
-                .map(c -> newInstance(c, type, context))
+                .map(c -> newInstance(c, context))
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
     }
 
-    private Object newInstance(Constructor<?> constructor, Type ownerType, GenerationContext context) {
+    private Object newInstance(Constructor<?> constructor, Context context) {
         try {
             log.trace("Using constructor `{}`", constructor.toGenericString());
-            final Object[] args = generateRandomParameters(constructor.getParameters(), ownerType, context);
+            final Object[] args = generateRandomParameters(constructor.getParameters(), context);
             if (!isPublic(constructor.getModifiers())) {
                 constructor.setAccessible(true);
             }

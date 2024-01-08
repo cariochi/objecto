@@ -1,4 +1,4 @@
-package com.cariochi.objecto.model;
+package com.cariochi.objecto.issues.model;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,22 +1,24 @@
-package com.cariochi.objecto;
+package com.cariochi.objecto.issues;
 
 
+import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.factories.BaseIssueFactory;
 import com.cariochi.objecto.factories.IssueFactory;
 import com.cariochi.objecto.factories.UserFactory;
-import com.cariochi.objecto.model.Attachment;
-import com.cariochi.objecto.model.Comment;
-import com.cariochi.objecto.model.Issue;
-import com.cariochi.objecto.model.Issue.Status;
-import com.cariochi.objecto.model.Issue.Type;
-import com.cariochi.objecto.model.User;
+import com.cariochi.objecto.issues.model.Attachment;
+import com.cariochi.objecto.issues.model.Comment;
+import com.cariochi.objecto.issues.model.Issue;
+import com.cariochi.objecto.issues.model.Issue.Properties;
+import com.cariochi.objecto.issues.model.Issue.Status;
+import com.cariochi.objecto.issues.model.Issue.Type;
+import com.cariochi.objecto.issues.model.User;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-import static com.cariochi.objecto.model.Issue.DependencyType.BLOCK;
+import static com.cariochi.objecto.issues.model.Issue.DependencyType.BLOCK;
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,6 +46,9 @@ class IssueFactoryTest {
         assertThat(issue.getLabels().get(0)).isEqualTo(issue.getKey());
         assertThat(issue.getLabels().get(1)).isEqualTo("LABEL1");
         assertThat(issue.getAssignee().getEmail()).contains("@");
+        assertThat(issue.getProperties())
+                .extracting(Properties::getValue, Properties::getSize)
+                .containsOnly("PROP", 101);
 
         // Type Generators
         final Instant expected = LocalDateTime.of(1978, Month.FEBRUARY, 20, 12, 0).atZone(UTC).toInstant();
@@ -194,6 +199,20 @@ class IssueFactoryTest {
         assertThat(issues)
                 .extracting(Issue::getType)
                 .containsOnlyNulls();
+    }
+
+    @Test
+    void should_manage_bidirectional_references() {
+        final Issue issue = issueFactory.createIssue();
+
+        assertThat(issue.getSubtasks())
+                .extracting(Issue::getParent)
+                .containsOnly(issue);
+
+        assertThat(issue.getParent().getSubtasks().get(0))
+                .isEqualTo(issue);
+        assertThat(issue.getParent().getSubtasks().get(1))
+                .isNotEqualTo(issue);
     }
 
 }
