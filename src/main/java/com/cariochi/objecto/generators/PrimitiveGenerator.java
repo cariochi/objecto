@@ -16,19 +16,19 @@ class PrimitiveGenerator implements Generator {
         final Type type = context.getType();
         final Settings settings = context.getSettings();
         if (type.equals(int.class)) {
-            return Random.nextInt(settings.integersRange());
+            return Random.nextInt(settings.integers());
         } else if (type.equals(double.class)) {
-            return Random.nextDouble(settings.doublesRange());
+            return Random.nextDouble(settings.doubles());
         } else if (type.equals(float.class)) {
-            return Random.nextFloat(settings.floatsRange());
+            return Random.nextFloat(settings.floats());
         } else if (type.equals(long.class)) {
-            return Random.nextLong(settings.longsRange());
+            return Random.nextLong(settings.longs());
         } else if (type.equals(short.class)) {
-            return (short) Random.nextInt(settings.integersRange());
+            return (short) Random.nextInt(settings.integers());
         } else if (type.equals(byte.class)) {
-            return (byte) Random.nextInt(settings.bytesRange());
+            return (byte) Random.nextInt(settings.bytes());
         } else if (type.equals(char.class)) {
-            return (char) Random.nextInt(settings.bytesRange());
+            return (char) Random.nextInt(settings.bytes());
         } else if (type.equals(boolean.class)) {
             return Random.nextBoolean();
         } else {

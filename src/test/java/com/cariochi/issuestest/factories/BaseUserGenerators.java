@@ -1,9 +1,9 @@
-package com.cariochi.objecto.factories;
+package com.cariochi.issuestest.factories;
 
+import com.cariochi.issuestest.model.User;
+import com.cariochi.issuestest.model.User.Fields;
 import com.cariochi.objecto.Generator;
 import com.cariochi.objecto.PostProcessor;
-import com.cariochi.objecto.issues.model.User;
-import com.cariochi.objecto.issues.model.User.Fields;
 import net.datafaker.Faker;
 
 import static org.apache.commons.lang3.StringUtils.lowerCase;

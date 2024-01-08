@@ -1,6 +1,7 @@
 package com.cariochi.objecto.utils;
 
-import com.cariochi.objecto.settings.StringsSettings;
+import com.cariochi.objecto.settings.Range;
+import com.cariochi.objecto.settings.Settings.Strings;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.rng.UniformRandomProvider;
@@ -31,7 +32,7 @@ public class Random {
         return RANDOM_PROVIDER.nextDouble(range.min(), range.max());
     }
 
-    public static String nextString(StringsSettings stringsSettings) {
+    public static String nextString(Strings stringsSettings) {
         String string;
         switch (stringsSettings.type()) {
             case ALPHANUMERIC:

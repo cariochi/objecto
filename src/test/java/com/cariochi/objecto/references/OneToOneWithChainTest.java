@@ -31,7 +31,7 @@ class OneToOneWithChainTest {
         @References("childHolder.child.parentHolder.parent")
         Parent createParent();
 
-        @References("parentHolder.parent.childHolder.child")
+//        @References("parentHolder.parent.childHolder.child")
         Child createChild();
 
     }

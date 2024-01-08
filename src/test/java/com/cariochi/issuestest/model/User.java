@@ -1,4 +1,4 @@
-package com.cariochi.objecto.issues.model;
+package com.cariochi.issuestest.model;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

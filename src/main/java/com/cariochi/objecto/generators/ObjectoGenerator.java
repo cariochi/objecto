@@ -30,7 +30,7 @@ public class ObjectoGenerator {
             new ConstructorInstantiator()
     ));
 
-    private final List<BackReferenceGenerator> backReferenceGenerators = new ArrayList<>();
+    private final List<ReferenceGenerator> referenceGenerators = new ArrayList<>();
     private final List<FieldGenerator> fieldGenerators = new ArrayList<>();
     private final List<TypeGenerator> typeGenerators = new ArrayList<>();
     private final List<ComplexGenerator> complexGenerators = new ArrayList<>();
@@ -47,15 +47,21 @@ public class ObjectoGenerator {
             new CustomObjectGenerator()
     );
 
+    private final Map<Type, List<FieldSettings>> fieldSettings = new HashMap<>();
+
     private final Map<Type, List<Consumer<Object>>> postProcessors = new HashMap<>();
 
     public void addCustomConstructor(Type type, Supplier<Object> constructor) {
         objectConstructors.add(0, context -> type.equals(context.getType()) ? constructor.get() : null);
     }
 
-    public void addBackReferenceGenerators(Type type, String[] paths) {
+    public void addReferenceGenerators(Type type, String[] paths) {
         Stream.of(paths)
-                .forEach(path -> backReferenceGenerators.add(new BackReferenceGenerator(type, path)));
+                .forEach(path -> referenceGenerators.add(new ReferenceGenerator(type, path)));
+    }
+
+    public void addFieldSettings(Type type, String path, Settings settings) {
+        fieldSettings.computeIfAbsent(type, t -> new ArrayList<>()).add(new FieldSettings(path, settings));
     }
 
     public void addCustomGenerator(Class<?> objectType, Type type, String expression, Supplier<Object> generator) {
@@ -82,39 +88,53 @@ public class ObjectoGenerator {
     }
 
     public Object generate(Type type) {
-        return newContext(type, defaultSettings()).generate();
+        return generate(newContext(type, defaultSettings()));
     }
 
     public Object generate(Context context) {
         final Type rawType = context.getType();
+        final String contextPath = context.getPath();
         if (rawType == null) {
-            log.info("Cannot recognize a raw type `{}` of field `{}`. Please create an @Instantiator method to specify how to instantiate this class.", context.getType().getTypeName(), context.getPath());
-            return null;
-        }
-        log.trace("Generating `{}` with type `{}`", context.getPath(), rawType.getTypeName());
-        if (context.getDepth() >= context.getSettings().depth()) {
-            log.debug("Max depth {} reached. Path: {}", context.getSettings().depth(), context.getPath());
+            log.info("Cannot recognize a raw type `{}` of field `{}`. Please create an @Instantiator method to specify how to instantiate this class.", context.getType().getTypeName(), contextPath);
             return null;
         }
 
-        final Object backReferenceObject = backReferenceGenerators.stream()
-                .filter(generator -> generator.isSupported(context)).findFirst()
-                .map(generator -> generator.generate(context))
+        final Context fieldContext;
+        final List<FieldSettings> typeSettings = fieldSettings.get(context.getOwnerType());
+        if (typeSettings != null) {
+            fieldContext = typeSettings.stream()
+                    .filter(s -> s.getPath().isEmpty() || context.findPreviousContext(s.getPath()).isPresent()).findFirst()
+                    .map(FieldSettings::getSettings)
+                    .map(context::withFieldSettings)
+                    .orElse(context);
+        } else {
+            fieldContext = context;
+        }
+
+        log.trace("Generating `{}` with type `{}`", contextPath, rawType.getTypeName());
+        if (fieldContext.getDepth() > fieldContext.getSettings().maxDepth() + 1) {
+            log.debug("Maximum depth ({}) reached. Path: {}", fieldContext.getSettings().maxDepth(), contextPath);
+            return null;
+        }
+
+        final Object backReferenceObject = referenceGenerators.stream()
+                .filter(generator -> generator.isSupported(fieldContext)).findFirst()
+                .map(generator -> generator.generate(fieldContext))
                 .orElse(null);
         if (backReferenceObject != null) {
             return backReferenceObject;
         }
 
-        if (context.getTypeDepth(rawType) >= context.getSettings().typeDepth()) {
-            log.debug("Max depth {} reached for type {}. Path: {}", context.getSettings().typeDepth(), context.getType().getTypeName(), context.getPath());
+        if (fieldContext.getTypeDepth(rawType) >= fieldContext.getSettings().maxRecursionDepth()) {
+            log.debug("Maximum recursion depth ({}) reached. Path: {}. Type: {}", fieldContext.getSettings().maxRecursionDepth(), contextPath, fieldContext.getType().getTypeName());
             return null;
         }
 
         return Stream.of(fieldGenerators, typeGenerators, defaultGenerators).flatMap(List::stream)
-                .filter(generator -> generator.isSupported(context)).findFirst()
-                .map(generator -> generator.generate(context))
+                .filter(generator -> generator.isSupported(fieldContext)).findFirst()
+                .map(generator -> generator.generate(fieldContext))
                 .map(instance -> {
-                    applyComplexGenerators(context);
+                    applyComplexGenerators(fieldContext);
                     return instance;
                 })
                 .map(instance -> postProcess(rawType, instance))

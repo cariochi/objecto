@@ -25,23 +25,25 @@ To use **Objecto** in your project, add the following dependency to your build c
 import com.cariochi.objecto.Instantiator;
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.Generator;
-import com.cariochi.objecto.PostProcessor;
-import com.cariochi.objecto.issues.model.Issue;
-import com.cariochi.objecto.issues.model.Issue.Fields;
-import com.cariochi.objecto.issues.model.Issue.Status;
-import com.cariochi.objecto.issues.model.Issue.Type;
-import com.cariochi.objecto.issues.model.User;
+import com.cariochi.objecto.WithSettings;
+import com.cariochi.issuestest.model.issues.Issue;
+import com.cariochi.issuestest.model.issues.Issue.Fields;
+import com.cariochi.issuestest.model.issues.Issue.Status;
+import com.cariochi.issuestest.model.issues.Issue.Type;
+import com.cariochi.issuestest.model.issues.User;
 import net.datafaker.Faker;
 
+@WithSettings(maxDepth = 5)
 public interface IssueFactory {
 
+    @References("subtasks[*].parent")
     Issue createIssue();
 
     Issue createIssue(@Modifier("type") Type type);
 
     @Instantiator
     private Attachment<?> newAttachment() {
-        return new Attachment("", new byte[0]);
+        return Attachment.builder().fileContent(new byte[0]).build();
     }
 
     @Generator
@@ -52,16 +54,6 @@ public interface IssueFactory {
     @Generator(type = Issue.class, expression = Issue.Fields.key)
     private String issueKeyGenerator() {
         return "ID-" + new Faker().number().randomNumber(4, true);
-    }
-
-    @Generator(type = Issue.class, expression = Fields.parent)
-    private Issue issueParentGenerator() {
-        return null;
-    }
-
-    @PostProcessor
-    private void issueParentProcessor(Issue issue) {
-        issue.getSubtasks().forEach(subtask -> subtask.setParent(issue));
     }
 
     @Modifier("type")
@@ -92,6 +84,5 @@ Issue randomOpenBug = issueFactory
                           .withType(Type.BUG)
                           .withStatus(Status.OPEN)
                           .createIssue();
-
 ```
 

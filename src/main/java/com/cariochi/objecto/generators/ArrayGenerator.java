@@ -16,7 +16,7 @@ class ArrayGenerator implements Generator {
 
     @Override
     public Object generate(Context context) {
-        int arrayLength = Random.nextInt(context.getSettings().arraysSize());
+        int arrayLength = Random.nextInt(context.getSettings().arrays().size());
         final Type componentType = getComponentType(context.getType());
         final Class<?> componentClass = getRawClass(componentType, context.getOwnerType());
         final Object firstItem = context.nextContext("[" + 0 + "]", componentType, context.getOwnerType()).generate();

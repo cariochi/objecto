@@ -11,7 +11,11 @@ class StringGenerator implements Generator {
 
     @Override
     public Object generate(Context context) {
-        return Random.nextString(context.getSettings().stringsSettings());
+        String random = Random.nextString(context.getSettings().strings());
+        if (context.getSettings().strings().fieldNamePrefix()) {
+            random = context.getFieldName() + " " + random;
+        }
+        return random;
     }
 
 

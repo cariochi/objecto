@@ -1,12 +1,12 @@
-package com.cariochi.objecto.factories;
+package com.cariochi.issuestest.factories;
 
 
+import com.cariochi.issuestest.model.Issue;
+import com.cariochi.issuestest.model.Issue.DependencyType;
+import com.cariochi.issuestest.model.Issue.Status;
+import com.cariochi.issuestest.model.Issue.Type;
+import com.cariochi.issuestest.model.User;
 import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.issues.model.Issue;
-import com.cariochi.objecto.issues.model.Issue.DependencyType;
-import com.cariochi.objecto.issues.model.Issue.Status;
-import com.cariochi.objecto.issues.model.Issue.Type;
-import com.cariochi.objecto.issues.model.User;
 
 public interface IssueFactory extends BaseIssueFactory {
 

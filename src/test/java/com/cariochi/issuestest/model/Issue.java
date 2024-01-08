@@ -1,4 +1,4 @@
-package com.cariochi.objecto.issues.model;
+package com.cariochi.issuestest.model;
 
 import java.time.Instant;
 import java.util.List;

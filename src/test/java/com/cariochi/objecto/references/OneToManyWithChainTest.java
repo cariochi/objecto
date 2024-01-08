@@ -43,7 +43,7 @@ class OneToManyWithChainTest {
         @References("childrenHolders[*].children[*].parent")
         Parent createParent();
 
-        @References("parent.childrenHolders[*].children[*]")
+//        @References("parent.childrenHolders[*].children[*]")
         Child createChild();
 
     }

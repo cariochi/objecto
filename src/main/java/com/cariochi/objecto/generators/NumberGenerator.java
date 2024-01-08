@@ -19,19 +19,19 @@ class NumberGenerator implements Generator {
         final Type type = context.getType();
         final Settings settings = context.getSettings();
         if (type.equals(Integer.class)) {
-            return Random.nextInt(settings.integersRange());
+            return Random.nextInt(settings.integers());
         } else if (type.equals(Double.class)) {
-            return Random.nextDouble(settings.doublesRange());
+            return Random.nextDouble(settings.doubles());
         } else if (type.equals(Float.class)) {
-            return Random.nextFloat(settings.floatsRange());
+            return Random.nextFloat(settings.floats());
         } else if (type.equals(Long.class)) {
-            return Random.nextLong(settings.longsRange());
+            return Random.nextLong(settings.longs());
         } else if (type.equals(Short.class)) {
-            return (short) Random.nextInt(settings.integersRange());
+            return (short) Random.nextInt(settings.integers());
         } else if (type.equals(Byte.class)) {
-            return (byte) Random.nextInt(settings.bytesRange());
+            return (byte) Random.nextInt(settings.bytes());
         } else if (type.equals(BigDecimal.class)) {
-            return BigDecimal.valueOf(Random.nextDouble(settings.doublesRange())).setScale(4, HALF_UP);
+            return BigDecimal.valueOf(Random.nextDouble(settings.doubles())).setScale(4, HALF_UP);
         } else {
             return null;
         }

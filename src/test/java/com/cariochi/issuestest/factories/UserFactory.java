@@ -1,8 +1,8 @@
-package com.cariochi.objecto.factories;
+package com.cariochi.issuestest.factories;
 
 
+import com.cariochi.issuestest.model.User;
 import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.issues.model.User;
 
 public abstract class UserFactory implements BaseFactory, BaseUserGenerators {
 

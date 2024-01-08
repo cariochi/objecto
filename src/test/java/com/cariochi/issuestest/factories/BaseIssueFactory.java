@@ -1,26 +1,28 @@
-package com.cariochi.objecto.factories;
+package com.cariochi.issuestest.factories;
 
+import com.cariochi.issuestest.model.Attachment;
+import com.cariochi.issuestest.model.Comment;
+import com.cariochi.issuestest.model.Issue;
+import com.cariochi.issuestest.model.Issue.DependencyType;
+import com.cariochi.issuestest.model.Issue.Fields;
+import com.cariochi.issuestest.model.Issue.Status;
+import com.cariochi.issuestest.model.Issue.Type;
+import com.cariochi.issuestest.model.User;
 import com.cariochi.objecto.Generator;
 import com.cariochi.objecto.Instantiator;
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.PostProcessor;
 import com.cariochi.objecto.References;
-import com.cariochi.objecto.issues.model.Attachment;
-import com.cariochi.objecto.issues.model.Comment;
-import com.cariochi.objecto.issues.model.Issue;
-import com.cariochi.objecto.issues.model.Issue.DependencyType;
-import com.cariochi.objecto.issues.model.Issue.Fields;
-import com.cariochi.objecto.issues.model.Issue.Status;
-import com.cariochi.objecto.issues.model.Issue.Type;
-import com.cariochi.objecto.issues.model.User;
+import com.cariochi.objecto.WithSettings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import net.datafaker.Faker;
 
+@WithSettings(maxRecursionDepth = 3)
 public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
 
-    @References({"subtasks[*].parent", "parent.subtasks[*]"})
+    @References("subtasks[*].parent")
     Issue createIssue();
 
     Issue createIssue(@Modifier("type=?") Type type);

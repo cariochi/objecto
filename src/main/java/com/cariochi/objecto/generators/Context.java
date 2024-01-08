@@ -54,6 +54,10 @@ public class Context {
                 .withInstance(instance);
     }
 
+    public Context withFieldSettings(Settings settings) {
+        return withSettings(settings);
+    }
+
     public Type getType() {
         return Optional.ofNullable(getRawType(type, ownerType))
                 .or(() -> Optional.ofNullable(instance).map(Object::getClass))
@@ -89,17 +93,6 @@ public class Context {
         }
     }
 
-    public Object findInstance(Type type) {
-        if (getType().equals(type) && instance != null) {
-            return instance;
-        }
-        if (previous != null) {
-            return previous.findInstance(type);
-        } else {
-            return null;
-        }
-    }
-
     public Object generate() {
         return generator.generate(this);
     }
@@ -128,16 +121,6 @@ public class Context {
         }
     }
 
-    public Optional<Context> stepsBack(int steps) {
-        if (steps == 0) {
-            return Optional.of(this);
-        } else if (previous != null) {
-            return previous.stepsBack(steps - 1);
-        } else {
-            return Optional.empty();
-        }
-    }
-
     public Optional<Context> findPreviousContext(String path) {
         final Deque<String> fields = new LinkedList<>(asList(split(replace(path, "[", ".["), ".")));
         return findPreviousContext(fields);
@@ -145,16 +128,14 @@ public class Context {
 
     private Optional<Context> findPreviousContext(Deque<String> fields) {
         final String field = fields.removeLast();
-        if (fieldName.equals(field) || (field.equals("[*]") && fieldName.startsWith("[") && fieldName.endsWith("]"))) {
-            if (fields.isEmpty()) {
-                return Optional.of(this);
-            } else if (previous == null) {
-                return Optional.empty();
-            } else {
-                return previous.findPreviousContext(fields);
-            }
-        } else {
+        if (!fieldName.equals(field) && (!field.equals("[*]") || !fieldName.startsWith("[") || !fieldName.endsWith("]"))) {
             return Optional.empty();
+        } else if (fields.isEmpty()) {
+            return Optional.of(this);
+        } else if (previous == null) {
+            return Optional.empty();
+        } else {
+            return previous.findPreviousContext(fields);
         }
     }
 

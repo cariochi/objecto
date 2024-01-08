@@ -2,6 +2,7 @@ package com.cariochi.objecto.references;
 
 import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.References;
+import com.cariochi.objecto.WithSettings;
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -103,6 +104,7 @@ class ComplexStructureTest {
                 .contains(assignment);
     }
 
+    @WithSettings(maxDepth = 7)
     public interface ObjectoFactory {
 
         @References({"professor.assignments[*].course", "enrollments[*].course"})

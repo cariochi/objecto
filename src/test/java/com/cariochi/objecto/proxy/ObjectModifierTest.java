@@ -1,8 +1,8 @@
 package com.cariochi.objecto.proxy;
 
+import com.cariochi.issuestest.factories.UserFactory;
+import com.cariochi.issuestest.model.User;
 import com.cariochi.objecto.Objecto;
-import com.cariochi.objecto.factories.UserFactory;
-import com.cariochi.objecto.issues.model.User;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -19,7 +19,7 @@ class CustomObjectGenerator implements Generator {
     @Override
     public Object generate(Context context) {
 
-        if (context.getDepth() >= context.getSettings().depth() - 1) {
+        if (context.getDepth() > context.getSettings().maxDepth()) {
             return null;
         }
 

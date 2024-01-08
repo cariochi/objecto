@@ -1,7 +1,7 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.settings.Range;
 import com.cariochi.objecto.utils.Random;
-import com.cariochi.objecto.utils.Range;
 
 class EnumGenerator implements Generator {
 

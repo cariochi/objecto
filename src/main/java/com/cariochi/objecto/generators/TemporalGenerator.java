@@ -69,7 +69,7 @@ class TemporalGenerator implements Generator {
 
     private Instant generateInstant(Context context) {
         long yearInSeconds = Duration.ofDays(365).getSeconds();
-        long randomSeconds = (long) (Random.nextDouble(context.getSettings().yearsRange()) * yearInSeconds);
+        long randomSeconds = (long) (Random.nextDouble(context.getSettings().years()) * yearInSeconds);
         return Instant.now().plusSeconds(randomSeconds);
     }
 

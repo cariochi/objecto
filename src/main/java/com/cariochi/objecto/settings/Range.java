@@ -1,4 +1,4 @@
-package com.cariochi.objecto.utils;
+package com.cariochi.objecto.settings;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Value;

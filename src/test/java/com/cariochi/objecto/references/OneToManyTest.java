@@ -39,7 +39,7 @@ class OneToManyTest {
         @References("tactics[*].campaign")
         Campaign createParent();
 
-        @References("campaign.tactics[*]")
+//        @References("campaign.tactics[*]")
         Tactic createChild();
 
     }

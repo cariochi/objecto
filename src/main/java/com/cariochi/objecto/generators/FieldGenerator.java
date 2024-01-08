@@ -18,10 +18,10 @@ class FieldGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
-        final boolean contextFound = context.findPreviousContext(substringBefore(expression, "=?"))
+        return fieldType.equals(context.getType())
+                && context.findPreviousContext(substringBefore(expression, "=?"))
                 .filter(cnxt -> ownerType.equals(cnxt.getOwnerType()))
                 .isPresent();
-        return contextFound && fieldType.equals(context.getType());
     }
 
     @Override

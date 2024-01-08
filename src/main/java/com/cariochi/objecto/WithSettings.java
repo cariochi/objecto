@@ -1,54 +1,67 @@
 package com.cariochi.objecto;
 
-import com.cariochi.objecto.settings.StringGenerationType;
+import com.cariochi.objecto.settings.Settings;
 import java.lang.annotation.Inherited;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import static com.cariochi.objecto.settings.StringGenerationType.ALPHABETIC;
+import static com.cariochi.objecto.settings.Settings.Strings.Type.ALPHABETIC;
+import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@Target(TYPE)
+@Target({TYPE, METHOD})
 @Retention(RUNTIME)
+@Repeatable(WithSettingsList.class)
 @Inherited
 public @interface WithSettings {
 
-    int depth() default 7;
+    String path() default "";
 
-    int typeDepth() default 3;
+    int maxDepth() default 4;
 
-    LongsRange longsRange() default @LongsRange(min = 1L, max = 100_000L);
+    int maxRecursionDepth() default 2;
 
-    IntegersRange integersRange() default @IntegersRange(min = 1, max = 100_000);
+    LongRange longs() default @LongRange(min = 1L, max = 100_000L);
 
-    IntegersRange bytesRange() default @IntegersRange(min = 65, max = 91);
+    IntRange integers() default @IntRange(min = 1, max = 100_000);
 
-    DoublesRange doublesRange() default @DoublesRange(min = 1.0, max = 100_000.0);
+    IntRange bytes() default @IntRange(min = 65, max = 91);
 
-    FloatsRange floatsRange() default @FloatsRange(min = 1F, max = 100_000F);
+    DoubleRange doubles() default @DoubleRange(min = 1.0, max = 100_000.0);
 
-    DoublesRange yearsRange() default @DoublesRange(min = -5.0, max = 1.0);
+    FloatRange floats() default @FloatRange(min = 1F, max = 100_000F);
 
-    IntegersRange collectionsSize() default @IntegersRange(min = 2, max = 5);
+    DoubleRange years() default @DoubleRange(min = -5.0, max = 1.0);
 
-    IntegersRange arraysSize() default @IntegersRange(min = 2, max = 5);
+    Collections collections() default @Collections;
 
-    IntegersRange mapsSize() default @IntegersRange(min = 2, max = 5);
+    Collections arrays() default @Collections;
 
-    StringSettings stringSettings() default @StringSettings;
+    Collections maps() default @Collections;
 
-    @interface StringSettings {
+    Strings strings() default @Strings;
 
-        IntegersRange size() default @IntegersRange(min = 8, max = 16);
+    @interface Strings {
+
+        IntRange size() default @IntRange(min = 8, max = 16);
 
         boolean uppercase() default true;
 
-        StringGenerationType type() default ALPHABETIC;
+        Settings.Strings.Type type() default ALPHABETIC;
+
+        boolean fieldNamePrefix() default false;
 
     }
 
-    @interface LongsRange {
+    @interface Collections {
+
+        IntRange size() default @IntRange(min = 2, max = 5);
+
+    }
+
+    @interface LongRange {
 
         long min();
 
@@ -56,7 +69,7 @@ public @interface WithSettings {
 
     }
 
-    @interface IntegersRange {
+    @interface IntRange {
 
         int min();
 
@@ -64,7 +77,7 @@ public @interface WithSettings {
 
     }
 
-    @interface DoublesRange {
+    @interface DoubleRange {
 
         double min();
 
@@ -72,7 +85,7 @@ public @interface WithSettings {
 
     }
 
-    @interface FloatsRange {
+    @interface FloatRange {
 
         float min();
 

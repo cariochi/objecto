@@ -1,4 +1,4 @@
-package com.cariochi.objecto.factories;
+package com.cariochi.issuestest.factories;
 
 import com.cariochi.objecto.Generator;
 import java.time.Instant;

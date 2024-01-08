@@ -20,7 +20,7 @@ class CollectionGenerator implements Generator {
         final Type elementType = getTypeArguments(context.getType(), Collection.class).values().iterator().next();
         final Collection<Object> collection = (Collection<Object>) context.newInstance();
         if (collection != null) {
-            for (int i = 0; i < Random.nextInt(context.getSettings().collectionsSize()); i++) {
+            for (int i = 0; i < Random.nextInt(context.getSettings().collections().size()); i++) {
                 final Object item = context.nextContext("[" + i + "]", elementType, context.getOwnerType()).generate();
                 if (item == null) {
                     return collection;

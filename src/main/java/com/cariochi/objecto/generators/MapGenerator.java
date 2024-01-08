@@ -24,7 +24,7 @@ class MapGenerator implements Generator {
         final Map<Object, Object> map = (Map<Object, Object>) context.newInstance();
         if (map != null) {
             map.clear();
-            for (int i = 0; i < Random.nextInt(context.getSettings().mapsSize()); i++) {
+            for (int i = 0; i < Random.nextInt(context.getSettings().maps().size()); i++) {
                 final Object key = context.nextContext("[key]", keyType, context.getOwnerType()).generate();
                 final Object value = context.nextContext("[value]", valueType, context.getOwnerType()).generate();
                 if (key == null || value == null) {
