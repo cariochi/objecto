@@ -1,6 +1,6 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.modifiers.ObjectModifier;
+import com.cariochi.objecto.modifiers.ObjectoModifier;
 import java.util.Map;
 import java.util.function.Supplier;
 import lombok.Getter;
@@ -23,7 +23,7 @@ class ComplexGenerator implements Generator {
     public Object generate(Context context) {
         final Object value = generator.get();
         final Object instance = context.getInstance();
-        ObjectModifier.modifyObject(instance, Map.of(expression, new Object[]{value}));
+        ObjectoModifier.modifyObject(instance, Map.of(expression, new Object[]{value}));
         return instance;
     }
 

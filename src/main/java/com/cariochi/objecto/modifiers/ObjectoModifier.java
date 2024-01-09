@@ -17,7 +17,7 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 
 @Slf4j
 @UtilityClass
-public class ObjectModifier {
+public class ObjectoModifier {
 
     public static <T> T modifyObject(T object, Map<String, Object[]> fieldValues) {
         if (object == null) {

@@ -104,7 +104,7 @@ class ComplexStructureTest {
                 .contains(assignment);
     }
 
-    @WithSettings(maxDepth = 7)
+    @WithSettings(maxDepth = 5)
     public interface ObjectoFactory {
 
         @References({"professor.assignments[*].course", "enrollments[*].course"})
