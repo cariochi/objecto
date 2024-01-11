@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ByteArrayTest {
 
-
     @Test
     void should_generate_byte_array_field() {
         final FileFactory factory = Objecto.create(FileFactory.class);

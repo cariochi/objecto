@@ -1,21 +1,16 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.utils.Random;
-import java.lang.reflect.Type;
 
-class BooleanGenerator extends Generator {
+class BooleanGenerator implements Generator {
 
-    public BooleanGenerator(ObjectoGenerator objectoGenerator) {
-        super(objectoGenerator);
+    @Override
+    public boolean isSupported(Context context) {
+        return context.getType().equals(Boolean.class);
     }
 
     @Override
-    public boolean isSupported(Type type, GenerationContext context) {
-        return type.equals(Boolean.class);
-    }
-
-    @Override
-    public Object generate(Type type, GenerationContext context) {
+    public Object generate(Context context) {
         return Random.nextBoolean();
     }
 

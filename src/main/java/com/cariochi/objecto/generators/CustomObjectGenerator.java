@@ -9,40 +9,37 @@ import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-class CustomObjectGenerator extends Generator {
-
-    public CustomObjectGenerator(ObjectoGenerator objectoGenerator) {
-        super(objectoGenerator);
-    }
+class CustomObjectGenerator implements Generator {
 
     @Override
-    public boolean isSupported(Type type, GenerationContext context) {
+    public boolean isSupported(Context context) {
         return true;
     }
 
     @Override
-    public Object generate(Type type, GenerationContext context) {
-        if (context.depth() == 1) {
+    public Object generate(Context context) {
+
+        if (context.getDepth() > context.getSettings().maxDepth()) {
             return null;
         }
 
-        final Object instance = createInstance(type, context);
+        final Object instance = context.newInstance();
 
         if (instance != null) {
 
-            final List<JavaField> fields = reflect(instance).fields().asList().stream().filter(field -> !field.isStatic()).collect(toList());
+            final List<JavaField> fields = reflect(instance).fields().asList().stream()
+                    .filter(field -> !field.isStatic())
+                    .collect(toList());
+
             for (JavaField field : fields) {
                 final Type fieldType = field.getGenericType();
                 if (fieldType != null) {
-                    final GenerationContext fieldContext = context.next()
-                            .withOwnerType(type)
-                            .withField(field.getName())
-                            .withInstance(field.getValue());
-                    final Object fieldValue = generateRandomObject(fieldType, fieldContext);
+                    final Context fieldContext = context.nextContext(field.getName(), fieldType, context.getType(), field.getValue());
+                    final Object fieldValue = fieldContext.generate();
                     try {
                         field.setValue(fieldValue);
                     } catch (Exception e) {
-                        log.error("Cannot set field value: {}", fieldContext.path());
+                        log.error("Cannot set field value: {}", fieldContext.getPath());
                     }
                 }
             }

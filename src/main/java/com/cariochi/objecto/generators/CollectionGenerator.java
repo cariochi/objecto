@@ -1,35 +1,27 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.utils.Random;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
+import static org.apache.commons.lang3.reflect.TypeUtils.getTypeArguments;
 
 @Slf4j
-class CollectionGenerator extends Generator {
+class CollectionGenerator implements Generator {
 
-    public CollectionGenerator(ObjectoGenerator objectoGenerator) {
-        super(objectoGenerator);
+    @Override
+    public boolean isSupported(Context context) {
+        return context.isCollection();
     }
 
     @Override
-    public boolean isSupported(Type type, GenerationContext context) {
-        final Class<?> rawType = getRawClass(type, context.ownerType());
-        return rawType != null && Iterable.class.isAssignableFrom(rawType);
-    }
-
-    @Override
-    public Object generate(Type type, GenerationContext context) {
-        final ParameterizedType parameterizedType = (ParameterizedType) type;
-        final Type elementType = parameterizedType.getActualTypeArguments()[0];
-        final Collection<Object> collection = (Collection<Object>) createInstance(parameterizedType, context);
+    public Object generate(Context context) {
+        final Type elementType = getTypeArguments(context.getType(), Collection.class).values().iterator().next();
+        final Collection<Object> collection = (Collection<Object>) context.newInstance();
         if (collection != null) {
-            collection.clear();
-            for (int i = 0; i < Random.nextInt(context.settings().collections()); i++) {
-                final Object item = generateRandomObject(elementType, context.withField("[" + i + "]"));
+            for (int i = 0; i < Random.nextInt(context.getSettings().collections().size()); i++) {
+                final Object item = context.nextContext("[" + i + "]", elementType, context.getOwnerType()).generate();
                 if (item == null) {
                     return collection;
                 }

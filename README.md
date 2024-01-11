@@ -22,56 +22,47 @@ To use **Objecto** in your project, add the following dependency to your build c
 ## Declaration
 
 ```java
-import com.cariochi.objecto.FieldGenerator;
+import com.cariochi.objecto.Instantiator;
 import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.TypeGenerator;
-import com.cariochi.objecto.PostProcessor;
-import com.cariochi.objecto.model.Issue;
-import com.cariochi.objecto.model.Issue.Fields;
-import com.cariochi.objecto.model.Issue.Status;
-import com.cariochi.objecto.model.Issue.Type;
-import com.cariochi.objecto.model.User;
-import java.util.List;
+import com.cariochi.objecto.Generator;
+import com.cariochi.objecto.WithSettings;
+import com.cariochi.issuestest.model.issues.Issue;
+import com.cariochi.issuestest.model.issues.Issue.Fields;
+import com.cariochi.issuestest.model.issues.Issue.Status;
+import com.cariochi.issuestest.model.issues.Issue.Type;
+import com.cariochi.issuestest.model.issues.User;
 import net.datafaker.Faker;
 
+@WithSettings(maxDepth = 5)
 public interface IssueFactory {
 
+    @References("subtasks[*].parent")
     Issue createIssue();
 
     Issue createIssue(@Modifier("type") Type type);
-    
-    @InstanceCreator
+
+    @Instantiator
     private Attachment<?> newAttachment() {
-        return new Attachment("", new byte[0]);
+        return Attachment.builder().fileContent(new byte[0]).build();
     }
 
-    @TypeGenerator
+    @Generator
     private String stringGenerator() {
         return new Faker().lorem().sentence();
     }
-    
-    @FieldGenerator(type = Issue.class, field = Issue.Fields.key)
+
+    @Generator(type = Issue.class, expression = Issue.Fields.key)
     private String issueKeyGenerator() {
         return "ID-" + new Faker().number().randomNumber(4, true);
     }
 
-    @FieldGenerator(type = Issue.class, field = Fields.parent)
-    private Issue issueParentGenerator() {
-        return null;
-    }
-    
-    @PostProcessor
-    private void issueParentProcessor(Issue issue) {
-        issue.getSubtasks().forEach(subtask -> subtask.setParent(issue));
-    }
-    
     @Modifier("type")
     IssueFactory withType(Type type);
 
     @Modifier("status")
     IssueFactory withStatus(Status status);
-    
-    @Modifier("subtasks[*].status") 
+
+    @Modifier("subtasks[*].status")
     IssueFactory withAllSubtaskStatuses(Status status);
 
 }
@@ -93,5 +84,5 @@ Issue randomOpenBug = issueFactory
                           .withType(Type.BUG)
                           .withStatus(Status.OPEN)
                           .createIssue();
-
 ```
+

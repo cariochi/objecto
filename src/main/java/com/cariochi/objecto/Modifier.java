@@ -1,6 +1,5 @@
 package com.cariochi.objecto;
 
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -10,7 +9,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({METHOD, PARAMETER})
 @Retention(RUNTIME)
-@Inherited
 public @interface Modifier {
 
     String value();

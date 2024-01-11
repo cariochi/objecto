@@ -1,6 +1,7 @@
 package com.cariochi.objecto.utils;
 
-import com.cariochi.objecto.ObjectoSettings.Strings;
+import com.cariochi.objecto.settings.Range;
+import com.cariochi.objecto.settings.Settings.Strings;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.rng.UniformRandomProvider;
@@ -31,30 +32,30 @@ public class Random {
         return RANDOM_PROVIDER.nextDouble(range.min(), range.max());
     }
 
-    public static String nextString(Strings strings) {
+    public static String nextString(Strings stringsSettings) {
         String string;
-        switch (strings.type()) {
+        switch (stringsSettings.type()) {
             case ALPHANUMERIC:
-                string = RandomStringUtils.randomAlphanumeric(strings.size().min(), strings.size().max());
+                string = RandomStringUtils.randomAlphanumeric(stringsSettings.size().min(), stringsSettings.size().max());
                 break;
             case NUMERIC:
-                string = RandomStringUtils.randomNumeric(strings.size().min(), strings.size().max());
+                string = RandomStringUtils.randomNumeric(stringsSettings.size().min(), stringsSettings.size().max());
                 break;
             case ASCII:
-                string = RandomStringUtils.randomAscii(strings.size().min(), strings.size().max());
+                string = RandomStringUtils.randomAscii(stringsSettings.size().min(), stringsSettings.size().max());
                 break;
             case GRAPH:
-                string = RandomStringUtils.randomGraph(strings.size().min(), strings.size().max());
+                string = RandomStringUtils.randomGraph(stringsSettings.size().min(), stringsSettings.size().max());
                 break;
             case PRINT:
-                string = RandomStringUtils.randomPrint(strings.size().min(), strings.size().max());
+                string = RandomStringUtils.randomPrint(stringsSettings.size().min(), stringsSettings.size().max());
                 break;
             case ALPHABETIC:
             default:
-                string = RandomStringUtils.randomAlphabetic(strings.size().min(), strings.size().max());
+                string = RandomStringUtils.randomAlphabetic(stringsSettings.size().min(), stringsSettings.size().max());
                 break;
         }
-        return strings.uppercase() ? string.toUpperCase() : string;
+        return stringsSettings.uppercase() ? string.toUpperCase() : string;
     }
 
 }

@@ -19,23 +19,19 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.Date;
 
-import static com.cariochi.objecto.utils.GenericTypeUtils.getRawClass;
 import static java.time.ZoneOffset.UTC;
 
-class TemporalGenerator extends Generator {
+class TemporalGenerator implements Generator {
 
-    public TemporalGenerator(ObjectoGenerator objectoGenerator) {
-        super(objectoGenerator);
+    @Override
+    public boolean isSupported(Context context) {
+        final Class<?> rawClass = context.getRawClass();
+        return Temporal.class.isAssignableFrom(rawClass) || Date.class.isAssignableFrom(rawClass);
     }
 
     @Override
-    public boolean isSupported(Type type, GenerationContext context) {
-        final Class<?> rawType = getRawClass(type, context.ownerType());
-        return rawType != null && (Temporal.class.isAssignableFrom(rawType) || Date.class.isAssignableFrom(rawType));
-    }
-
-    @Override
-    public Object generate(Type type, GenerationContext context) {
+    public Object generate(Context context) {
+        final Type type = context.getType();
         final Instant instant = generateInstant(context);
         final ZonedDateTime zonedDateTime = instant.atZone(UTC);
         if (type.equals(Date.class)) {
@@ -71,9 +67,9 @@ class TemporalGenerator extends Generator {
         }
     }
 
-    private Instant generateInstant(GenerationContext context) {
+    private Instant generateInstant(Context context) {
         long yearInSeconds = Duration.ofDays(365).getSeconds();
-        long randomSeconds = (long) (Random.nextDouble(context.settings().years()) * yearInSeconds);
+        long randomSeconds = (long) (Random.nextDouble(context.getSettings().years()) * yearInSeconds);
         return Instant.now().plusSeconds(randomSeconds);
     }
 
