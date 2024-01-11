@@ -25,7 +25,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class TemporalGeneratorTest {
 
-    private final ObjectoGenerator objectoGenerator = new ObjectoGenerator();
+    private final ObjectoGenerator generator = new ObjectoGenerator();
 
     private static Stream<Arguments> types() {
         return Stream.of(
@@ -49,7 +49,7 @@ class TemporalGeneratorTest {
     @ParameterizedTest
     @MethodSource("types")
     void should_generate_temporal(Type type) {
-        final Object instance = objectoGenerator.generateInstance(type);
+        final Object instance = generator.generate(type);
         assertThat(instance).isNotNull();
     }
 
