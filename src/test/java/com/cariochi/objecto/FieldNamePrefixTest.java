@@ -17,8 +17,8 @@ class FieldNamePrefixTest {
         assertThat(dto.getName()).startsWith("name");
         assertThat(dto.getValue()).startsWith("value");
         assertThat(dto)
-                .extracting(Dto::getA, Dto::getB)
-                .containsExactly(1, 2);
+                .extracting(Dto::getMonth, Dto::getYear)
+                .containsExactly(1, 2024);
     }
 
     @WithSettings(strings = @Strings(fieldNamePrefix = true))
@@ -26,10 +26,10 @@ class FieldNamePrefixTest {
 
     }
 
-    interface DtoFactory extends SuperFactory {
+    interface DtoFactory extends SuperFactory{
 
-        @WithSettings(path = "a", integers = @IntRange(min = 1, max = 2))
-        @WithSettings(path = "b", integers = @IntRange(min = 2, max = 3))
+        @WithSettings(path = "month", integers = @IntRange(min = 1, max = 2))
+        @WithSettings(path = "year", integers = @IntRange(min = 2024, max = 2025))
         Dto createDto();
 
     }
@@ -39,8 +39,8 @@ class FieldNamePrefixTest {
 
         private String name;
         private String value;
-        private Integer a;
-        private Integer b;
+        private Integer month;
+        private Integer year;
 
     }
 
