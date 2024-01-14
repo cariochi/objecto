@@ -37,11 +37,22 @@ public class Settings {
 
         public enum Type {
 
+            // Characters will be chosen from the set of Latin alphabetic characters (a-z, A-Z).
             ALPHABETIC,
+
+            // Characters will be chosen from the set of Latin alphabetic characters (a-z, A-Z) and the digits 0-9.
             ALPHANUMERIC,
+
+            // Characters will be chosen from the set of characters whose ASCII value is between 32 and 126 (inclusive).
             ASCII,
+
+            // Characters will be chosen from the set of \p{Digit} characters.
             NUMERIC,
+
+            // Characters will be chosen from the set of \p{Graph} characters.
             GRAPH,
+
+            // Characters will be chosen from the set of \p{Print} characters.
             PRINT;
 
         }
