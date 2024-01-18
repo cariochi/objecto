@@ -3,6 +3,7 @@ package com.cariochi.issuestest.model;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,7 +36,7 @@ public class Issue {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private List<Issue> subtasks;
+    private Set<Issue> subtasks;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

@@ -20,6 +20,7 @@ import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.cariochi.issuestest.model.Issue.Status.CLOSED;
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -94,7 +95,7 @@ class IssueFactoryTest {
     void should_generate_issue_with_modifiers() {
         final String key = "MY-KEY";
         final Type type = Type.BUG;
-        final Status status = Status.CLOSED;
+        final Status status = CLOSED;
         final User assignee = userFactory.createUser();
 
         final BaseIssueFactory modifiedFactory = issueFactory
@@ -210,10 +211,19 @@ class IssueFactoryTest {
                 .extracting(Issue::getParent)
                 .containsOnly(issue);
 
-        assertThat(issue.getParent().getSubtasks().get(0))
-                .isEqualTo(issue);
-        assertThat(issue.getParent().getSubtasks().get(1))
-                .isNotEqualTo(issue);
+        assertThat(issue.getParent().getSubtasks())
+                .hasSizeGreaterThan(1)
+                .containsOnlyOnce(issue);
+
+    }
+
+    @Test
+    void should_set_subtask_statuses() {
+        final Issue issue = issueFactory.withStatuses(CLOSED).createIssue();
+
+        assertThat(issue.getSubtasks())
+                .extracting(Issue::getStatus)
+                .containsOnly(CLOSED);
     }
 
 }

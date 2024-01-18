@@ -7,7 +7,7 @@
 
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <name>Objecto</name>
     <description>A testing library for streamlined object creation and modification in test scenarios.</description>
     <url>https://cariochi.com/objecto</url>
@@ -39,7 +39,7 @@
         <java.version>11</java.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <reflecto.version>1.1.7</reflecto.version>
+        <reflecto.version>1.1.8</reflecto.version>
         <lombok.version>1.18.30</lombok.version>
         <instancio.version>3.7.1</instancio.version>
         <junit.version>5.10.1</junit.version>
