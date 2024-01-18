@@ -67,7 +67,9 @@ public class ProxyHandler<T> implements MethodHandler {
     private Map<String, Object[]> getParametersFromMethodAnnotation(Modifier methodModifier, Parameter[] parameters, Object[] args) {
         final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
         if (methodModifier != null) {
-            methodParameters.put(methodModifier.value(), args);
+            for (String value : methodModifier.value()) {
+                methodParameters.put(value, args);
+            }
         } else {
             final Parameter param = parameters[0];
             if (param.isNamePresent()) {
@@ -91,7 +93,9 @@ public class ProxyHandler<T> implements MethodHandler {
                     throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
                 }
             } else {
-                methodParameters.put(modifierParameter.value(), Stream.of(args[i]).toArray());
+                for (String value : modifierParameter.value()) {
+                    methodParameters.put(value, Stream.of(args[i]).toArray());
+                }
             }
         }
         return methodParameters;

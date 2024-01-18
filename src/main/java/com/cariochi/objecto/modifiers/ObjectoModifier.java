@@ -1,19 +1,14 @@
 package com.cariochi.objecto.modifiers;
 
 import com.cariochi.reflecto.Reflection;
-import java.lang.reflect.Array;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
-import static java.util.Collections.emptyMap;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.substringAfter;
-import static org.apache.commons.lang3.StringUtils.substringBefore;
+import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @UtilityClass
@@ -25,76 +20,23 @@ public class ObjectoModifier {
         }
         final Reflection reflection = reflect(object);
 
-        final Map<String, Object[]> values;
-        if (isCollection(object) || isArray(object)) {
-            values = new HashMap<>();
-            fieldValues.forEach((key, value) -> values.put("[*]." + key, value));
-        } else {
-            values = fieldValues;
-        }
+        final Map<String, Object[]> values = isCollection(object) || isArray(object)
+                ? fieldValues.entrySet().stream().collect(toMap(e -> "[*]." + e.getKey(), Entry::getValue))
+                : fieldValues;
 
-        values.entrySet().stream()
-                .map(e -> splitName(e.getKey(), e.getValue(), reflection))
-                .flatMap(map -> map.entrySet().stream())
-                .forEach(e -> {
-                    final String path = e.getKey();
-                    try {
-                        final String reflectoPath = path.endsWith(")") || path.endsWith("?") ? path : path + "=?";
-                        reflection.invoke(reflectoPath, (Object[]) e.getValue());
-                    } catch (NullPointerException ex) {
-                    } catch (Exception ex) {
-                        log.info(
-                                "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
-                                path, object.getClass().getName()
-                        );
-                    }
-                });
+        values.forEach((expression, value) -> {
+            try {
+                final String reflectoPath = expression.endsWith(")") || expression.endsWith("?") ? expression : expression + "=?";
+                reflection.invoke(reflectoPath, value);
+            } catch (Exception ex) {
+                log.warn(
+                        "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
+                        expression, object.getClass().getName()
+                );
+            }
+        });
 
         return object;
-    }
-
-    private static Map<String, Object> splitName(String name, Object value, Reflection reflection) {
-        if (name.contains("[*]")) {
-
-            final String prefix = substringBefore(name, "[*]");
-            final String suffix = substringAfter(name, "[*]");
-
-            final Reflection javaField = isEmpty(prefix) ? reflection : reflection.get(prefix);
-
-            try {
-
-                final Object fieldValue = javaField.getValue();
-                int size = getSize(fieldValue);
-                final Map<String, Object> resultMap = new LinkedHashMap<>();
-                for (int i = 0; i < size; i++) {
-                    final String key = prefix + "[" + i + "]" + suffix;
-                    final Map<String, Object> split = splitName(key, value, reflection);
-                    resultMap.putAll(split);
-                }
-                return resultMap;
-
-            } catch (Exception e) {
-                log.info(
-                        "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
-                        name, reflection.getValue().getClass().getName()
-                );
-                return emptyMap();
-            }
-        } else {
-            Map<String, Object> map = new HashMap<>();
-            map.put(name, value);
-            return map;
-        }
-    }
-
-    private static int getSize(Object o) {
-        if (isArray(o)) {
-            return Array.getLength(o);
-        } else if (isCollection(o)) {
-            return ((Collection<?>) o).size();
-        } else {
-            return -1;
-        }
     }
 
     private static boolean isArray(Object o) {

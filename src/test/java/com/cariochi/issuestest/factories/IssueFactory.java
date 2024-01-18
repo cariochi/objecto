@@ -36,4 +36,7 @@ public interface IssueFactory extends BaseIssueFactory {
     @Modifier("comments[100].commenter=?")
     IssueFactory withWrongCommenter(User commenter);
 
+    @Modifier("subtasks[*].status")
+    IssueFactory withStatuses(Status status);
+
 }
