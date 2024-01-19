@@ -125,7 +125,7 @@ public class ObjectoGenerator {
             return backReferenceObject;
         }
 
-        if (fieldContext.getTypeDepth(rawType) >= fieldContext.getSettings().maxRecursionDepth()) {
+        if (fieldContext.getRecursionDepth(rawType) >= fieldContext.getSettings().maxRecursionDepth()) {
             log.debug("Maximum recursion depth ({}) reached. Path: {}. Type: {}", fieldContext.getSettings().maxRecursionDepth(), contextPath, fieldContext.getType().getTypeName());
             return null;
         }

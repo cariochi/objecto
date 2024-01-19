@@ -5,7 +5,7 @@ import com.cariochi.objecto.utils.GenericTypeUtils;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
@@ -78,8 +78,8 @@ public class Context {
         }
     }
 
-    public int getTypeDepth(Type type) {
-        final HashSet<Object> instances = new HashSet<>();
+    public int getRecursionDepth(Type type) {
+        final Set<Object> instances = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
         collectInstances(type, instances);
         return instances.size();
     }
