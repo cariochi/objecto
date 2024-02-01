@@ -25,6 +25,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static com.cariochi.objecto.Objecto.defaultSettings;
+import static com.cariochi.objecto.utils.Random.randomSeed;
 import static com.cariochi.reflecto.types.Types.type;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -59,7 +60,7 @@ class InstantiatorsTest {
     @ParameterizedTest
     @MethodSource("types")
     void should_create_instance(Type type) {
-        final Context context = generator.newContext(type, defaultSettings());
+        final Context context = new Context(type, defaultSettings(), generator, randomSeed());
         final Object instance = generator.newInstance(context);
         assertThat(instance).isNotNull();
     }

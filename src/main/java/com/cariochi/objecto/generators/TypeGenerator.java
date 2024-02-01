@@ -14,7 +14,7 @@ class TypeGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
-        return fieldType.equals(context.getType());
+        return fieldType.equals(context.getType().actualType());
     }
 
     @Override

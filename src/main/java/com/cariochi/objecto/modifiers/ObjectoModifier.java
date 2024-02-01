@@ -1,6 +1,6 @@
 package com.cariochi.objecto.modifiers;
 
-import com.cariochi.reflecto.Reflection;
+import com.cariochi.reflecto.objects.Reflection;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;

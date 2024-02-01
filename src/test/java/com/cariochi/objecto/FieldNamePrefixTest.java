@@ -26,7 +26,7 @@ class FieldNamePrefixTest {
 
     }
 
-    interface DtoFactory extends SuperFactory{
+    interface DtoFactory extends SuperFactory {
 
         @WithSettings(path = "month", integers = @IntRange(min = 1, max = 2))
         @WithSettings(path = "year", integers = @IntRange(min = 2024, max = 2025))

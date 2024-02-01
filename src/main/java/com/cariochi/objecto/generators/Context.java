@@ -1,20 +1,18 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.settings.Settings;
-import com.cariochi.objecto.utils.GenericTypeUtils;
+import com.cariochi.objecto.utils.Random;
+import com.cariochi.reflecto.types.TypeReflection;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.With;
 
-import static com.cariochi.objecto.utils.GenericTypeUtils.getRawType;
+import static com.cariochi.reflecto.Reflecto.reflectType;
 import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.replace;
@@ -22,50 +20,47 @@ import static org.apache.commons.lang3.StringUtils.split;
 
 @Getter
 @With(PRIVATE)
-@AllArgsConstructor(access = PRIVATE)
 public class Context {
 
+    private final Random random;
+    private final String fieldName;
+    private final TypeReflection type;
     private final ObjectoGenerator generator;
     private final Settings settings;
-    private final String fieldName;
-    private final Type type;
-    private final Type ownerType;
     private final Context previous;
     private Object instance;
 
-    Context(Type type, Settings settings, ObjectoGenerator generator) {
+    public Context(Type type, Settings settings, ObjectoGenerator generator, long seed) {
+        this.random = new Random(seed);
         this.fieldName = "";
-        this.type = type;
-        this.ownerType = null;
+        this.type = reflectType(type);
         this.previous = null;
         this.settings = settings;
         this.generator = generator;
     }
 
-    public Context nextContext(String fieldName, Type fieldType, Type ownerType) {
-        return nextContext(fieldName, fieldType, ownerType, null);
+    private Context(Random random, String fieldName, TypeReflection type, ObjectoGenerator generator, Settings settings, Context previous, Object instance) {
+        this.random = random;
+        this.fieldName = fieldName;
+        this.generator = generator;
+        this.settings = settings;
+        this.previous = previous;
+        this.instance = instance;
+
+        this.type = type.isTypeVariable() && instance != null
+                ? new TypeReflection(instance.getClass(), type.getParentType())
+                : type;
     }
 
-    public Context nextContext(String fieldName, Type fieldType, Type ownerType, Object instance) {
+    public Context nextContext(String fieldName, TypeReflection type, Object instance) {
         return withPrevious(this)
                 .withFieldName(fieldName)
-                .withType(fieldType)
-                .withOwnerType(ownerType)
+                .withType(type)
                 .withInstance(instance);
     }
 
     public Context withFieldSettings(Settings settings) {
         return withSettings(settings);
-    }
-
-    public Type getType() {
-        return Optional.ofNullable(getRawType(type, ownerType))
-                .or(() -> Optional.ofNullable(instance).map(Object::getClass))
-                .orElse(null);
-    }
-
-    public Class<?> getRawClass() {
-        return GenericTypeUtils.getRawClass(getType(), ownerType);
     }
 
     public int getDepth() {
@@ -85,7 +80,7 @@ public class Context {
     }
 
     private void collectInstances(Type type, Set<Object> instances) {
-        if (getType().equals(type) && instance != null) {
+        if (getType().actualType().equals(type) && instance != null) {
             instances.add(instance);
         }
         if (previous != null) {
@@ -100,14 +95,6 @@ public class Context {
     public Object newInstance() {
         instance = generator.newInstance(this);
         return instance;
-    }
-
-    public boolean isCollection() {
-        return Collection.class.isAssignableFrom(getRawClass());
-    }
-
-    public boolean isMap() {
-        return Map.class.isAssignableFrom(getRawClass());
     }
 
     public String getPath() {
@@ -137,6 +124,10 @@ public class Context {
         } else {
             return previous.findPreviousContext(fields);
         }
+    }
+
+    public Random getRandom() {
+        return random;
     }
 
 }

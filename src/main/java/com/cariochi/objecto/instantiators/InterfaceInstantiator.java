@@ -1,6 +1,7 @@
 package com.cariochi.objecto.instantiators;
 
 import com.cariochi.objecto.generators.Context;
+import com.cariochi.reflecto.types.TypeReflection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,17 +16,17 @@ public class InterfaceInstantiator implements Function<Context, Object> {
 
     @Override
     public Object apply(Context context) {
-        final Class<?> rawClass = context.getRawClass();
-        if (!rawClass.isInterface()) {
+        final TypeReflection type = context.getType();
+        if (!type.isInterface()) {
             return null;
         }
-        if (Set.class.isAssignableFrom(rawClass)) {
+        if (type.is(Set.class)) {
             return new HashSet<>();
-        } else if (Queue.class.isAssignableFrom(rawClass)) {
+        } else if (type.is(Queue.class)) {
             return new LinkedList<>();
-        } else if (Collection.class.isAssignableFrom(rawClass)) {
+        } else if (type.is(Collection.class)) {
             return new ArrayList<>();
-        } else if (Map.class.isAssignableFrom(rawClass)) {
+        } else if (type.is(Map.class)) {
             return new HashMap<>();
         }
         return null;

@@ -4,6 +4,7 @@ import com.cariochi.objecto.instantiators.ConstructorInstantiator;
 import com.cariochi.objecto.instantiators.InterfaceInstantiator;
 import com.cariochi.objecto.instantiators.StaticMethodInstantiator;
 import com.cariochi.objecto.settings.Settings;
+import com.cariochi.reflecto.types.TypeReflection;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,9 +17,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.objecto.Objecto.defaultSettings;
+import static com.cariochi.objecto.utils.Random.randomSeed;
 
 
 @Slf4j
@@ -42,7 +45,7 @@ public class ObjectoGenerator {
             new MapGenerator(),
             new ArrayGenerator(),
             new TemporalGenerator(),
-            new PrimitiveGenerator(),
+            new CharacterGenerator(),
             new EnumGenerator(),
             new CustomObjectGenerator()
     );
@@ -51,8 +54,10 @@ public class ObjectoGenerator {
 
     private final Map<Type, List<Consumer<Object>>> postProcessors = new HashMap<>();
 
-    public void addCustomConstructor(Type type, Supplier<Object> constructor) {
-        objectConstructors.add(0, context -> type.equals(context.getType()) ? constructor.get() : null);
+    @Getter private Long seed = null;
+
+    public void addCustomConstructor(Type type, Supplier<Object> instantiator) {
+        objectConstructors.add(0, context -> type.equals(context.getType().actualType()) ? instantiator.get() : null);
     }
 
     public void addReferenceGenerators(Type type, String[] paths) {
@@ -79,7 +84,7 @@ public class ObjectoGenerator {
     }
 
     public Object newInstance(Context context) {
-        log.trace("Creating instance of `{}` with type `{}`", context.getPath(), context.getType().getTypeName());
+        log.trace("Creating instance of `{}` with type `{}`", context.getPath(), context.getType().getName());
         return objectConstructors.stream()
                 .map(creator -> creator.apply(context))
                 .filter(Objects::nonNull)
@@ -88,30 +93,27 @@ public class ObjectoGenerator {
     }
 
     public Object generate(Type type) {
-        return generate(newContext(type, defaultSettings()));
+        return generate(type, defaultSettings(), randomSeed());
+    }
+
+    public Object generate(Type type, Settings settings, long seed) {
+        return generate(new Context(type, settings, this, seed));
     }
 
     public Object generate(Context context) {
-        final Type rawType = context.getType();
+        final Type type = context.getType().actualType();
         final String contextPath = context.getPath();
-        if (rawType == null) {
-            log.info("Cannot recognize a raw type `{}` of field `{}`. Please create an @Instantiator method to specify how to instantiate this class.", context.getType().getTypeName(), contextPath);
-            return null;
-        }
+        final Context fieldContext = Optional.of(context.getType())
+                .map(TypeReflection::getParentType)
+                .map(TypeReflection::actualType)
+                .map(fieldSettings::get)
+                .flatMap(typeSettings -> typeSettings.stream()
+                        .filter(s -> s.getPath().isEmpty() || context.findPreviousContext(s.getPath()).isPresent()).findFirst()
+                        .map(FieldSettings::getSettings)
+                        .map(context::withFieldSettings))
+                .orElse(context);
 
-        final Context fieldContext;
-        final List<FieldSettings> typeSettings = fieldSettings.get(context.getOwnerType());
-        if (typeSettings != null) {
-            fieldContext = typeSettings.stream()
-                    .filter(s -> s.getPath().isEmpty() || context.findPreviousContext(s.getPath()).isPresent()).findFirst()
-                    .map(FieldSettings::getSettings)
-                    .map(context::withFieldSettings)
-                    .orElse(context);
-        } else {
-            fieldContext = context;
-        }
-
-        log.trace("Generating `{}` with type `{}`", contextPath, rawType.getTypeName());
+        log.trace("Generating `{}` with type `{}`", contextPath, type.getTypeName());
         if (fieldContext.getDepth() > fieldContext.getSettings().maxDepth() + 1) {
             log.debug("Maximum depth ({}) reached. Path: {}", fieldContext.getSettings().maxDepth(), contextPath);
             return null;
@@ -125,8 +127,13 @@ public class ObjectoGenerator {
             return backReferenceObject;
         }
 
-        if (fieldContext.getRecursionDepth(rawType) >= fieldContext.getSettings().maxRecursionDepth()) {
-            log.debug("Maximum recursion depth ({}) reached. Path: {}. Type: {}", fieldContext.getSettings().maxRecursionDepth(), contextPath, fieldContext.getType().getTypeName());
+        if (fieldContext.getRecursionDepth(type) >= fieldContext.getSettings().maxRecursionDepth()) {
+            log.debug(
+                    "Maximum recursion depth ({}) reached. Path: {}. Type: {}",
+                    fieldContext.getSettings().maxRecursionDepth(),
+                    contextPath,
+                    fieldContext.getType().actualType().getTypeName()
+            );
             return null;
         }
 
@@ -137,12 +144,8 @@ public class ObjectoGenerator {
                     applyComplexGenerators(fieldContext);
                     return instance;
                 })
-                .map(instance -> postProcess(rawType, instance))
+                .map(instance -> postProcess(type, instance))
                 .orElse(null);
-    }
-
-    public Context newContext(Type type, Settings settings) {
-        return new Context(type, settings, this);
     }
 
     private void applyComplexGenerators(Context context) {
@@ -159,6 +162,10 @@ public class ObjectoGenerator {
                 .flatMap(Collection::stream)
                 .forEach(postProcessor -> postProcessor.accept(instance));
         return instance;
+    }
+
+    public void setSeed(Long seed) {
+        this.seed = seed;
     }
 
 }

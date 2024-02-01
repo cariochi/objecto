@@ -16,7 +16,7 @@ class ComplexGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
-        return ownerType.equals(context.getRawClass());
+        return ownerType.equals(context.getType().asClass());
     }
 
     @Override

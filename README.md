@@ -1,6 +1,6 @@
 # Cariochi Objecto
 
-Objecto is a lightweight Java library designed to simplify and enhance the process of object creation and testing in unit tests. 
+Objecto is a lightweight Java library designed to simplify and enhance the process of object creation and testing in unit tests.
 It provides a convenient way to generate complex objects with various configurations, making it easier for developers to focus on testing their logic rather than creating elaborate object setups.
 
 # Documentation
@@ -8,7 +8,9 @@ It provides a convenient way to generate complex objects with various configurat
 Please, see the recently published documentation [here](https://www.cariochi.com/objecto).
 
 # Installation
+
 To use **Objecto** in your project, add the following dependency to your build configuration:
+
 ```xml
 <dependency>
     <groupId>com.cariochi.objecto</groupId>
@@ -67,6 +69,7 @@ public interface IssueFactory {
 
 }
 ```
+
 ## Usage
 
 ```java

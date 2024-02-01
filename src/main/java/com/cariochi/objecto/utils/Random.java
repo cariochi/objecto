@@ -2,57 +2,67 @@ package com.cariochi.objecto.utils;
 
 import com.cariochi.objecto.settings.Range;
 import com.cariochi.objecto.settings.Settings.Strings;
-import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.rng.UniformRandomProvider;
+import org.apache.commons.rng.simple.JDKRandomWrapper;
 import org.apache.commons.rng.simple.RandomSource;
 
-@UtilityClass
 public class Random {
 
-    private static final UniformRandomProvider RANDOM_PROVIDER = RandomSource.XO_RO_SHI_RO_128_PP.create();
+    private final java.util.Random random;
+    private final UniformRandomProvider randomProvider;
 
-    public static int nextInt(Range<Integer> range) {
-        return RANDOM_PROVIDER.nextInt(range.min(), range.max());
+    public Random(long seed) {
+        random = new java.util.Random(seed);
+        randomProvider = new JDKRandomWrapper(random);
     }
 
-    public static long nextLong(Range<Long> range) {
-        return RANDOM_PROVIDER.nextLong(range.min(), range.max());
+    public static long randomSeed() {
+        return RandomSource.JDK.create().nextLong();
     }
 
-    public static boolean nextBoolean() {
-        return RANDOM_PROVIDER.nextBoolean();
+    public int nextInt(Range<Integer> range) {
+        return randomProvider.nextInt(range.min(), range.max());
     }
 
-    public static float nextFloat(Range<Float> range) {
-        return RANDOM_PROVIDER.nextFloat(range.min(), range.max());
+    public long nextLong(Range<Long> range) {
+        return randomProvider.nextLong(range.min(), range.max());
     }
 
-    public static double nextDouble(Range<Double> range) {
-        return RANDOM_PROVIDER.nextDouble(range.min(), range.max());
+    public boolean nextBoolean() {
+        return randomProvider.nextBoolean();
     }
 
-    public static String nextString(Strings stringsSettings) {
+    public float nextFloat(Range<Float> range) {
+        return randomProvider.nextFloat(range.min(), range.max());
+    }
+
+    public double nextDouble(Range<Double> range) {
+        return randomProvider.nextDouble(range.min(), range.max());
+    }
+
+    public String nextString(Strings stringsSettings) {
         String string;
+        final int count = nextInt(stringsSettings.size());
         switch (stringsSettings.type()) {
             case ALPHANUMERIC:
-                string = RandomStringUtils.randomAlphanumeric(stringsSettings.size().min(), stringsSettings.size().max());
+                string = RandomStringUtils.random(count, 0, 0, true, true, null, random);
                 break;
             case NUMERIC:
-                string = RandomStringUtils.randomNumeric(stringsSettings.size().min(), stringsSettings.size().max());
+                string = RandomStringUtils.random(count, 0, 0, false, true, null, random);
                 break;
             case ASCII:
-                string = RandomStringUtils.randomAscii(stringsSettings.size().min(), stringsSettings.size().max());
+                string = RandomStringUtils.random(count, 32, 127, false, false, null, random);
                 break;
             case GRAPH:
-                string = RandomStringUtils.randomGraph(stringsSettings.size().min(), stringsSettings.size().max());
+                string = RandomStringUtils.random(count, 33, 126, false, false, null, random);
                 break;
             case PRINT:
-                string = RandomStringUtils.randomPrint(stringsSettings.size().min(), stringsSettings.size().max());
+                string = RandomStringUtils.random(count, 32, 126, false, false, null, random);
                 break;
             case ALPHABETIC:
             default:
-                string = RandomStringUtils.randomAlphabetic(stringsSettings.size().min(), stringsSettings.size().max());
+                string = RandomStringUtils.random(count, 0, 0, true, false, null, random);
                 break;
         }
         return stringsSettings.uppercase() ? string.toUpperCase() : string;

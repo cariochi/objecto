@@ -1,11 +1,11 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.reflecto.fields.JavaField;
-import java.lang.reflect.Type;
+import com.cariochi.reflecto.objects.fields.ObjectField;
+import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.types.fields.TypeField;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -27,17 +27,18 @@ class CustomObjectGenerator implements Generator {
 
         if (instance != null) {
 
-            final List<JavaField> fields = reflect(instance).fields().asList().stream()
+            final List<TypeField> typeFields = context.getType().fields().all().stream()
                     .filter(field -> !field.isStatic())
                     .collect(toList());
 
-            for (JavaField field : fields) {
-                final Type fieldType = field.getGenericType();
+            for (TypeField typeField : typeFields) {
+                final TypeReflection fieldType = typeField.getType();
                 if (fieldType != null) {
-                    final Context fieldContext = context.nextContext(field.getName(), fieldType, context.getType(), field.getValue());
+                    final ObjectField javaField = typeField.toObjectField(instance);
+                    final Context fieldContext = context.nextContext(typeField.getName(), fieldType, javaField.getValue());
                     final Object fieldValue = fieldContext.generate();
                     try {
-                        field.setValue(fieldValue);
+                        javaField.setValue(fieldValue);
                     } catch (Exception e) {
                         log.error("Cannot set field value: {}", fieldContext.getPath());
                     }

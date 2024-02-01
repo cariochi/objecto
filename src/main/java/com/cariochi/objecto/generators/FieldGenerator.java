@@ -1,6 +1,8 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.reflecto.types.TypeReflection;
 import java.lang.reflect.Type;
+import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +20,15 @@ class FieldGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
-        return fieldType.equals(context.getType())
+        return fieldType.equals(context.getType().actualType())
                 && context.findPreviousContext(substringBefore(expression, "=?"))
-                .filter(cnxt -> ownerType.equals(cnxt.getOwnerType()))
+                .filter(cnxt -> {
+                    final Type type = Optional.of(cnxt.getType())
+                            .map(TypeReflection::getParentType)
+                            .map(TypeReflection::actualType)
+                            .orElse(null);
+                    return ownerType.equals(type);
+                })
                 .isPresent();
     }
 

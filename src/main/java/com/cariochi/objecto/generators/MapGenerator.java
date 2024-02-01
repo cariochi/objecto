@@ -1,32 +1,29 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.utils.Random;
-import java.lang.reflect.Type;
-import java.util.Iterator;
+import com.cariochi.reflecto.types.TypeReflection;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-
-import static org.apache.commons.lang3.reflect.TypeUtils.getTypeArguments;
 
 @Slf4j
 class MapGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
-        return context.isMap();
+        return context.getType().is(Map.class);
     }
 
     @Override
     public Object generate(Context context) {
-        final Iterator<Type> iterator = getTypeArguments(context.getType(), Map.class).values().iterator();
-        final Type keyType = iterator.next();
-        final Type valueType = iterator.next();
+        final TypeReflection mapType = context.getType().as(Map.class);
+        final TypeReflection keyType = mapType.typeParameter(0);
+        final TypeReflection valueType = mapType.typeParameter(1);
+
         final Map<Object, Object> map = (Map<Object, Object>) context.newInstance();
         if (map != null) {
             map.clear();
-            for (int i = 0; i < Random.nextInt(context.getSettings().maps().size()); i++) {
-                final Object key = context.nextContext("[key]", keyType, context.getOwnerType()).generate();
-                final Object value = context.nextContext("[value]", valueType, context.getOwnerType()).generate();
+            for (int i = 0; i < context.getRandom().nextInt(context.getSettings().maps().size()); i++) {
+                final Object key = context.nextContext("[key]", keyType, null).generate();
+                final Object value = context.nextContext("[value]", valueType, null).generate();
                 if (key == null || value == null) {
                     return map;
                 }

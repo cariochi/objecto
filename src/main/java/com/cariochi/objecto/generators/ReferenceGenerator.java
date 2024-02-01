@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.reflecto.types.TypeReflection;
 import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ReferenceGenerator implements Generator {
         for (int i = 0; i < items.size(); i++) {
 
             final Optional<Context> possibleContext = findContext(items, context)
-                    .filter(referenceContext -> referenceContext.getType().equals(context.getType()));
+                    .filter(referenceContext -> referenceContext.getType().actualType().equals(context.getType().actualType()));
 
             if (possibleContext.isPresent()) {
                 return possibleContext;
@@ -45,7 +46,7 @@ public class ReferenceGenerator implements Generator {
     }
 
     private Optional<Context> findContext(List<String> items, Context context) {
-        boolean hasType = type.equals(context.getType());
+        boolean hasType = type.equals(context.getType().actualType());
         Optional<Context> possibleContext = Optional.of(context);
         for (int i = 0; i < items.size(); i++) {
             final String item = items.get(items.size() - 1 - i);
@@ -53,7 +54,7 @@ public class ReferenceGenerator implements Generator {
             if (possibleContext.isEmpty()) {
                 return Optional.empty();
             }
-            hasType |= type.equals(possibleContext.map(Context::getType).orElse(null));
+            hasType |= type.equals(possibleContext.map(Context::getType).map(TypeReflection::actualType).orElse(null));
         }
         return hasType ? possibleContext : Optional.empty();
     }

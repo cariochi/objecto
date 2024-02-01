@@ -1,10 +1,10 @@
 package com.cariochi.objecto.proxy;
 
 import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.objecto.modifiers.ObjectoModifier;
 import com.cariochi.objecto.settings.Settings;
+import com.cariochi.objecto.utils.Random;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodProceed;
@@ -12,9 +12,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ProxyHandler<T> implements MethodHandler {
 
@@ -43,8 +46,9 @@ public class ProxyHandler<T> implements MethodHandler {
                 childMethodHandler.parameters.putAll(methodParameter);
                 return ProxyFactory.createInstance(childMethodHandler, targetClass, com.cariochi.objecto.proxy.ObjectModifier.class);
             } else {
-                final Context context = generator.newContext(method.getGenericReturnType(), settings);
-                final Object instance = generator.generate(context);
+                final Long seed = Optional.ofNullable(generator.getSeed()).orElseGet(Random::randomSeed);
+                log.info("Method: {}, Seed: {}", method.toGenericString(), seed);
+                final Object instance = generator.generate(method.getGenericReturnType(), settings, seed);
                 final Map<String, Object[]> tmpMap = new LinkedHashMap<>();
                 tmpMap.putAll(parameters);
                 tmpMap.putAll(methodParameter);
