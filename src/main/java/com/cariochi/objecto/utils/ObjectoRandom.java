@@ -2,21 +2,22 @@ package com.cariochi.objecto.utils;
 
 import com.cariochi.objecto.settings.Range;
 import com.cariochi.objecto.settings.Settings.Strings;
+import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.simple.JDKRandomWrapper;
 import org.apache.commons.rng.simple.RandomSource;
 
-public class Random {
+public class ObjectoRandom {
 
-    private final java.util.Random random;
+    @Getter private final java.util.Random random;
     private final UniformRandomProvider randomProvider;
 
-    public Random() {
+    public ObjectoRandom() {
         this(randomSeed());
     }
 
-    public Random(long seed) {
+    public ObjectoRandom(long seed) {
         random = new java.util.Random(seed);
         randomProvider = new JDKRandomWrapper(random);
     }

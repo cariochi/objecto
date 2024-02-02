@@ -1,5 +1,7 @@
 package com.cariochi.objecto;
 
+import com.cariochi.objecto.settings.Range;
+import com.cariochi.objecto.utils.ObjectoRandom;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,13 +23,13 @@ class SeedTest {
         assertThat(dto)
                 .isEqualTo(Dto.builder()
                         .string("ZTNUVNEANPAWQ")
-                        .integer(60228)
+                        .integer(72)
                         .longs(new long[]{78260, 82620, 44139, 46767})
                         .children(List.of(
-                                Dto.builder().string("JOXEROBNPFO").integer(47688).longs(new long[]{8202, 53912}).children(emptyList()).build(),
-                                Dto.builder().string("AYXEZQHGPSTAIJ").integer(18540).longs(new long[]{61173, 46276, 5335, 35687}).children(emptyList()).build(),
-                                Dto.builder().string("PYZBSHETWNDXXQ").integer(21944).longs(new long[]{1509, 11878, 80116, 65433}).children(emptyList()).build(),
-                                Dto.builder().string("KEJIUYNGBI").integer(37987).longs(new long[]{65484, 84702, 10887, 26435}).children(emptyList()).build()
+                                Dto.builder().string("JOXEROBNPFO").integer(57).longs(new long[]{8202, 53912}).children(emptyList()).build(),
+                                Dto.builder().string("AYXEZQHGPSTAIJ").integer(22).longs(new long[]{61173, 46276, 5335, 35687}).children(emptyList()).build(),
+                                Dto.builder().string("PYZBSHETWNDXXQ").integer(26).longs(new long[]{1509, 11878, 80116, 65433}).children(emptyList()).build(),
+                                Dto.builder().string("KEJIUYNGBI").integer(45).longs(new long[]{65484, 84702, 10887, 26435}).children(emptyList()).build()
                         ))
                         .build());
     }
@@ -38,12 +40,12 @@ class SeedTest {
         assertThat(dto)
                 .isEqualTo(Dto.builder()
                         .string("DFLJBOYNORQHL")
-                        .integer(83516)
+                        .integer(100)
                         .longs(new long[]{23305, 90592})
                         .children(List.of(
-                                Dto.builder().string("PQPHNFHBXTRAJ").integer(16116).longs(new long[]{18975, 76565, 44361, 39654}).children(emptyList()).build(),
-                                Dto.builder().string("RRZLKIRBPRCRVIY").integer(535).longs(new long[]{74803, 76021}).children(emptyList()).build(),
-                                Dto.builder().string("LSZZVDIB").integer(49391).longs(new long[]{93173, 62280, 92135, 87597}).children(emptyList()).build()
+                                Dto.builder().string("PQPHNFHBXTRAJ").integer(19).longs(new long[]{18975, 76565, 44361, 39654}).children(emptyList()).build(),
+                                Dto.builder().string("RRZLKIRBPRCRVIY").integer(0).longs(new long[]{74803, 76021}).children(emptyList()).build(),
+                                Dto.builder().string("LSZZVDIB").integer(59).longs(new long[]{93173, 62280, 92135, 87597}).children(emptyList()).build()
                         ))
                         .build());
     }
@@ -54,11 +56,11 @@ class SeedTest {
         assertThat(dto)
                 .isEqualTo(Dto.builder()
                         .string("GKWWBRGRUTRMJ")
-                        .integer(99098)
+                        .integer(118)
                         .longs(new long[]{32613, 18505})
                         .children(List.of(
-                                Dto.builder().string("MVREZEJI").integer(88662).longs(new long[]{61685, 511, 20267}).children(emptyList()).build(),
-                                Dto.builder().string("PNVATOGJCMCGY").integer(4906).longs(new long[]{73309, 13739, 95448}).children(emptyList()).build()
+                                Dto.builder().string("MVREZEJI").integer(106).longs(new long[]{61685, 511, 20267}).children(emptyList()).build(),
+                                Dto.builder().string("PNVATOGJCMCGY").integer(5).longs(new long[]{73309, 13739, 95448}).children(emptyList()).build()
                         ))
                         .build());
     }
@@ -70,6 +72,11 @@ class SeedTest {
 
         @Seed(320)
         Dto createDtoWithCustomSeed();
+
+        @Generator(type = Dto.class, expression = "integer")
+        private Integer generateInteger(ObjectoRandom random) {
+            return random.nextInt(Range.of(0, 120));
+        }
 
     }
 

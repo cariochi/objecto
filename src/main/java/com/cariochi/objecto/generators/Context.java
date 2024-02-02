@@ -1,7 +1,7 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.settings.Settings;
-import com.cariochi.objecto.utils.Random;
+import com.cariochi.objecto.utils.ObjectoRandom;
 import com.cariochi.reflecto.types.TypeReflection;
 import java.lang.reflect.Type;
 import java.util.Deque;
@@ -23,7 +23,7 @@ import static org.apache.commons.lang3.StringUtils.split;
 @With(PRIVATE)
 public class Context {
 
-    private final Random random;
+    private final ObjectoRandom random;
     private final String fieldName;
     private final TypeReflection type;
     private final Settings settings;
@@ -31,14 +31,14 @@ public class Context {
     @Setter private Object instance;
 
     public Context(Type type, Settings settings) {
-        this(type, settings, new Random());
+        this(type, settings, new ObjectoRandom());
     }
 
-    public Context(Type type, Settings settings, Random random) {
+    public Context(Type type, Settings settings, ObjectoRandom random) {
         this(random, "", reflectType(type), settings, null, null);
     }
 
-    private Context(Random random, String fieldName, TypeReflection type, Settings settings, Context previous, Object instance) {
+    private Context(ObjectoRandom random, String fieldName, TypeReflection type, Settings settings, Context previous, Object instance) {
         this.random = random;
         this.fieldName = fieldName;
         this.settings = settings;

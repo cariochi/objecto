@@ -3,7 +3,7 @@ package com.cariochi.objecto.generators;
 import com.cariochi.reflecto.types.TypeReflection;
 import java.lang.reflect.Array;
 
-class ArrayGenerator extends AbstractGenerator {
+class ArrayGenerator extends AbstractObjectsGenerator {
 
     public ArrayGenerator(ObjectoGenerator generator) {
         super(generator);
@@ -17,7 +17,8 @@ class ArrayGenerator extends AbstractGenerator {
     @Override
     public Object generate(Context context) {
         final TypeReflection type = context.getType().arrayComponentType();
-        final Object firstItem = generateObject(context.nextContext("[" + 0 + "]", type));
+        Context context2 = context.nextContext("[" + 0 + "]", type);
+        final Object firstItem = generator.generate(context2);
         if (firstItem == null) {
             return null;
         }
@@ -25,7 +26,8 @@ class ArrayGenerator extends AbstractGenerator {
         final Object array = Array.newInstance(type.asClass(), arrayLength);
         Array.set(array, 0, firstItem);
         for (int i = 1; i < arrayLength; i++) {
-            final Object item = generateObject(context.nextContext("[" + i + "]", type));
+            Context context1 = context.nextContext("[" + i + "]", type);
+            final Object item = generator.generate(context1);
             Array.set(array, i, item);
         }
         return array;

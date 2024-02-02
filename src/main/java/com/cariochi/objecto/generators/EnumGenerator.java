@@ -5,10 +5,6 @@ import com.cariochi.reflecto.types.TypeReflection;
 
 class EnumGenerator extends AbstractGenerator {
 
-    public EnumGenerator(ObjectoGenerator generator) {
-        super(generator);
-    }
-
     @Override
     public boolean isSupported(Context context) {
         return context.getType().isEnum();

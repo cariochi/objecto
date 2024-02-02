@@ -2,7 +2,8 @@ package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.instantiators.ObjectoInstantiator;
 import com.cariochi.objecto.settings.Settings;
-import com.cariochi.objecto.utils.Random;
+import com.cariochi.objecto.utils.ObjectoRandom;
+import com.cariochi.reflecto.objects.methods.ObjectMethod;
 import com.cariochi.reflecto.types.TypeReflection;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.objecto.Objecto.defaultSettings;
-import static com.cariochi.objecto.utils.Random.randomSeed;
+import static com.cariochi.objecto.utils.ObjectoRandom.randomSeed;
 
 
 @Slf4j
@@ -29,29 +30,29 @@ public class ObjectoGenerator {
     private final List<TypeGenerator> typeGenerators = new ArrayList<>();
     private final List<ComplexGenerator> complexGenerators = new ArrayList<>();
     private final List<AbstractGenerator> defaultGenerators = List.of(
-            new StringGenerator(this),
-            new NumberGenerator(this),
-            new BooleanGenerator(this),
+            new StringGenerator(),
+            new NumberGenerator(),
+            new BooleanGenerator(),
             new CollectionGenerator(this),
             new MapGenerator(this),
             new ArrayGenerator(this),
-            new TemporalGenerator(this),
-            new CharacterGenerator(this),
-            new EnumGenerator(this),
+            new TemporalGenerator(),
+            new CharacterGenerator(),
+            new EnumGenerator(),
             new CustomObjectGenerator(this)
     );
 
     private final Map<Type, List<FieldSettings>> fieldSettings = new HashMap<>();
     private final Map<Type, List<Consumer<Object>>> postProcessors = new HashMap<>();
     @Getter private final ObjectoInstantiator instantiator = new ObjectoInstantiator(this);
-    private final Random random;
+    private final ObjectoRandom random;
 
     public ObjectoGenerator() {
         this(randomSeed());
     }
 
     public ObjectoGenerator(Long seed) {
-        this.random = new Random(seed);
+        this.random = new ObjectoRandom(seed);
     }
 
     public void addCustomConstructor(Type type, Supplier<Object> instantiator) {
@@ -60,20 +61,20 @@ public class ObjectoGenerator {
 
     public void addReferenceGenerators(Type type, String[] paths) {
         Stream.of(paths)
-                .forEach(path -> referenceGenerators.add(new ReferenceGenerator(this, type, path)));
+                .forEach(path -> referenceGenerators.add(new ReferenceGenerator(type, path)));
     }
 
     public void addFieldSettings(Type type, String path, Settings settings) {
         fieldSettings.computeIfAbsent(type, t -> new ArrayList<>()).add(new FieldSettings(path, settings));
     }
 
-    public void addCustomGenerator(Class<?> objectType, Type type, String expression, Supplier<Object> generator) {
+    public void addCustomGenerator(Class<?> objectType, String expression, ObjectMethod method) {
         if (objectType.equals(Object.class)) {
-            typeGenerators.add(new TypeGenerator(this, type, generator));
+            typeGenerators.add(new TypeGenerator(this, method));
         } else if (expression.contains("(")) {
-            complexGenerators.add(new ComplexGenerator(this, objectType, expression, generator));
+            complexGenerators.add(new ComplexGenerator(this, objectType, expression, method));
         } else {
-            fieldGenerators.add(new FieldGenerator(this, objectType, type, expression, generator));
+            fieldGenerators.add(new FieldGenerator(this, objectType, expression, method));
         }
     }
 
@@ -86,7 +87,7 @@ public class ObjectoGenerator {
     }
 
     public Object generate(Type type, Settings settings, Long customSeed) {
-        return generate(new Context(type, settings, Optional.ofNullable(customSeed).map(Random::new).orElse(random)));
+        return generate(new Context(type, settings, Optional.ofNullable(customSeed).map(ObjectoRandom::new).orElse(random)));
     }
 
     public Object generate(Context context) {

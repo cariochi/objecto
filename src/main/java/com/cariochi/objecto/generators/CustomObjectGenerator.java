@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-class CustomObjectGenerator extends AbstractGenerator {
+class CustomObjectGenerator extends AbstractObjectsGenerator {
 
     public CustomObjectGenerator(ObjectoGenerator generator) {
         super(generator);
@@ -27,7 +27,8 @@ class CustomObjectGenerator extends AbstractGenerator {
             return null;
         }
 
-        final Object instance = newInstance(context);
+        final Object instance = generator.getInstantiator().newInstance(context);
+        context.setInstance(instance);
 
         if (instance != null) {
 
@@ -41,7 +42,7 @@ class CustomObjectGenerator extends AbstractGenerator {
                     final ObjectField javaField = typeField.toObjectField(instance);
                     final Context fieldContext = context.nextContext(typeField.getName(), fieldType);
                     fieldContext.setInstance(javaField.getValue());
-                    final Object fieldValue = generateObject(fieldContext);
+                    final Object fieldValue = generator.generate(fieldContext);
                     try {
                         javaField.setValue(fieldValue);
                     } catch (Exception e) {

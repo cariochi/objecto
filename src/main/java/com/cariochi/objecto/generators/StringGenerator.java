@@ -2,10 +2,6 @@ package com.cariochi.objecto.generators;
 
 class StringGenerator extends AbstractGenerator {
 
-    public StringGenerator(ObjectoGenerator generator) {
-        super(generator);
-    }
-
     @Override
     public boolean isSupported(Context context) {
         return context.getType().is(String.class);

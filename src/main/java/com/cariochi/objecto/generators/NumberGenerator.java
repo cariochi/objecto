@@ -9,10 +9,6 @@ import static java.math.RoundingMode.HALF_UP;
 
 class NumberGenerator extends AbstractGenerator {
 
-    public NumberGenerator(ObjectoGenerator generator) {
-        super(generator);
-    }
-
     @Override
     public boolean isSupported(Context context) {
         return context.getType().is(Number.class);

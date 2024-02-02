@@ -4,10 +4,6 @@ import com.cariochi.objecto.settings.Settings;
 
 class CharacterGenerator extends AbstractGenerator {
 
-    public CharacterGenerator(ObjectoGenerator generator) {
-        super(generator);
-    }
-
     @Override
     public boolean isSupported(Context context) {
         return context.getType().is(Character.class);

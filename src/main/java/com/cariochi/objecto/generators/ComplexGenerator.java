@@ -1,22 +1,20 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.modifiers.ObjectoModifier;
+import com.cariochi.reflecto.objects.methods.ObjectMethod;
 import java.util.Map;
-import java.util.function.Supplier;
 import lombok.Getter;
 
 @Getter
-class ComplexGenerator extends AbstractGenerator {
+class ComplexGenerator extends AbstractCustomGenerator {
 
     private final Class<?> ownerType;
     private final String expression;
-    private final Supplier<Object> generator;
 
-    public ComplexGenerator(ObjectoGenerator generator, Class<?> ownerType, String expression, Supplier<Object> generator1) {
-        super(generator);
+    public ComplexGenerator(ObjectoGenerator generator, Class<?> ownerType, String expression, ObjectMethod method) {
+        super(method);
         this.ownerType = ownerType;
         this.expression = expression;
-        this.generator = generator1;
     }
 
     @Override
@@ -26,7 +24,7 @@ class ComplexGenerator extends AbstractGenerator {
 
     @Override
     public Object generate(Context context) {
-        final Object value = generator.get();
+        final Object value = invokeGenerationMethod(context);
         final Object instance = context.getInstance();
         ObjectoModifier.modifyObject(instance, Map.of(expression, new Object[]{value}));
         return instance;
