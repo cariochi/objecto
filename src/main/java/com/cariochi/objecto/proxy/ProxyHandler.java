@@ -1,10 +1,10 @@
 package com.cariochi.objecto.proxy;
 
 import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.Seed;
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.objecto.modifiers.ObjectoModifier;
 import com.cariochi.objecto.settings.Settings;
-import com.cariochi.objecto.utils.Random;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodProceed;
@@ -46,8 +46,7 @@ public class ProxyHandler<T> implements MethodHandler {
                 childMethodHandler.parameters.putAll(methodParameter);
                 return ProxyFactory.createInstance(childMethodHandler, targetClass, com.cariochi.objecto.proxy.ObjectModifier.class);
             } else {
-                final Long seed = Optional.ofNullable(generator.getSeed()).orElseGet(Random::randomSeed);
-                log.info("Method: {}, Seed: {}", method.toGenericString(), seed);
+                final Long seed = Optional.ofNullable(method.getAnnotation(Seed.class)).map(Seed::value).orElse(null);
                 final Object instance = generator.generate(method.getGenericReturnType(), settings, seed);
                 final Map<String, Object[]> tmpMap = new LinkedHashMap<>();
                 tmpMap.putAll(parameters);

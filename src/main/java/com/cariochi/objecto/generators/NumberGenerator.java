@@ -7,7 +7,11 @@ import java.math.BigDecimal;
 
 import static java.math.RoundingMode.HALF_UP;
 
-class NumberGenerator implements Generator {
+class NumberGenerator extends AbstractGenerator {
+
+    public NumberGenerator(ObjectoGenerator generator) {
+        super(generator);
+    }
 
     @Override
     public boolean isSupported(Context context) {

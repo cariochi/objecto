@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Set;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.With;
 
 import static com.cariochi.reflecto.Reflecto.reflectType;
@@ -25,24 +26,21 @@ public class Context {
     private final Random random;
     private final String fieldName;
     private final TypeReflection type;
-    private final ObjectoGenerator generator;
     private final Settings settings;
     private final Context previous;
-    private Object instance;
+    @Setter private Object instance;
 
-    public Context(Type type, Settings settings, ObjectoGenerator generator, long seed) {
-        this.random = new Random(seed);
-        this.fieldName = "";
-        this.type = reflectType(type);
-        this.previous = null;
-        this.settings = settings;
-        this.generator = generator;
+    public Context(Type type, Settings settings) {
+        this(type, settings, new Random());
     }
 
-    private Context(Random random, String fieldName, TypeReflection type, ObjectoGenerator generator, Settings settings, Context previous, Object instance) {
+    public Context(Type type, Settings settings, Random random) {
+        this(random, "", reflectType(type), settings, null, null);
+    }
+
+    private Context(Random random, String fieldName, TypeReflection type, Settings settings, Context previous, Object instance) {
         this.random = random;
         this.fieldName = fieldName;
-        this.generator = generator;
         this.settings = settings;
         this.previous = previous;
         this.instance = instance;
@@ -52,11 +50,11 @@ public class Context {
                 : type;
     }
 
-    public Context nextContext(String fieldName, TypeReflection type, Object instance) {
+    public Context nextContext(String fieldName, TypeReflection type) {
         return withPrevious(this)
                 .withFieldName(fieldName)
                 .withType(type)
-                .withInstance(instance);
+                .withInstance(null);
     }
 
     public Context withFieldSettings(Settings settings) {
@@ -88,15 +86,6 @@ public class Context {
         }
     }
 
-    public Object generate() {
-        return generator.generate(this);
-    }
-
-    public Object newInstance() {
-        instance = generator.newInstance(this);
-        return instance;
-    }
-
     public String getPath() {
         final String path = previous == null ? "" : previous.getPath();
         if (path.isEmpty()) {
@@ -124,10 +113,6 @@ public class Context {
         } else {
             return previous.findPreviousContext(fields);
         }
-    }
-
-    public Random getRandom() {
-        return random;
     }
 
 }

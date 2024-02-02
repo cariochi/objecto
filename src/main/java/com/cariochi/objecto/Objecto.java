@@ -5,6 +5,7 @@ import com.cariochi.objecto.proxy.ObjectModifier;
 import com.cariochi.objecto.proxy.ProxyHandler;
 import com.cariochi.objecto.settings.Settings;
 import com.cariochi.objecto.settings.SettingsMapper;
+import com.cariochi.objecto.utils.Random;
 import com.cariochi.reflecto.objects.methods.ObjectMethods;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import java.lang.reflect.Type;
@@ -21,7 +22,12 @@ import static com.cariochi.reflecto.Reflecto.reflect;
 public class Objecto {
 
     public static <T> T create(Class<T> targetClass) {
-        final ObjectoGenerator generator = new ObjectoGenerator();
+        final Long seed = Optional.ofNullable(targetClass.getAnnotation(Seed.class)).map(Seed::value).orElseGet(Random::randomSeed);
+        return create(targetClass, seed);
+    }
+
+    public static <T> T create(Class<T> targetClass, Long seed) {
+        final ObjectoGenerator generator = new ObjectoGenerator(seed);
         final ProxyHandler<T> methodHandler = new ProxyHandler<>(targetClass, generator, getSettings(targetClass));
         final T proxy = ProxyFactory.createInstance(methodHandler, targetClass, ObjectModifier.class);
         addConstructors(proxy, generator);
@@ -29,7 +35,6 @@ public class Objecto {
         addFieldSettings(proxy, generator);
         addGenerators(proxy, generator);
         addPostProcessors(proxy, generator);
-        Optional.ofNullable(targetClass.getAnnotation(Seed.class)).map(Seed::value).ifPresent(generator::setSeed);
         return proxy;
     }
 

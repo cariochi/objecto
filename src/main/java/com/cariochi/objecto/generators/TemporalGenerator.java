@@ -20,7 +20,11 @@ import java.util.Date;
 
 import static java.time.ZoneOffset.UTC;
 
-class TemporalGenerator implements Generator {
+class TemporalGenerator extends AbstractGenerator {
+
+    public TemporalGenerator(ObjectoGenerator generator) {
+        super(generator);
+    }
 
     @Override
     public boolean isSupported(Context context) {

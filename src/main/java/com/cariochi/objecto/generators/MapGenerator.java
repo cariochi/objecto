@@ -5,7 +5,11 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-class MapGenerator implements Generator {
+class MapGenerator extends AbstractGenerator {
+
+    public MapGenerator(ObjectoGenerator generator) {
+        super(generator);
+    }
 
     @Override
     public boolean isSupported(Context context) {
@@ -18,12 +22,12 @@ class MapGenerator implements Generator {
         final TypeReflection keyType = mapType.typeParameter(0);
         final TypeReflection valueType = mapType.typeParameter(1);
 
-        final Map<Object, Object> map = (Map<Object, Object>) context.newInstance();
+        final Map<Object, Object> map = (Map<Object, Object>) newInstance(context);
         if (map != null) {
             map.clear();
             for (int i = 0; i < context.getRandom().nextInt(context.getSettings().maps().size()); i++) {
-                final Object key = context.nextContext("[key]", keyType, null).generate();
-                final Object value = context.nextContext("[value]", valueType, null).generate();
+                final Object key = generateObject(context.nextContext("[key]", keyType));
+                final Object value = generateObject(context.nextContext("[value]", valueType));
                 if (key == null || value == null) {
                     return map;
                 }

@@ -4,15 +4,20 @@ import com.cariochi.objecto.modifiers.ObjectoModifier;
 import java.util.Map;
 import java.util.function.Supplier;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
-class ComplexGenerator implements Generator {
+class ComplexGenerator extends AbstractGenerator {
 
     private final Class<?> ownerType;
     private final String expression;
     private final Supplier<Object> generator;
+
+    public ComplexGenerator(ObjectoGenerator generator, Class<?> ownerType, String expression, Supplier<Object> generator1) {
+        super(generator);
+        this.ownerType = ownerType;
+        this.expression = expression;
+        this.generator = generator1;
+    }
 
     @Override
     public boolean isSupported(Context context) {

@@ -1,6 +1,7 @@
 package com.cariochi.objecto.instantiators;
 
 import com.cariochi.objecto.generators.Context;
+import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.reflecto.types.methods.TypeConstructor;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +12,10 @@ import static java.util.stream.Collectors.joining;
 
 @Slf4j
 public class ConstructorInstantiator extends DefaultInstantiator {
+
+    public ConstructorInstantiator(ObjectoGenerator generator) {
+        super(generator);
+    }
 
     @Override
     public Object apply(Context context) {

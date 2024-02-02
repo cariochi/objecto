@@ -1,6 +1,7 @@
 package com.cariochi.objecto.instantiators;
 
 import com.cariochi.objecto.generators.Context;
+import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.reflecto.types.TypeReflection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,9 +11,12 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.function.Function;
 
-public class InterfaceInstantiator implements Function<Context, Object> {
+public class InterfaceInstantiator extends AbstractInstantiator {
+
+    public InterfaceInstantiator(ObjectoGenerator generator) {
+        super(generator);
+    }
 
     @Override
     public Object apply(Context context) {

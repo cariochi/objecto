@@ -25,14 +25,13 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static com.cariochi.objecto.Objecto.defaultSettings;
-import static com.cariochi.objecto.utils.Random.randomSeed;
 import static com.cariochi.reflecto.types.Types.type;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class InstantiatorsTest {
 
-    private final ObjectoGenerator generator = new ObjectoGenerator();
+    private final ObjectoInstantiator instantiator = new ObjectoInstantiator(new ObjectoGenerator());
 
     private static Stream<Arguments> types() {
         return Stream.of(
@@ -60,8 +59,8 @@ class InstantiatorsTest {
     @ParameterizedTest
     @MethodSource("types")
     void should_create_instance(Type type) {
-        final Context context = new Context(type, defaultSettings(), generator, randomSeed());
-        final Object instance = generator.newInstance(context);
+        final Context context = new Context(type, defaultSettings());
+        final Object instance = instantiator.newInstance(context);
         assertThat(instance).isNotNull();
     }
 

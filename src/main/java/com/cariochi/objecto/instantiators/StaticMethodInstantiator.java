@@ -1,6 +1,7 @@
 package com.cariochi.objecto.instantiators;
 
 import com.cariochi.objecto.generators.Context;
+import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.reflecto.types.TypeReflection;
 import com.cariochi.reflecto.types.methods.StaticMethod;
 import java.util.List;
@@ -12,6 +13,10 @@ import static java.util.stream.Collectors.joining;
 
 @Slf4j
 public class StaticMethodInstantiator extends DefaultInstantiator {
+
+    public StaticMethodInstantiator(ObjectoGenerator generator) {
+        super(generator);
+    }
 
     @Override
     public Object apply(Context context) {

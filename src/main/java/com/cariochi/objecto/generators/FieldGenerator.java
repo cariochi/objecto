@@ -5,18 +5,24 @@ import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
 @Getter
-@RequiredArgsConstructor
-class FieldGenerator implements Generator {
+class FieldGenerator extends AbstractGenerator {
 
     private final Class<?> ownerType;
     private final Type fieldType;
     private final String expression;
     private final Supplier<Object> generator;
+
+    public FieldGenerator(ObjectoGenerator generator, Class<?> ownerType, Type fieldType, String expression, Supplier<Object> generator1) {
+        super(generator);
+        this.ownerType = ownerType;
+        this.fieldType = fieldType;
+        this.expression = expression;
+        this.generator = generator1;
+    }
 
     @Override
     public boolean isSupported(Context context) {

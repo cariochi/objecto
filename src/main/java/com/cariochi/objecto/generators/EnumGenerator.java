@@ -3,7 +3,11 @@ package com.cariochi.objecto.generators;
 import com.cariochi.objecto.settings.Range;
 import com.cariochi.reflecto.types.TypeReflection;
 
-class EnumGenerator implements Generator {
+class EnumGenerator extends AbstractGenerator {
+
+    public EnumGenerator(ObjectoGenerator generator) {
+        super(generator);
+    }
 
     @Override
     public boolean isSupported(Context context) {

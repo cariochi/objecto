@@ -3,14 +3,18 @@ package com.cariochi.objecto.generators;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
-class TypeGenerator implements Generator {
+class TypeGenerator extends AbstractGenerator {
 
     private final Type fieldType;
     private final Supplier<Object> generator;
+
+    public TypeGenerator(ObjectoGenerator generator, Type fieldType, Supplier<Object> supplier) {
+        super(generator);
+        this.fieldType = fieldType;
+        this.generator = supplier;
+    }
 
     @Override
     public boolean isSupported(Context context) {

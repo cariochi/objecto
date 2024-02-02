@@ -5,13 +5,17 @@ import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-public class ReferenceGenerator implements Generator {
+public class ReferenceGenerator extends AbstractGenerator {
 
     private final Type type;
     private final String path;
+
+    public ReferenceGenerator(ObjectoGenerator generator, Type type, String path) {
+        super(generator);
+        this.type = type;
+        this.path = path;
+    }
 
     @Override
     public boolean isSupported(Context context) {

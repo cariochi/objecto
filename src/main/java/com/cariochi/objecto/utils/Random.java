@@ -12,6 +12,10 @@ public class Random {
     private final java.util.Random random;
     private final UniformRandomProvider randomProvider;
 
+    public Random() {
+        this(randomSeed());
+    }
+
     public Random(long seed) {
         random = new java.util.Random(seed);
         randomProvider = new JDKRandomWrapper(random);
