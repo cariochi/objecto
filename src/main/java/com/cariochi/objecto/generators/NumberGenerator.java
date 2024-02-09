@@ -2,12 +2,12 @@ package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.settings.Range;
 import com.cariochi.objecto.settings.Settings;
-import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.math.BigDecimal;
 
 import static java.math.RoundingMode.HALF_UP;
 
-class NumberGenerator extends AbstractGenerator {
+class NumberGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
@@ -16,7 +16,7 @@ class NumberGenerator extends AbstractGenerator {
 
     @Override
     public Object generate(Context context) {
-        final TypeReflection type = context.getType();
+        final ReflectoType type = context.getType();
         final Settings settings = context.getSettings();
         if (type.is(Integer.class)) {
             return context.getRandom().nextInt(settings.integers());

@@ -1,25 +1,25 @@
 package com.cariochi.objecto.utils;
 
+import com.cariochi.objecto.proxy.HasSeed;
 import com.cariochi.objecto.settings.Range;
 import com.cariochi.objecto.settings.Settings.Strings;
+import java.util.Random;
 import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.simple.JDKRandomWrapper;
 import org.apache.commons.rng.simple.RandomSource;
 
-public class ObjectoRandom {
+public class ObjectoRandom implements HasSeed {
 
-    @Getter private final java.util.Random random;
-    private final UniformRandomProvider randomProvider;
+    @Getter private final java.util.Random random = new Random();
+    private final UniformRandomProvider randomProvider = new JDKRandomWrapper(random);
+    @Getter private long seed;
+    @Getter private boolean customSeed = false;
 
     public ObjectoRandom() {
-        this(randomSeed());
-    }
-
-    public ObjectoRandom(long seed) {
-        random = new java.util.Random(seed);
-        randomProvider = new JDKRandomWrapper(random);
+        seed = randomSeed();
+        random.setSeed(seed);
     }
 
     public static long randomSeed() {
@@ -71,6 +71,13 @@ public class ObjectoRandom {
                 break;
         }
         return stringsSettings.uppercase() ? string.toUpperCase() : string;
+    }
+
+    @Override
+    public void setSeed(long seed) {
+        this.customSeed = true;
+        this.seed = seed;
+        this.random.setSeed(seed);
     }
 
 }

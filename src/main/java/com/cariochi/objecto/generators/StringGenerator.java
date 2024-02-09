@@ -1,6 +1,6 @@
 package com.cariochi.objecto.generators;
 
-class StringGenerator extends AbstractGenerator {
+class StringGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {

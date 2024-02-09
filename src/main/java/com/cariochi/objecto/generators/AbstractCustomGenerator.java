@@ -1,25 +1,27 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.utils.ObjectoRandom;
-import com.cariochi.reflecto.objects.methods.ObjectMethod;
-import com.cariochi.reflecto.types.methods.MethodParameter;
+import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.parameters.ReflectoParameter;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.List;
 
-public abstract class AbstractCustomGenerator extends AbstractGenerator {
+public abstract class AbstractCustomGenerator implements Generator {
 
-    protected final ObjectMethod method;
+    protected final TargetMethod method;
 
-    protected AbstractCustomGenerator(ObjectMethod method) {
+    protected AbstractCustomGenerator(TargetMethod method) {
         this.method = method;
     }
 
     protected Object invokeGenerationMethod(Context context) {
-        final List<MethodParameter> parameters = method.getParameters();
+        final List<ReflectoParameter> parameters = method.parameters().list();
         if (parameters.size() == 1) {
-            if (parameters.get(0).getType().is(ObjectoRandom.class)) {
+            final ReflectoType parameterType = parameters.get(0).type();
+            if (parameterType.is(ObjectoRandom.class)) {
                 return method.invoke(context.getRandom());
             }
-            if (parameters.get(0).getType().is(java.util.Random.class)) {
+            if (parameterType.is(java.util.Random.class)) {
                 return method.invoke(context.getRandom().getRandom());
             }
         }

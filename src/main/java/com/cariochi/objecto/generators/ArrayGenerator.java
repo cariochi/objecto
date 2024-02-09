@@ -1,6 +1,6 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Array;
 
 class ArrayGenerator extends AbstractObjectsGenerator {
@@ -16,14 +16,14 @@ class ArrayGenerator extends AbstractObjectsGenerator {
 
     @Override
     public Object generate(Context context) {
-        final TypeReflection type = context.getType().arrayComponentType();
+        final ReflectoType type = context.getType().asArray().componentType();
         Context context2 = context.nextContext("[" + 0 + "]", type);
         final Object firstItem = generator.generate(context2);
         if (firstItem == null) {
             return null;
         }
         int arrayLength = context.getRandom().nextInt(context.getSettings().arrays().size());
-        final Object array = Array.newInstance(type.asClass(), arrayLength);
+        final Object array = Array.newInstance(type.actualClass(), arrayLength);
         Array.set(array, 0, firstItem);
         for (int i = 1; i < arrayLength; i++) {
             Context context1 = context.nextContext("[" + i + "]", type);

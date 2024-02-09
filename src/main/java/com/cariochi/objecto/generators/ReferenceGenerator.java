@@ -1,6 +1,6 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ReferenceGenerator extends AbstractGenerator {
+public class ReferenceGenerator implements Generator {
 
     private final Type type;
     private final String path;
@@ -33,7 +33,7 @@ public class ReferenceGenerator extends AbstractGenerator {
         for (int i = 0; i < items.size(); i++) {
 
             final Optional<Context> possibleContext = findContext(items, context)
-                    .filter(referenceContext -> referenceContext.getType().actualType().equals(context.getType().actualType()));
+                    .filter(referenceContext -> referenceContext.getType().equals(context.getType()));
 
             if (possibleContext.isPresent()) {
                 return possibleContext;
@@ -54,7 +54,7 @@ public class ReferenceGenerator extends AbstractGenerator {
             if (possibleContext.isEmpty()) {
                 return Optional.empty();
             }
-            hasType |= type.equals(possibleContext.map(Context::getType).map(TypeReflection::actualType).orElse(null));
+            hasType |= type.equals(possibleContext.map(Context::getType).map(ReflectoType::actualType).orElse(null));
         }
         return hasType ? possibleContext : Optional.empty();
     }

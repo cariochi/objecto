@@ -34,7 +34,7 @@ class OneToManyTest {
 
     }
 
-    public interface ObjectoFactory {
+    private interface ObjectoFactory {
 
         @References("tactics[*].campaign")
         Campaign createParent();
@@ -45,7 +45,7 @@ class OneToManyTest {
     }
 
     @Data
-    public static class Campaign {
+    private static class Campaign {
 
         private String name;
         private List<Tactic> tactics;
@@ -53,7 +53,7 @@ class OneToManyTest {
     }
 
     @Data
-    public static class Tactic {
+    private static class Tactic {
 
         private String name;
 

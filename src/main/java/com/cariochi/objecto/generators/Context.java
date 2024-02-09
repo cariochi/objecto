@@ -1,8 +1,9 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.settings.Settings;
 import com.cariochi.objecto.utils.ObjectoRandom;
-import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.Deque;
 import java.util.IdentityHashMap;
@@ -13,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.With;
 
-import static com.cariochi.reflecto.Reflecto.reflectType;
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.replace;
@@ -25,20 +26,24 @@ public class Context {
 
     private final ObjectoRandom random;
     private final String fieldName;
-    private final TypeReflection type;
+    private final ReflectoType type;
     private final Settings settings;
     private final Context previous;
     @Setter private Object instance;
+
+    public Context(Type type) {
+        this(type, Objecto.defaultSettings());
+    }
 
     public Context(Type type, Settings settings) {
         this(type, settings, new ObjectoRandom());
     }
 
     public Context(Type type, Settings settings, ObjectoRandom random) {
-        this(random, "", reflectType(type), settings, null, null);
+        this(random, "", reflect(type), settings, null, null);
     }
 
-    private Context(ObjectoRandom random, String fieldName, TypeReflection type, Settings settings, Context previous, Object instance) {
+    private Context(ObjectoRandom random, String fieldName, ReflectoType type, Settings settings, Context previous, Object instance) {
         this.random = random;
         this.fieldName = fieldName;
         this.settings = settings;
@@ -46,11 +51,11 @@ public class Context {
         this.instance = instance;
 
         this.type = type.isTypeVariable() && instance != null
-                ? new TypeReflection(instance.getClass(), type.getParentType())
+                ? type.reflect(instance.getClass())
                 : type;
     }
 
-    public Context nextContext(String fieldName, TypeReflection type) {
+    public Context nextContext(String fieldName, ReflectoType type) {
         return withPrevious(this)
                 .withFieldName(fieldName)
                 .withType(type)
@@ -71,14 +76,14 @@ public class Context {
         }
     }
 
-    public int getRecursionDepth(Type type) {
+    public int getRecursionDepth(ReflectoType type) {
         final Set<Object> instances = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
         collectInstances(type, instances);
         return instances.size();
     }
 
-    private void collectInstances(Type type, Set<Object> instances) {
-        if (getType().actualType().equals(type) && instance != null) {
+    private void collectInstances(ReflectoType type, Set<Object> instances) {
+        if (getType().equals(type) && instance != null) {
             instances.add(instance);
         }
         if (previous != null) {

@@ -2,6 +2,7 @@ package com.cariochi.objecto.instantiators;
 
 import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.ObjectoGenerator;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +26,18 @@ public class ObjectoInstantiator {
         ));
     }
 
-    public void addCustomConstructor(Type type, Supplier<Object> instantiator) {
-        objectConstructors.add(0, context -> type.equals(context.getType().actualType()) ? instantiator.get() : null);
+    public void addCustomConstructor(ReflectoType type, Supplier<Object> instantiator) {
+        objectConstructors.add(0, context -> type.equals(context.getType()) ? instantiator.get() : null);
     }
 
-    public Object newInstance(Context context) {
-        log.trace("Creating instance of `{}` with type `{}`", context.getPath(), context.getType().getName());
-        return objectConstructors.stream()
+    public <T> T newInstance(Type type) {
+        return newInstance(new Context(type));
+    }
+
+        @SuppressWarnings("unchecked")
+    public <T> T newInstance(Context context) {
+        log.trace("Creating instance of `{}` with type `{}`", context.getPath(), context.getType().name());
+        return (T) objectConstructors.stream()
                 .map(creator -> creator.apply(context))
                 .filter(Objects::nonNull)
                 .findFirst()

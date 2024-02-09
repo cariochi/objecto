@@ -1,8 +1,8 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.reflecto.objects.fields.ObjectField;
-import com.cariochi.reflecto.types.TypeReflection;
-import com.cariochi.reflecto.types.fields.TypeField;
+import com.cariochi.reflecto.fields.ReflectoField;
+import com.cariochi.reflecto.fields.TargetField;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,19 +32,19 @@ class CustomObjectGenerator extends AbstractObjectsGenerator {
 
         if (instance != null) {
 
-            final List<TypeField> typeFields = context.getType().fields().all().stream()
-                    .filter(field -> !field.isStatic())
+            final List<ReflectoField> fields = context.getType().fields().stream()
+                    .filter(field -> !field.modifiers().isStatic())
                     .collect(toList());
 
-            for (TypeField typeField : typeFields) {
-                final TypeReflection fieldType = typeField.getType();
+            for (ReflectoField field : fields) {
+                final ReflectoType fieldType = field.type();
                 if (fieldType != null) {
-                    final ObjectField javaField = typeField.toObjectField(instance);
-                    final Context fieldContext = context.nextContext(typeField.getName(), fieldType);
-                    fieldContext.setInstance(javaField.getValue());
+                    final TargetField targetField = field.withTarget(instance);
+                    final Context fieldContext = context.nextContext(field.name(), fieldType);
+                    fieldContext.setInstance(targetField.getValue());
                     final Object fieldValue = generator.generate(fieldContext);
                     try {
-                        javaField.setValue(fieldValue);
+                        targetField.setValue(fieldValue);
                     } catch (Exception e) {
                         log.error("Cannot set field value: {}", fieldContext.getPath());
                     }

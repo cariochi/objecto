@@ -2,7 +2,7 @@ package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.settings.Settings;
 
-class CharacterGenerator extends AbstractGenerator {
+class CharacterGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {

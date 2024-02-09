@@ -1,6 +1,6 @@
 package com.cariochi.objecto.modifiers;
 
-import com.cariochi.reflecto.objects.Reflection;
+import com.cariochi.reflecto.invocations.model.Reflection;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,7 +27,7 @@ public class ObjectoModifier {
         values.forEach((expression, value) -> {
             try {
                 final String reflectoPath = expression.endsWith(")") || expression.endsWith("?") ? expression : expression + "=?";
-                reflection.invoke(reflectoPath, value);
+                reflection.perform(reflectoPath, value);
             } catch (Exception ex) {
                 log.warn(
                         "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",

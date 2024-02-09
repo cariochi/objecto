@@ -1,6 +1,6 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,7 +20,7 @@ import java.util.Date;
 
 import static java.time.ZoneOffset.UTC;
 
-class TemporalGenerator extends AbstractGenerator {
+class TemporalGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
@@ -29,7 +29,7 @@ class TemporalGenerator extends AbstractGenerator {
 
     @Override
     public Object generate(Context context) {
-        final TypeReflection typeReflection = context.getType();
+        final ReflectoType typeReflection = context.getType();
         final Instant instant = generateInstant(context);
         final ZonedDateTime zonedDateTime = instant.atZone(UTC);
         if (typeReflection.is(Date.class)) {

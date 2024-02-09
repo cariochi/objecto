@@ -1,6 +1,7 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.types.ReflectoType;
+import com.cariochi.reflecto.types.ReflectoType.TypeArguments;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,11 +19,11 @@ class MapGenerator extends AbstractObjectsGenerator {
 
     @Override
     public Object generate(Context context) {
-        final TypeReflection mapType = context.getType().as(Map.class);
-        final TypeReflection keyType = mapType.typeParameter(0);
-        final TypeReflection valueType = mapType.typeParameter(1);
+        final TypeArguments typeArguments = context.getType().as(Map.class).arguments();
+        final ReflectoType keyType = typeArguments.get(0);
+        final ReflectoType valueType = typeArguments.get(1);
 
-        final Map<Object, Object> map = (Map<Object, Object>) generator.getInstantiator().newInstance(context);
+        final Map<Object, Object> map = generator.getInstantiator().newInstance(context);
         context.setInstance(map);
         if (map != null) {
             map.clear();

@@ -2,7 +2,7 @@ package com.cariochi.objecto.instantiators;
 
 import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.ObjectoGenerator;
-import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,8 +20,8 @@ public class InterfaceInstantiator extends AbstractInstantiator {
 
     @Override
     public Object apply(Context context) {
-        final TypeReflection type = context.getType();
-        if (!type.isInterface()) {
+        final ReflectoType type = context.getType();
+        if (!type.modifiers().isInterface()) {
             return null;
         }
         if (type.is(Set.class)) {

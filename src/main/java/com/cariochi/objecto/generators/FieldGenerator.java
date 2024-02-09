@@ -1,7 +1,8 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.reflecto.objects.methods.ObjectMethod;
-import com.cariochi.reflecto.types.TypeReflection;
+
+import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.Optional;
 import lombok.Getter;
@@ -14,7 +15,7 @@ class FieldGenerator extends AbstractCustomGenerator {
     private final Class<?> ownerType;
     private final String expression;
 
-    public FieldGenerator(ObjectoGenerator generator, Class<?> ownerType, String expression, ObjectMethod method) {
+    public FieldGenerator(Class<?> ownerType, String expression, TargetMethod method) {
         super(method);
         this.ownerType = ownerType;
         this.expression = expression;
@@ -22,16 +23,16 @@ class FieldGenerator extends AbstractCustomGenerator {
 
     @Override
     public boolean isSupported(Context context) {
-        return method.getReturnType().actualType().equals(context.getType().actualType())
-                && context.findPreviousContext(substringBefore(expression, "=?"))
-                .filter(cnxt -> {
-                    final Type type = Optional.of(cnxt.getType())
-                            .map(TypeReflection::getParentType)
-                            .map(TypeReflection::actualType)
-                            .orElse(null);
-                    return ownerType.equals(type);
-                })
-                .isPresent();
+        return method.returnType().equals(context.getType())
+               && context.findPreviousContext(substringBefore(expression, "=?"))
+                       .map(Context::getPrevious)
+                       .filter(cnxt -> {
+                           final Type type = Optional.of(cnxt.getType())
+                                   .map(ReflectoType::actualType)
+                                   .orElse(null);
+                           return ownerType.equals(type);
+                       })
+                       .isPresent();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.cariochi.objecto.generators;
 
-class BooleanGenerator extends AbstractGenerator {
+class BooleanGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {

@@ -1,19 +1,20 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.reflecto.objects.methods.ObjectMethod;
+
+import com.cariochi.reflecto.methods.TargetMethod;
 import lombok.Getter;
 
 @Getter
 class TypeGenerator extends AbstractCustomGenerator {
 
 
-    public TypeGenerator(ObjectoGenerator generator, ObjectMethod method) {
+    public TypeGenerator(TargetMethod method) {
         super(method);
     }
 
     @Override
     public boolean isSupported(Context context) {
-        return method.getReturnType().actualType().equals(context.getType().actualType());
+        return method.returnType().equals(context.getType());
     }
 
     @Override

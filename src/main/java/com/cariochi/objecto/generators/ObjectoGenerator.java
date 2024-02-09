@@ -3,8 +3,8 @@ package com.cariochi.objecto.generators;
 import com.cariochi.objecto.instantiators.ObjectoInstantiator;
 import com.cariochi.objecto.settings.Settings;
 import com.cariochi.objecto.utils.ObjectoRandom;
-import com.cariochi.reflecto.objects.methods.ObjectMethod;
-import com.cariochi.reflecto.types.TypeReflection;
+import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.objecto.Objecto.defaultSettings;
-import static com.cariochi.objecto.utils.ObjectoRandom.randomSeed;
 
 
 @Slf4j
@@ -29,7 +28,7 @@ public class ObjectoGenerator {
     private final List<FieldGenerator> fieldGenerators = new ArrayList<>();
     private final List<TypeGenerator> typeGenerators = new ArrayList<>();
     private final List<ComplexGenerator> complexGenerators = new ArrayList<>();
-    private final List<AbstractGenerator> defaultGenerators = List.of(
+    private final List<Generator> defaultGenerators = List.of(
             new StringGenerator(),
             new NumberGenerator(),
             new BooleanGenerator(),
@@ -42,20 +41,12 @@ public class ObjectoGenerator {
             new CustomObjectGenerator(this)
     );
 
-    private final Map<Type, List<FieldSettings>> fieldSettings = new HashMap<>();
-    private final Map<Type, List<Consumer<Object>>> postProcessors = new HashMap<>();
+    private final Map<ReflectoType, List<FieldSettings>> fieldSettings = new HashMap<>();
+    private final Map<ReflectoType, List<Consumer<Object>>> postProcessors = new HashMap<>();
     @Getter private final ObjectoInstantiator instantiator = new ObjectoInstantiator(this);
-    private final ObjectoRandom random;
+    @Getter private final ObjectoRandom random = new ObjectoRandom();
 
-    public ObjectoGenerator() {
-        this(randomSeed());
-    }
-
-    public ObjectoGenerator(Long seed) {
-        this.random = new ObjectoRandom(seed);
-    }
-
-    public void addCustomConstructor(Type type, Supplier<Object> instantiator) {
+    public void addCustomConstructor(ReflectoType type, Supplier<Object> instantiator) {
         this.instantiator.addCustomConstructor(type, instantiator);
     }
 
@@ -64,38 +55,37 @@ public class ObjectoGenerator {
                 .forEach(path -> referenceGenerators.add(new ReferenceGenerator(type, path)));
     }
 
-    public void addFieldSettings(Type type, String path, Settings settings) {
+    public void addFieldSettings(ReflectoType type, String path, Settings settings) {
         fieldSettings.computeIfAbsent(type, t -> new ArrayList<>()).add(new FieldSettings(path, settings));
     }
 
-    public void addCustomGenerator(Class<?> objectType, String expression, ObjectMethod method) {
+    public void addCustomGenerator(Class<?> objectType, String expression, TargetMethod method) {
         if (objectType.equals(Object.class)) {
-            typeGenerators.add(new TypeGenerator(this, method));
+            typeGenerators.add(new TypeGenerator(method));
         } else if (expression.contains("(")) {
-            complexGenerators.add(new ComplexGenerator(this, objectType, expression, method));
+            complexGenerators.add(new ComplexGenerator(objectType, expression, method));
         } else {
-            fieldGenerators.add(new FieldGenerator(this, objectType, expression, method));
+            fieldGenerators.add(new FieldGenerator(objectType, expression, method));
         }
     }
 
-    public void addPostProcessor(Type type, Consumer<Object> postProcessor) {
+    public void addPostProcessor(ReflectoType type, Consumer<Object> postProcessor) {
         postProcessors.computeIfAbsent(type, t -> new ArrayList<>()).add(postProcessor);
     }
 
     public Object generate(Type type) {
-        return generate(type, defaultSettings(), null);
+        return generate(type, defaultSettings());
     }
 
-    public Object generate(Type type, Settings settings, Long customSeed) {
-        return generate(new Context(type, settings, Optional.ofNullable(customSeed).map(ObjectoRandom::new).orElse(random)));
+    public Object generate(Type type, Settings settings) {
+        return generate(new Context(type, settings, random));
     }
 
     public Object generate(Context context) {
-        final Type type = context.getType().actualType();
+        final ReflectoType type = context.getType();
         final String contextPath = context.getPath();
-        final Context fieldContext = Optional.of(context.getType())
-                .map(TypeReflection::getParentType)
-                .map(TypeReflection::actualType)
+        final Context fieldContext = Optional.ofNullable(context.getPrevious())
+                .map(Context::getType)
                 .map(fieldSettings::get)
                 .flatMap(typeSettings -> typeSettings.stream()
                         .filter(s -> s.getPath().isEmpty() || context.findPreviousContext(s.getPath()).isPresent()).findFirst()
@@ -144,11 +134,11 @@ public class ObjectoGenerator {
                 .forEach(generator -> generator.generate(context));
     }
 
-    private Object postProcess(Type actualType, Object instance) {
+    private Object postProcess(ReflectoType type, Object instance) {
         if (instance == null) {
             return null;
         }
-        Optional.ofNullable(postProcessors.get(actualType)).stream()
+        Optional.ofNullable(postProcessors.get(type)).stream()
                 .flatMap(Collection::stream)
                 .forEach(postProcessor -> postProcessor.accept(instance));
         return instance;

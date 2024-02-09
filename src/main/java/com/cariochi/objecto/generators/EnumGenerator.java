@@ -1,9 +1,9 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.settings.Range;
-import com.cariochi.reflecto.types.TypeReflection;
+import java.util.List;
 
-class EnumGenerator extends AbstractGenerator {
+class EnumGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
@@ -12,9 +12,9 @@ class EnumGenerator extends AbstractGenerator {
 
     @Override
     public Object generate(Context context) {
-        final TypeReflection typeReflection = context.getType();
-        final int randomIndex = context.getRandom().nextInt(Range.of(0, typeReflection.getEnumConstants().size()));
-        return typeReflection.getEnumConstants().get(randomIndex);
+        final List<Object> enumConstants = context.getType().asEnum().constants();
+        final int randomIndex = context.getRandom().nextInt(Range.of(0, enumConstants.size()));
+        return enumConstants.get(randomIndex);
     }
 
 }

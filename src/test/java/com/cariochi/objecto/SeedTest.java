@@ -1,6 +1,6 @@
 package com.cariochi.objecto;
 
-import com.cariochi.objecto.settings.Range;
+import com.cariochi.objecto.extension.ObjectoExtension;
 import com.cariochi.objecto.utils.ObjectoRandom;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -8,28 +8,35 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(ObjectoExtension.class)
 class SeedTest {
 
+    private static final long INTERFACE_LEVEL_SEED = 123;
+    private static final long INSTANCE_LEVEL_SEED = 100;
+    private static final long METHOD_LEVEL_SEED = 320;
+    private static final long SEED_TO_IGNORE = 1000;
+
     private final DtoFactory factory = Objecto.create(DtoFactory.class);
-    private final DtoFactory factoryWithSeed = Objecto.create(DtoFactory.class, 100L);
+    private final DtoFactory factoryWithSeed = Objecto.create(DtoFactory.class, INSTANCE_LEVEL_SEED);
 
     @Test
+    @Seed(SEED_TO_IGNORE)
     void testFactoryInterfaceLevelSeed() {
         final Dto dto = factory.createDto();
         assertThat(dto)
                 .isEqualTo(Dto.builder()
                         .string("ZTNUVNEANPAWQ")
-                        .integer(72)
-                        .longs(new long[]{78260, 82620, 44139, 46767})
+                        .seed(INTERFACE_LEVEL_SEED)
+                        .number(60228)
                         .children(List.of(
-                                Dto.builder().string("JOXEROBNPFO").integer(57).longs(new long[]{8202, 53912}).children(emptyList()).build(),
-                                Dto.builder().string("AYXEZQHGPSTAIJ").integer(22).longs(new long[]{61173, 46276, 5335, 35687}).children(emptyList()).build(),
-                                Dto.builder().string("PYZBSHETWNDXXQ").integer(26).longs(new long[]{1509, 11878, 80116, 65433}).children(emptyList()).build(),
-                                Dto.builder().string("KEJIUYNGBI").integer(45).longs(new long[]{65484, 84702, 10887, 26435}).children(emptyList()).build()
+                                Dto.builder().string("XWNSEJOXE").seed(INTERFACE_LEVEL_SEED).number(39650).children(emptyList()).build(),
+                                Dto.builder().string("BNPFOGAKBAYXEZQ").seed(INTERFACE_LEVEL_SEED).number(41636).children(emptyList()).build(),
+                                Dto.builder().string("STAIJSDYNVDTM").seed(INTERFACE_LEVEL_SEED).number(51421).children(emptyList()).build()
                         ))
                         .build());
     }
@@ -40,12 +47,11 @@ class SeedTest {
         assertThat(dto)
                 .isEqualTo(Dto.builder()
                         .string("DFLJBOYNORQHL")
-                        .integer(100)
-                        .longs(new long[]{23305, 90592})
+                        .seed(METHOD_LEVEL_SEED)
+                        .number(83516)
                         .children(List.of(
-                                Dto.builder().string("PQPHNFHBXTRAJ").integer(19).longs(new long[]{18975, 76565, 44361, 39654}).children(emptyList()).build(),
-                                Dto.builder().string("RRZLKIRBPRCRVIY").integer(0).longs(new long[]{74803, 76021}).children(emptyList()).build(),
-                                Dto.builder().string("LSZZVDIB").integer(59).longs(new long[]{93173, 62280, 92135, 87597}).children(emptyList()).build()
+                                Dto.builder().string("LFVPQPHNF").seed(METHOD_LEVEL_SEED).number(38733).children(emptyList()).build(),
+                                Dto.builder().string("XTRAJDFQ").seed(METHOD_LEVEL_SEED).number(68764).children(emptyList()).build()
                         ))
                         .build());
     }
@@ -56,26 +62,27 @@ class SeedTest {
         assertThat(dto)
                 .isEqualTo(Dto.builder()
                         .string("GKWWBRGRUTRMJ")
-                        .integer(118)
-                        .longs(new long[]{32613, 18505})
+                        .seed(INSTANCE_LEVEL_SEED)
+                        .number(99098)
                         .children(List.of(
-                                Dto.builder().string("MVREZEJI").integer(106).longs(new long[]{61685, 511, 20267}).children(emptyList()).build(),
-                                Dto.builder().string("PNVATOGJCMCGY").integer(5).longs(new long[]{73309, 13739, 95448}).children(emptyList()).build()
+                                Dto.builder().string("ZGMVREZEJIYSNZP").seed(INSTANCE_LEVEL_SEED).number(68707).children(emptyList()).build(),
+                                Dto.builder().string("TOGJCMCGYIT").seed(INSTANCE_LEVEL_SEED).number(91389).children(emptyList()).build(),
+                                Dto.builder().string("WADKLQBNOS").seed(INSTANCE_LEVEL_SEED).number(71739).children(emptyList()).build()
                         ))
                         .build());
     }
 
-    @Seed(123)
-    interface DtoFactory {
+    @Seed(INTERFACE_LEVEL_SEED)
+    private interface DtoFactory {
 
         Dto createDto();
 
-        @Seed(320)
+        @Seed(METHOD_LEVEL_SEED)
         Dto createDtoWithCustomSeed();
 
-        @Generator(type = Dto.class, expression = "integer")
-        private Integer generateInteger(ObjectoRandom random) {
-            return random.nextInt(Range.of(0, 120));
+        @Generator(type = Dto.class, expression = "seed")
+        private long generateSeed(ObjectoRandom random) {
+            return random.getSeed();
         }
 
     }
@@ -84,11 +91,11 @@ class SeedTest {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Dto {
+    private static class Dto {
 
         private String string;
-        private Integer integer;
-        private long[] longs;
+        private long seed;
+        private int number;
 
         private List<Dto> children;
 
