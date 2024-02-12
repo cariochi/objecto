@@ -54,12 +54,13 @@ public class Objecto {
     }
 
     private static void addConstructors(ObjectoGenerator generator, TargetMethods methods) {
-        methods.withAnnotation(Instantiator.class)
+        methods.stream()
+                .filter(method -> method.annotations().contains(Instantiator.class))
                 .forEach(method -> generator.addCustomConstructor(method.returnType(), method::invoke));
     }
 
     private static void addReferenceGenerators(ObjectoGenerator generator, TargetMethods methods) {
-        methods.withAnnotation(References.class)
+        methods.stream()
                 .forEach(method -> method.annotations().find(References.class)
                         .ifPresent(annotation -> generator.addReferenceGenerators(method.returnType().actualType(), annotation.value()))
                 );
@@ -67,28 +68,29 @@ public class Objecto {
 
     private static void addFieldSettings(ObjectoGenerator generator, TargetMethods methods) {
 
-        methods.withAnnotation(WithSettingsList.class)
+        methods.stream()
                 .forEach(method -> method.annotations().find(WithSettingsList.class)
                         .map(WithSettingsList::value).stream().flatMap(Stream::of)
                         .forEach(annotation -> generator.addFieldSettings(method.returnType(), annotation.path(), map(annotation)))
                 );
 
-        methods.withAnnotation(WithSettings.class)
+        methods.stream()
                 .forEach(method -> method.annotations().find(WithSettings.class)
                         .ifPresent(annotation -> generator.addFieldSettings(method.returnType(), annotation.path(), map(annotation)))
                 );
     }
 
     private static void addGenerators(ObjectoGenerator generator, TargetMethods methods) {
-        methods.withAnnotation(Generator.class)
+        methods.stream()
                 .forEach(method -> method.annotations().find(Generator.class)
                         .ifPresent(annotation -> generator.addCustomGenerator(annotation.type(), annotation.expression(), method))
                 );
     }
 
     private static void addPostProcessors(ObjectoGenerator generator, TargetMethods methods) {
-        methods.withAnnotation(PostProcessor.class).stream()
-                .filter(method -> void.class.equals(method.returnType().actualType()))
+        methods.stream()
+                .filter(method -> method.annotations().contains(PostProcessor.class))
+                .filter(method -> method.returnType().is(void.class))
                 .filter(method -> method.parameters().size() == 1)
                 .forEach(method -> {
                     final ReflectoType type = method.parameters().get(0).type();

@@ -24,7 +24,7 @@ public class ConstructorInstantiator extends DefaultInstantiator {
 
     @Override
     public Object apply(Context context) {
-        return context.getType().constructors().stream()
+        return context.getType().declared().constructors().stream()
                 .sorted(MODIFIERS_COMPARATOR.thenComparing(PARAMETERS_COMPARATOR))
                 .map(c -> newInstance(c, context))
                 .filter(Objects::nonNull)

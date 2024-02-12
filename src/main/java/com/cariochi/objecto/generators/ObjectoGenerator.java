@@ -37,6 +37,7 @@ public class ObjectoGenerator {
             new ArrayGenerator(this),
             new TemporalGenerator(),
             new CharacterGenerator(),
+            new PrimitiveGenerator(),
             new EnumGenerator(),
             new CustomObjectGenerator(this)
     );
