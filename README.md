@@ -15,7 +15,7 @@ To use **Objecto** in your project, add the following dependency to your build c
 <dependency>
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
 </dependency>
 ```
 
