@@ -1,27 +1,30 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.utils.Random;
-import java.lang.reflect.Type;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 
-import static org.apache.commons.lang3.reflect.TypeUtils.getTypeArguments;
-
 @Slf4j
-class CollectionGenerator implements Generator {
+class CollectionGenerator extends AbstractObjectsGenerator {
+
+    public CollectionGenerator(ObjectoGenerator generator) {
+        super(generator);
+    }
 
     @Override
     public boolean isSupported(Context context) {
-        return context.isCollection();
+        return context.getType().is(Collection.class);
     }
 
     @Override
     public Object generate(Context context) {
-        final Type elementType = getTypeArguments(context.getType(), Collection.class).values().iterator().next();
-        final Collection<Object> collection = (Collection<Object>) context.newInstance();
+        final ReflectoType elementType = context.getType().as(Iterable.class).arguments().get(0);
+        final Collection<Object> collection = generator.getInstantiator().newInstance(context);
+        context.setInstance(collection);
         if (collection != null) {
-            for (int i = 0; i < Random.nextInt(context.getSettings().collections().size()); i++) {
-                final Object item = context.nextContext("[" + i + "]", elementType, context.getOwnerType()).generate();
+            for (int i = 0; i < context.getRandom().nextInt(context.getSettings().collections().size()); i++) {
+                Context context1 = context.nextContext("[" + i + "]", elementType);
+                final Object item = generator.generate(context1);
                 if (item == null) {
                     return collection;
                 }

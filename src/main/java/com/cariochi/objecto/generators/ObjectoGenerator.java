@@ -1,21 +1,21 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.instantiators.ConstructorInstantiator;
-import com.cariochi.objecto.instantiators.InterfaceInstantiator;
-import com.cariochi.objecto.instantiators.StaticMethodInstantiator;
+import com.cariochi.objecto.instantiators.ObjectoInstantiator;
 import com.cariochi.objecto.settings.Settings;
+import com.cariochi.objecto.utils.ObjectoRandom;
+import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.objecto.Objecto.defaultSettings;
@@ -23,12 +23,6 @@ import static com.cariochi.objecto.Objecto.defaultSettings;
 
 @Slf4j
 public class ObjectoGenerator {
-
-    private final List<Function<Context, Object>> objectConstructors = new ArrayList<>(List.of(
-            new InterfaceInstantiator(),
-            new StaticMethodInstantiator(),
-            new ConstructorInstantiator()
-    ));
 
     private final List<ReferenceGenerator> referenceGenerators = new ArrayList<>();
     private final List<FieldGenerator> fieldGenerators = new ArrayList<>();
@@ -38,21 +32,23 @@ public class ObjectoGenerator {
             new StringGenerator(),
             new NumberGenerator(),
             new BooleanGenerator(),
-            new CollectionGenerator(),
-            new MapGenerator(),
-            new ArrayGenerator(),
+            new CollectionGenerator(this),
+            new MapGenerator(this),
+            new ArrayGenerator(this),
             new TemporalGenerator(),
+            new CharacterGenerator(),
             new PrimitiveGenerator(),
             new EnumGenerator(),
-            new CustomObjectGenerator()
+            new CustomObjectGenerator(this)
     );
 
-    private final Map<Type, List<FieldSettings>> fieldSettings = new HashMap<>();
+    private final Map<ReflectoType, List<FieldSettings>> fieldSettings = new HashMap<>();
+    private final Map<ReflectoType, List<Consumer<Object>>> postProcessors = new HashMap<>();
+    @Getter private final ObjectoInstantiator instantiator = new ObjectoInstantiator(this);
+    @Getter private final ObjectoRandom random = new ObjectoRandom();
 
-    private final Map<Type, List<Consumer<Object>>> postProcessors = new HashMap<>();
-
-    public void addCustomConstructor(Type type, Supplier<Object> constructor) {
-        objectConstructors.add(0, context -> type.equals(context.getType()) ? constructor.get() : null);
+    public void addCustomConstructor(ReflectoType type, Supplier<Object> instantiator) {
+        this.instantiator.addCustomConstructor(type, instantiator);
     }
 
     public void addReferenceGenerators(Type type, String[] paths) {
@@ -60,58 +56,45 @@ public class ObjectoGenerator {
                 .forEach(path -> referenceGenerators.add(new ReferenceGenerator(type, path)));
     }
 
-    public void addFieldSettings(Type type, String path, Settings settings) {
+    public void addFieldSettings(ReflectoType type, String path, Settings settings) {
         fieldSettings.computeIfAbsent(type, t -> new ArrayList<>()).add(new FieldSettings(path, settings));
     }
 
-    public void addCustomGenerator(Class<?> objectType, Type type, String expression, Supplier<Object> generator) {
+    public void addCustomGenerator(Class<?> objectType, String expression, TargetMethod method) {
         if (objectType.equals(Object.class)) {
-            typeGenerators.add(new TypeGenerator(type, generator));
+            typeGenerators.add(new TypeGenerator(method));
         } else if (expression.contains("(")) {
-            complexGenerators.add(new ComplexGenerator(objectType, expression, generator));
+            complexGenerators.add(new ComplexGenerator(objectType, expression, method));
         } else {
-            fieldGenerators.add(new FieldGenerator(objectType, type, expression, generator));
+            fieldGenerators.add(new FieldGenerator(objectType, expression, method));
         }
     }
 
-    public void addPostProcessor(Type type, Consumer<Object> postProcessor) {
+    public void addPostProcessor(ReflectoType type, Consumer<Object> postProcessor) {
         postProcessors.computeIfAbsent(type, t -> new ArrayList<>()).add(postProcessor);
     }
 
-    public Object newInstance(Context context) {
-        log.trace("Creating instance of `{}` with type `{}`", context.getPath(), context.getType().getTypeName());
-        return objectConstructors.stream()
-                .map(creator -> creator.apply(context))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+    public Object generate(Type type) {
+        return generate(type, defaultSettings());
     }
 
-    public Object generate(Type type) {
-        return generate(newContext(type, defaultSettings()));
+    public Object generate(Type type, Settings settings) {
+        return generate(new Context(type, settings, random));
     }
 
     public Object generate(Context context) {
-        final Type rawType = context.getType();
+        final ReflectoType type = context.getType();
         final String contextPath = context.getPath();
-        if (rawType == null) {
-            log.info("Cannot recognize a raw type `{}` of field `{}`. Please create an @Instantiator method to specify how to instantiate this class.", context.getType().getTypeName(), contextPath);
-            return null;
-        }
+        final Context fieldContext = Optional.ofNullable(context.getPrevious())
+                .map(Context::getType)
+                .map(fieldSettings::get)
+                .flatMap(typeSettings -> typeSettings.stream()
+                        .filter(s -> s.getPath().isEmpty() || context.findPreviousContext(s.getPath()).isPresent()).findFirst()
+                        .map(FieldSettings::getSettings)
+                        .map(context::withFieldSettings))
+                .orElse(context);
 
-        final Context fieldContext;
-        final List<FieldSettings> typeSettings = fieldSettings.get(context.getOwnerType());
-        if (typeSettings != null) {
-            fieldContext = typeSettings.stream()
-                    .filter(s -> s.getPath().isEmpty() || context.findPreviousContext(s.getPath()).isPresent()).findFirst()
-                    .map(FieldSettings::getSettings)
-                    .map(context::withFieldSettings)
-                    .orElse(context);
-        } else {
-            fieldContext = context;
-        }
-
-        log.trace("Generating `{}` with type `{}`", contextPath, rawType.getTypeName());
+        log.trace("Generating `{}` with type `{}`", contextPath, type.getTypeName());
         if (fieldContext.getDepth() > fieldContext.getSettings().maxDepth() + 1) {
             log.debug("Maximum depth ({}) reached. Path: {}", fieldContext.getSettings().maxDepth(), contextPath);
             return null;
@@ -125,8 +108,13 @@ public class ObjectoGenerator {
             return backReferenceObject;
         }
 
-        if (fieldContext.getRecursionDepth(rawType) >= fieldContext.getSettings().maxRecursionDepth()) {
-            log.debug("Maximum recursion depth ({}) reached. Path: {}. Type: {}", fieldContext.getSettings().maxRecursionDepth(), contextPath, fieldContext.getType().getTypeName());
+        if (fieldContext.getRecursionDepth(type) >= fieldContext.getSettings().maxRecursionDepth()) {
+            log.debug(
+                    "Maximum recursion depth ({}) reached. Path: {}. Type: {}",
+                    fieldContext.getSettings().maxRecursionDepth(),
+                    contextPath,
+                    fieldContext.getType().actualType().getTypeName()
+            );
             return null;
         }
 
@@ -137,12 +125,8 @@ public class ObjectoGenerator {
                     applyComplexGenerators(fieldContext);
                     return instance;
                 })
-                .map(instance -> postProcess(rawType, instance))
+                .map(instance -> postProcess(type, instance))
                 .orElse(null);
-    }
-
-    public Context newContext(Type type, Settings settings) {
-        return new Context(type, settings, this);
     }
 
     private void applyComplexGenerators(Context context) {
@@ -151,11 +135,11 @@ public class ObjectoGenerator {
                 .forEach(generator -> generator.generate(context));
     }
 
-    private Object postProcess(Type actualType, Object instance) {
+    private Object postProcess(ReflectoType type, Object instance) {
         if (instance == null) {
             return null;
         }
-        Optional.ofNullable(postProcessors.get(actualType)).stream()
+        Optional.ofNullable(postProcessors.get(type)).stream()
                 .flatMap(Collection::stream)
                 .forEach(postProcessor -> postProcessor.accept(instance));
         return instance;

@@ -105,7 +105,7 @@ class ComplexStructureTest {
     }
 
     @WithSettings(maxDepth = 5)
-    public interface ObjectoFactory {
+    private interface ObjectoFactory {
 
         @References({"professor.assignments[*].course", "enrollments[*].course"})
         Course createCourse();
@@ -158,7 +158,7 @@ class ComplexStructureTest {
 
 
     @Data
-    public static class Student {
+    private static class Student {
 
         private String name;
 
@@ -169,7 +169,7 @@ class ComplexStructureTest {
     }
 
     @Data
-    public static class Enrollment {
+    private static class Enrollment {
 
         private Course course;
         private Student student;
@@ -177,7 +177,7 @@ class ComplexStructureTest {
     }
 
     @Data
-    public static class Course {
+    private static class Course {
 
         private String name;
         private Professor professor;
@@ -189,7 +189,7 @@ class ComplexStructureTest {
     }
 
     @Data
-    public static class Professor {
+    private static class Professor {
 
         private String name;
 
@@ -200,7 +200,7 @@ class ComplexStructureTest {
     }
 
     @Data
-    public static class Assignment {
+    private static class Assignment {
 
         private Course course;
         private Professor professor;

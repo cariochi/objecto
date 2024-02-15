@@ -21,7 +21,7 @@ class CollectionGenerationTest {
                 .isNotEmpty();
     }
 
-    interface MyCollectionFactory {
+    private interface MyCollectionFactory {
 
         MyCollection createMyCollection();
 

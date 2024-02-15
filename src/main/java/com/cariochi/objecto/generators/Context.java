@@ -1,20 +1,20 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.settings.Settings;
-import com.cariochi.objecto.utils.GenericTypeUtils;
+import com.cariochi.objecto.utils.ObjectoRandom;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.With;
 
-import static com.cariochi.objecto.utils.GenericTypeUtils.getRawType;
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.replace;
@@ -22,50 +22,48 @@ import static org.apache.commons.lang3.StringUtils.split;
 
 @Getter
 @With(PRIVATE)
-@AllArgsConstructor(access = PRIVATE)
 public class Context {
 
-    private final ObjectoGenerator generator;
-    private final Settings settings;
+    private final ObjectoRandom random;
     private final String fieldName;
-    private final Type type;
-    private final Type ownerType;
+    private final ReflectoType type;
+    private final Settings settings;
     private final Context previous;
-    private Object instance;
+    @Setter private Object instance;
 
-    Context(Type type, Settings settings, ObjectoGenerator generator) {
-        this.fieldName = "";
-        this.type = type;
-        this.ownerType = null;
-        this.previous = null;
+    public Context(Type type) {
+        this(type, Objecto.defaultSettings());
+    }
+
+    public Context(Type type, Settings settings) {
+        this(type, settings, new ObjectoRandom());
+    }
+
+    public Context(Type type, Settings settings, ObjectoRandom random) {
+        this(random, "", reflect(type), settings, null, null);
+    }
+
+    private Context(ObjectoRandom random, String fieldName, ReflectoType type, Settings settings, Context previous, Object instance) {
+        this.random = random;
+        this.fieldName = fieldName;
         this.settings = settings;
-        this.generator = generator;
+        this.previous = previous;
+        this.instance = instance;
+
+        this.type = type.isTypeVariable() && instance != null
+                ? type.reflect(instance.getClass())
+                : type;
     }
 
-    public Context nextContext(String fieldName, Type fieldType, Type ownerType) {
-        return nextContext(fieldName, fieldType, ownerType, null);
-    }
-
-    public Context nextContext(String fieldName, Type fieldType, Type ownerType, Object instance) {
+    public Context nextContext(String fieldName, ReflectoType type) {
         return withPrevious(this)
                 .withFieldName(fieldName)
-                .withType(fieldType)
-                .withOwnerType(ownerType)
-                .withInstance(instance);
+                .withType(type)
+                .withInstance(null);
     }
 
     public Context withFieldSettings(Settings settings) {
         return withSettings(settings);
-    }
-
-    public Type getType() {
-        return Optional.ofNullable(getRawType(type, ownerType))
-                .or(() -> Optional.ofNullable(instance).map(Object::getClass))
-                .orElse(null);
-    }
-
-    public Class<?> getRawClass() {
-        return GenericTypeUtils.getRawClass(getType(), ownerType);
     }
 
     public int getDepth() {
@@ -78,36 +76,19 @@ public class Context {
         }
     }
 
-    public int getRecursionDepth(Type type) {
+    public int getRecursionDepth(ReflectoType type) {
         final Set<Object> instances = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
         collectInstances(type, instances);
         return instances.size();
     }
 
-    private void collectInstances(Type type, Set<Object> instances) {
+    private void collectInstances(ReflectoType type, Set<Object> instances) {
         if (getType().equals(type) && instance != null) {
             instances.add(instance);
         }
         if (previous != null) {
             previous.collectInstances(type, instances);
         }
-    }
-
-    public Object generate() {
-        return generator.generate(this);
-    }
-
-    public Object newInstance() {
-        instance = generator.newInstance(this);
-        return instance;
-    }
-
-    public boolean isCollection() {
-        return Collection.class.isAssignableFrom(getRawClass());
-    }
-
-    public boolean isMap() {
-        return Map.class.isAssignableFrom(getRawClass());
     }
 
     public String getPath() {

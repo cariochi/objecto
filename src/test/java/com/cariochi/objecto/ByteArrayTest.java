@@ -17,7 +17,7 @@ class ByteArrayTest {
     }
 
     @Data
-    public static class Arrays {
+    private static class Arrays {
 
         private byte[] bytes;
         private int[] integers;
@@ -26,7 +26,7 @@ class ByteArrayTest {
 
     }
 
-    public interface FileFactory {
+    private interface FileFactory {
 
         Arrays createFile();
 

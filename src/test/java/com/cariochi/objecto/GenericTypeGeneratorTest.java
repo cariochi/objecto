@@ -38,7 +38,7 @@ class GenericTypeGeneratorTest {
 
     }
 
-    public interface DtoFactory {
+    private interface DtoFactory {
 
         Dto<Integer, List<String>> dto();
 
@@ -46,7 +46,7 @@ class GenericTypeGeneratorTest {
 
     @Data
     @EqualsAndHashCode(callSuper = true)
-    public static class Dto<I, S> extends AbstractDto<Double, S, Set<String>> {
+    private static class Dto<I, S> extends AbstractDto<Double, S, Set<String>> {
 
         private I objectI;
         private I[] arrayI;
@@ -59,7 +59,7 @@ class GenericTypeGeneratorTest {
     }
 
     @Data
-    public static abstract class AbstractDto<T, S, C> {
+    private static abstract class AbstractDto<T, S, C> {
 
         private T parentObjectD;
         private T[] parentArrayD;

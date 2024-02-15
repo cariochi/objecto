@@ -26,18 +26,18 @@ class OneToOneWithChainTest {
 
     }
 
-    public interface ObjectoFactory {
+    private interface ObjectoFactory {
 
         @References("childHolder.child.parentHolder.parent")
         Parent createParent();
 
-//        @References("parentHolder.parent.childHolder.child")
+        //        @References("parentHolder.parent.childHolder.child")
         Child createChild();
 
     }
 
     @Data
-    public static class Parent {
+    private static class Parent {
 
         private String name;
 
@@ -46,14 +46,14 @@ class OneToOneWithChainTest {
     }
 
     @Data
-    public static class ChildHolder {
+    private static class ChildHolder {
 
         private Child child;
 
     }
 
     @Data
-    public static class Child {
+    private static class Child {
 
         private String name;
 
@@ -63,7 +63,7 @@ class OneToOneWithChainTest {
     }
 
     @Data
-    public static class ParentHolder {
+    private static class ParentHolder {
 
         private Parent parent;
 

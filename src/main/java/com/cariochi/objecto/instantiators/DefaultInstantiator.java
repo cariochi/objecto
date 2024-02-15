@@ -1,32 +1,34 @@
 package com.cariochi.objecto.instantiators;
 
 import com.cariochi.objecto.generators.Context;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.function.Function;
-import lombok.RequiredArgsConstructor;
+import com.cariochi.objecto.generators.ObjectoGenerator;
+import com.cariochi.reflecto.base.ReflectoModifiers;
+import com.cariochi.reflecto.parameters.ReflectoParameters;
+import java.util.List;
 
-import static java.lang.reflect.Modifier.isPublic;
+import static java.util.stream.Collectors.toList;
 
-@RequiredArgsConstructor
-abstract class DefaultInstantiator implements Function<Context, Object> {
+abstract class DefaultInstantiator extends AbstractInstantiator {
 
-    protected Object[] generateRandomParameters(Parameter[] parameters, Context context) {
-        return Arrays.stream(parameters)
-                .map(parameter -> {
-                    final Context childContext = context.nextContext(parameter.getName(), parameter.getParameterizedType(), context.getType());
-                    return childContext.generate();
-                })
-                .toArray();
+    protected DefaultInstantiator(ObjectoGenerator generator) {
+        super(generator);
     }
 
-    protected static int getAccessibilityOrder(int modifiers) {
-        if (isPublic(modifiers)) {
+    protected List<Object> generateRandomParameters(ReflectoParameters parameters, Context context) {
+        return parameters.stream()
+                .map(parameter -> {
+                    final Context childContext = context.nextContext(parameter.name(), parameter.type());
+                    return generate(childContext);
+                })
+                .collect(toList());
+    }
+
+    protected static int getAccessibilityOrder(ReflectoModifiers modifiers) {
+        if (modifiers.isPublic()) {
             return 0;
-        } else if (Modifier.isProtected(modifiers)) {
+        } else if (modifiers.isProtected()) {
             return 1;
-        } else if (Modifier.isPrivate(modifiers)) {
+        } else if (modifiers.isPrivate()) {
             return 2;
         } else {
             return 3;

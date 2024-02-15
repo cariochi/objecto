@@ -26,18 +26,18 @@ class OneToOneTest {
 
     }
 
-    public interface ObjectoFactory {
+    private interface ObjectoFactory {
 
         @References("child.parent")
         Parent createParent();
 
-//        @References("parent.child")
+        //        @References("parent.child")
         Child createChild();
 
     }
 
     @Data
-    public static class Parent {
+    private static class Parent {
 
         private String name;
 
@@ -46,7 +46,7 @@ class OneToOneTest {
     }
 
     @Data
-    public static class Child {
+    private static class Child {
 
         private String name;
 
