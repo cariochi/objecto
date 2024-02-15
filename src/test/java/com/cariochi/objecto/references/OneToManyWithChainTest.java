@@ -38,18 +38,18 @@ class OneToManyWithChainTest {
 
     }
 
-    public interface ObjectoFactory {
+    private interface ObjectoFactory {
 
         @References("childrenHolders[*].children[*].parent")
         Parent createParent();
 
-//        @References("parent.childrenHolders[*].children[*]")
+        //        @References("parent.childrenHolders[*].children[*]")
         Child createChild();
 
     }
 
     @Data
-    public static class Parent {
+    private static class Parent {
 
         private String name;
 
@@ -58,14 +58,14 @@ class OneToManyWithChainTest {
     }
 
     @Data
-    public static class ChildrenHolder {
+    private static class ChildrenHolder {
 
         private List<Child> children;
 
     }
 
     @Data
-    public static class Child {
+    private static class Child {
 
         private String name;
 

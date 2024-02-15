@@ -1,7 +1,6 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.utils.Random;
-import java.lang.reflect.Type;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
@@ -25,42 +24,41 @@ class TemporalGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
-        final Class<?> rawClass = context.getRawClass();
-        return Temporal.class.isAssignableFrom(rawClass) || Date.class.isAssignableFrom(rawClass);
+        return context.getType().is(Temporal.class) || context.getType().is(Date.class);
     }
 
     @Override
     public Object generate(Context context) {
-        final Type type = context.getType();
+        final ReflectoType typeReflection = context.getType();
         final Instant instant = generateInstant(context);
         final ZonedDateTime zonedDateTime = instant.atZone(UTC);
-        if (type.equals(Date.class)) {
+        if (typeReflection.is(Date.class)) {
             return Date.from(instant);
-        } else if (type.equals(Instant.class)) {
+        } else if (typeReflection.is(Instant.class)) {
             return instant;
-        } else if (type.equals(LocalDate.class)) {
+        } else if (typeReflection.is(LocalDate.class)) {
             return zonedDateTime.toLocalDate();
-        } else if (type.equals(LocalTime.class)) {
+        } else if (typeReflection.is(LocalTime.class)) {
             return zonedDateTime.toLocalTime();
-        } else if (type.equals(LocalDateTime.class)) {
+        } else if (typeReflection.is(LocalDateTime.class)) {
             return zonedDateTime.toLocalDateTime();
-        } else if (type.equals(ZonedDateTime.class)) {
+        } else if (typeReflection.is(ZonedDateTime.class)) {
             return zonedDateTime;
-        } else if (type.equals(OffsetDateTime.class)) {
+        } else if (typeReflection.is(OffsetDateTime.class)) {
             return instant.atOffset(UTC);
-        } else if (type.equals(Year.class)) {
+        } else if (typeReflection.is(Year.class)) {
             return Year.from(zonedDateTime);
-        } else if (type.equals(Month.class)) {
+        } else if (typeReflection.is(Month.class)) {
             return Month.from(zonedDateTime);
-        } else if (type.equals(MonthDay.class)) {
+        } else if (typeReflection.is(MonthDay.class)) {
             return MonthDay.from(zonedDateTime);
-        } else if (type.equals(DayOfWeek.class)) {
+        } else if (typeReflection.is(DayOfWeek.class)) {
             return DayOfWeek.from(zonedDateTime);
-        } else if (type.equals(YearMonth.class)) {
+        } else if (typeReflection.is(YearMonth.class)) {
             return YearMonth.from(zonedDateTime);
-        } else if (type.equals(ZoneOffset.class)) {
+        } else if (typeReflection.is(ZoneOffset.class)) {
             return ZoneOffset.from(zonedDateTime);
-        } else if (type.equals(OffsetTime.class)) {
+        } else if (typeReflection.is(OffsetTime.class)) {
             return OffsetTime.from(zonedDateTime);
         } else {
             return null;
@@ -69,7 +67,7 @@ class TemporalGenerator implements Generator {
 
     private Instant generateInstant(Context context) {
         long yearInSeconds = Duration.ofDays(365).getSeconds();
-        long randomSeconds = (long) (Random.nextDouble(context.getSettings().years()) * yearInSeconds);
+        long randomSeconds = (long) (context.getRandom().nextDouble(context.getSettings().years()) * yearInSeconds);
         return Instant.now().plusSeconds(randomSeconds);
     }
 

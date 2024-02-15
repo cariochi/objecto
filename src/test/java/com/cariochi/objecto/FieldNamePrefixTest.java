@@ -22,11 +22,11 @@ class FieldNamePrefixTest {
     }
 
     @WithSettings(strings = @Strings(fieldNamePrefix = true))
-    interface SuperFactory {
+    private interface SuperFactory {
 
     }
 
-    interface DtoFactory extends SuperFactory{
+    private interface DtoFactory extends SuperFactory {
 
         @WithSettings(path = "month", integers = @IntRange(min = 1, max = 2))
         @WithSettings(path = "year", integers = @IntRange(min = 2024, max = 2025))
@@ -35,7 +35,7 @@ class FieldNamePrefixTest {
     }
 
     @Data
-    public static class Dto {
+    private static class Dto {
 
         private String name;
         private String value;

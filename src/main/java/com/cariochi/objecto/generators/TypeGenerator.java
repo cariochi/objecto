@@ -1,25 +1,25 @@
 package com.cariochi.objecto.generators;
 
-import java.lang.reflect.Type;
-import java.util.function.Supplier;
+
+import com.cariochi.reflecto.methods.TargetMethod;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
-class TypeGenerator implements Generator {
+class TypeGenerator extends AbstractCustomGenerator {
 
-    private final Type fieldType;
-    private final Supplier<Object> generator;
+
+    public TypeGenerator(TargetMethod method) {
+        super(method);
+    }
 
     @Override
     public boolean isSupported(Context context) {
-        return fieldType.equals(context.getType());
+        return method.returnType().equals(context.getType());
     }
 
     @Override
     public Object generate(Context context) {
-        return generator.get();
+        return invokeGenerationMethod(context);
     }
 
 }

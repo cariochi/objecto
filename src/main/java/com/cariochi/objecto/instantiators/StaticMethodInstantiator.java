@@ -1,44 +1,52 @@
 package com.cariochi.objecto.instantiators;
 
 import com.cariochi.objecto.generators.Context;
-import java.lang.reflect.Method;
+import com.cariochi.objecto.generators.ObjectoGenerator;
+import com.cariochi.reflecto.methods.ReflectoMethod;
+import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.types.ReflectoType;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
-import static java.lang.reflect.Modifier.isPublic;
-import static java.lang.reflect.Modifier.isStatic;
 import static java.util.Comparator.comparingInt;
+import static java.util.Comparator.comparingLong;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public class StaticMethodInstantiator extends DefaultInstantiator {
 
+    private static final Comparator<TargetMethod> MODIFIERS_COMPARATOR = comparingInt(method -> getAccessibilityOrder(method.modifiers()));
+    private static final Comparator<TargetMethod> PARAMETERS_COMPARATOR = comparingLong(method -> method.parameters().size());
+
+    public StaticMethodInstantiator(ObjectoGenerator generator) {
+        super(generator);
+    }
+
     @Override
     public Object apply(Context context) {
-        final Class<?> rawClass = context.getRawClass();
-        final List<Method> methods = Stream.of(rawClass.getDeclaredMethods())
-                .filter(m -> isPublic(m.getModifiers()))
-                .filter(m -> isStatic(m.getModifiers()))
-                .filter(m -> rawClass.isAssignableFrom(m.getReturnType()))
-                .sorted(comparingInt((Method m) -> getAccessibilityOrder(m.getModifiers())).thenComparingInt(Method::getParameterCount))
-                .collect(toList());
-        return methods.stream()
-                .map(c -> newInstance(c, context))
+        final ReflectoType type = context.getType();
+        return type.methods().stream()
+                .filter(method -> method.modifiers().isPublic())
+                .filter(method -> method.modifiers().isStatic())
+                .filter(method -> type.isAssignableFrom(method.returnType().actualType()))
+                .map(ReflectoMethod::asStatic)
+                .sorted(MODIFIERS_COMPARATOR.thenComparing(PARAMETERS_COMPARATOR))
+                .map(method -> newInstance(method, context))
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
     }
 
-    private Object newInstance(Method staticConstructor, Context context) {
+    private Object newInstance(TargetMethod staticConstructor, Context context) {
         try {
             log.trace("Using static method `{}`", staticConstructor.toGenericString());
-            final Object[] args = generateRandomParameters(staticConstructor.getParameters(), context);
-            log.trace("Static method parameters: `{}({})`", staticConstructor.getName(), Stream.of(args).map(String::valueOf).collect(joining(", ")));
-            return staticConstructor.invoke(null, args);
+            final List<Object> args = generateRandomParameters(staticConstructor.parameters(), context);
+            log.trace("Static method parameters: `{}({})`", staticConstructor.name(), args.stream().map(String::valueOf).collect(joining(", ")));
+            return staticConstructor.invoke(args.toArray());
         } catch (Exception e) {
+            log.warn(e.getMessage(), e);
             return null;
         }
     }

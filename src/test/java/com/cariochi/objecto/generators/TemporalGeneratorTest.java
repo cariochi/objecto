@@ -12,7 +12,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.Year;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.stream.Stream;
@@ -41,7 +40,6 @@ class TemporalGeneratorTest {
                 arguments(MonthDay.class),
                 arguments(DayOfWeek.class),
                 arguments(YearMonth.class),
-                arguments(ZoneOffset.class),
                 arguments(OffsetTime.class)
         );
     }
