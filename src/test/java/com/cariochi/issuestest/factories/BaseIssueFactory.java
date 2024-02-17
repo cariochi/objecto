@@ -14,9 +14,12 @@ import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.PostProcessor;
 import com.cariochi.objecto.References;
 import com.cariochi.objecto.WithSettings;
+import com.cariochi.objecto.settings.Range;
+import com.cariochi.objecto.utils.ObjectoRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import net.datafaker.Faker;
 
 @WithSettings(maxRecursionDepth = 3)
@@ -52,13 +55,13 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
     }
 
     @Generator(type = Issue.class, expression = Issue.Fields.key)
-    private String issueKeyGenerator() {
-        return "ID-" + new Faker().number().randomNumber(4, true);
+    private String issueKeyGenerator(ObjectoRandom random) {
+        return "ID-" + random.nextInt(Range.of(1000, 10000));
     }
 
     @Generator(type = Comment.class, expression = Comment.Fields.commenter)
-    private User commenterGenerator() {
-        Faker faker = new Faker();
+    private User commenterGenerator(Random random) {
+        Faker faker = new Faker(random);
         return User.builder()
                 .fullName("Vadym Deineka")
                 .companyName(faker.company().name())
