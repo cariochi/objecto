@@ -11,4 +11,8 @@ public abstract class UserFactory implements BaseFactory, BaseUserGenerators {
     @Modifier("username=?")
     public abstract UserFactory withUsername(String username);
 
+    public User createDefaultUser() {
+        return User.builder().build();
+    }
+
 }

@@ -12,7 +12,7 @@ class EnumGenerator implements Generator {
 
     @Override
     public Object generate(Context context) {
-        final List<Object> enumConstants = context.getType().asEnum().constants();
+        final List<?> enumConstants = context.getType().asEnum().constants().list();
         final int randomIndex = context.getRandom().nextInt(Range.of(0, enumConstants.size()));
         return enumConstants.get(randomIndex);
     }

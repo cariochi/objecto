@@ -1,8 +1,8 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.Objecto;
+import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.settings.Settings;
-import com.cariochi.objecto.utils.ObjectoRandom;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.Deque;
@@ -50,7 +50,7 @@ public class Context {
         this.previous = previous;
         this.instance = instance;
 
-        this.type = type.isTypeVariable() && instance != null
+        this.type = type.actualClass() == null && instance != null
                 ? type.reflect(instance.getClass())
                 : type;
     }

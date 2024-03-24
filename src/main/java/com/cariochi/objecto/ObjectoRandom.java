@@ -1,4 +1,4 @@
-package com.cariochi.objecto.utils;
+package com.cariochi.objecto;
 
 import com.cariochi.objecto.proxy.HasSeed;
 import com.cariochi.objecto.settings.Range;

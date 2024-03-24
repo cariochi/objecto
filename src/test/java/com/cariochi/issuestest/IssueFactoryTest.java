@@ -17,7 +17,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.cariochi.issuestest.model.Issue.Status.CLOSED;
@@ -63,15 +62,15 @@ class IssueFactoryTest {
 
     @Test
     void should_generate_list() {
-        Assertions.assertThat(issueFactory.createIssues())
+        assertThat(issueFactory.createIssues())
                 .isNotEmpty();
 
-        Assertions.assertThat(issueFactory.createIssues(Type.BUG))
+        assertThat(issueFactory.createIssues(Type.BUG))
                 .isNotEmpty()
                 .extracting(Issue::getType)
                 .containsOnly(Type.BUG);
 
-        Assertions.assertThat(issueFactory.withType(Type.BUG).createIssues())
+        assertThat(issueFactory.withType(Type.BUG).createIssues())
                 .isNotEmpty()
                 .extracting(Issue::getType)
                 .containsOnly(Type.BUG);
@@ -82,11 +81,11 @@ class IssueFactoryTest {
         final Type type = Type.BUG;
         final User assignee = userFactory.createUser();
 
-        Assertions.assertThat(issueFactory.createIssue(type))
+        assertThat(issueFactory.createIssue(type))
                 .extracting(Issue::getType)
                 .isEqualTo(type);
 
-        Assertions.assertThat(issueFactory.createIssue(assignee))
+        assertThat(issueFactory.createIssue(assignee))
                 .extracting(Issue::getAssignee)
                 .isEqualTo(assignee);
     }
@@ -104,11 +103,11 @@ class IssueFactoryTest {
                 .withStatus(status)
                 .withAssignee(assignee);
 
-        Assertions.assertThat(modifiedFactory.createIssue())
+        assertThat(modifiedFactory.createIssue())
                 .extracting(Issue::getKey, Issue::getType, Issue::getStatus, Issue::getAssignee)
                 .containsExactly(key, type, status, assignee);
 
-        Assertions.assertThat(modifiedFactory.createDefaultIssue())
+        assertThat(modifiedFactory.createDefaultIssue())
                 .extracting(Issue::getKey, Issue::getType, Issue::getStatus, Issue::getAssignee)
                 .containsExactly(key, type, status, assignee);
     }
@@ -125,11 +124,11 @@ class IssueFactoryTest {
     void should_modify_simple_complex_paths() {
         final User commenter = userFactory.createUser();
 
-        Assertions.assertThat(issueFactory.withCommenter(0, commenter).createIssue().getComments().get(0))
+        assertThat(issueFactory.withCommenter(0, commenter).createIssue().getComments().get(0))
                 .extracting(Comment::getCommenter)
                 .isEqualTo(commenter);
 
-        Assertions.assertThat(issueFactory.withCommenter(0, commenter).createDefaultIssue().getComments().get(0))
+        assertThat(issueFactory.withCommenter(0, commenter).createDefaultIssue().getComments().get(0))
                 .extracting(Comment::getCommenter)
                 .isEqualTo(commenter);
     }
@@ -138,11 +137,11 @@ class IssueFactoryTest {
     void should_modify_complex_paths() {
         final User commenter = userFactory.createUser();
 
-        Assertions.assertThat(issueFactory.withAllCommenter(commenter).createIssue().getComments())
+        assertThat(issueFactory.withAllCommenter(commenter).createIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .containsOnly(commenter);
 
-        Assertions.assertThat(issueFactory.withAllCommenter(commenter).createDefaultIssue().getComments())
+        assertThat(issueFactory.withAllCommenter(commenter).createDefaultIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .containsOnly(commenter);
     }
@@ -151,24 +150,24 @@ class IssueFactoryTest {
     void should_modify_paths_with_method_call() {
         final User commenter = userFactory.createUser();
 
-        Assertions.assertThat(issueFactory.withAllCommenterByMethod(commenter).createIssue().getComments())
+        assertThat(issueFactory.withAllCommenterByMethod(commenter).createIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .containsOnly(commenter);
 
-        Assertions.assertThat(issueFactory.withAllCommenterByMethod(commenter).createDefaultIssue().getComments())
+        assertThat(issueFactory.withAllCommenterByMethod(commenter).createDefaultIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .containsOnly(commenter);
     }
 
     @Test
     void should_modify_paths_with_method_with_multiple_parameters() {
-        Assertions.assertThat(issueFactory.withDependency(DependencyType.BLOCK, new Issue("BLOCK")).createIssue().getDependencies())
+        assertThat(issueFactory.withDependency(DependencyType.BLOCK, new Issue("BLOCK")).createIssue().getDependencies())
                 .containsEntry(DependencyType.BLOCK, new Issue("BLOCK"));
 
-        Assertions.assertThat(issueFactory.withDependency(DependencyType.BLOCK, new Issue("BLOCK")).createDefaultIssue().getDependencies())
+        assertThat(issueFactory.withDependency(DependencyType.BLOCK, new Issue("BLOCK")).createDefaultIssue().getDependencies())
                 .containsEntry(DependencyType.BLOCK, new Issue("BLOCK"));
 
-        Assertions.assertThat(issueFactory.createIssuesWithDependency(DependencyType.BLOCK, new Issue("BLOCK")).getDependencies())
+        assertThat(issueFactory.createIssuesWithDependency(DependencyType.BLOCK, new Issue("BLOCK")).getDependencies())
                 .containsEntry(DependencyType.BLOCK, new Issue("BLOCK"));
     }
 
@@ -176,11 +175,11 @@ class IssueFactoryTest {
     void should_not_fail_on_wrong_complex_paths() {
         final User commenter = userFactory.createUser();
 
-        Assertions.assertThat(issueFactory.withWrongCommenter(commenter).createIssue().getComments())
+        assertThat(issueFactory.withWrongCommenter(commenter).createIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .doesNotContain(commenter);
 
-        Assertions.assertThat(issueFactory.withWrongCommenter(commenter).createDefaultIssue().getComments())
+        assertThat(issueFactory.withWrongCommenter(commenter).createDefaultIssue().getComments())
                 .extracting(Comment::getCommenter)
                 .doesNotContain(commenter);
     }

@@ -11,11 +11,11 @@ import com.cariochi.issuestest.model.User;
 import com.cariochi.objecto.Generator;
 import com.cariochi.objecto.Instantiator;
 import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.PostProcessor;
 import com.cariochi.objecto.References;
 import com.cariochi.objecto.WithSettings;
 import com.cariochi.objecto.settings.Range;
-import com.cariochi.objecto.utils.ObjectoRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +51,7 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
 
     @Instantiator
     private Attachment<?> newAttachment() {
-        return Attachment.builder().fileContent(new byte[0]).build();
+        return Attachment.builder().fileContent("").build();
     }
 
     @Generator(type = Issue.class, expression = Issue.Fields.key)
