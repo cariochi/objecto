@@ -1,7 +1,6 @@
 package com.cariochi.objecto;
 
 import com.cariochi.objecto.extension.ObjectoExtension;
-import com.cariochi.objecto.utils.ObjectoRandom;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

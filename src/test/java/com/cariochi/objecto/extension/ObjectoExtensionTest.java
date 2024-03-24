@@ -2,8 +2,8 @@ package com.cariochi.objecto.extension;
 
 import com.cariochi.objecto.Generator;
 import com.cariochi.objecto.Objecto;
+import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.Seed;
-import com.cariochi.objecto.utils.ObjectoRandom;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

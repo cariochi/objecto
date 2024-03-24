@@ -3,18 +3,19 @@ package com.cariochi.objecto;
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.objecto.proxy.HasSeed;
 import com.cariochi.objecto.proxy.ObjectModifier;
-import com.cariochi.objecto.proxy.ProxyHandler;
+import com.cariochi.objecto.proxy.ObjectoGeneratorProxy;
 import com.cariochi.objecto.settings.Settings;
 import com.cariochi.objecto.settings.SettingsMapper;
 import com.cariochi.reflecto.methods.TargetMethods;
-import com.cariochi.reflecto.proxy.ProxyFactory;
+import com.cariochi.reflecto.proxy.ProxyType;
 import com.cariochi.reflecto.types.ReflectoType;
+import java.util.List;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.objecto.settings.SettingsMapper.map;
-import static com.cariochi.objecto.utils.AnnotationUtils.findAllAnnotations;
+import static com.cariochi.reflecto.Reflecto.proxy;
 import static com.cariochi.reflecto.Reflecto.reflect;
 
 @Slf4j
@@ -32,8 +33,12 @@ public class Objecto {
         if (seed != null) {
             generator.getRandom().setSeed(seed);
         }
-        final ProxyHandler<T> methodHandler = new ProxyHandler<>(targetClass, generator, getSettings(targetClass));
-        final T proxy = ProxyFactory.createInstance(methodHandler, targetClass, ObjectModifier.class, HasSeed.class);
+        final ProxyType proxyType = proxy(targetClass, ObjectModifier.class, HasSeed.class);
+        final T proxy = proxyType
+                .with(() -> new ObjectoGeneratorProxy(proxyType, generator, getSettings(targetClass)))
+                .getConstructor()
+                .newInstance();
+
         final TargetMethods methods = reflect(proxy).methods();
         addConstructors(generator, methods);
         addReferenceGenerators(generator, methods);
@@ -48,9 +53,12 @@ public class Objecto {
     }
 
     private static <T> Settings getSettings(Class<T> targetClass) {
-        return findAllAnnotations(targetClass, WithSettings.class).stream().findFirst()
+        final ReflectoType reflectoType = reflect(targetClass);
+        return Stream.of(List.of(reflectoType), reflectoType.allInterfaces(), reflectoType.allSuperTypes()).flatMap(List::stream)
+                .flatMap(type -> type.annotations().find(WithSettings.class).stream())
+                .findFirst()
                 .map(SettingsMapper::map)
-                .orElse(defaultSettings());
+                .orElseGet(Objecto::defaultSettings);
     }
 
     private static void addConstructors(ObjectoGenerator generator, TargetMethods methods) {
@@ -60,31 +68,29 @@ public class Objecto {
     }
 
     private static void addReferenceGenerators(ObjectoGenerator generator, TargetMethods methods) {
-        methods.stream()
-                .forEach(method -> method.annotations().find(References.class)
-                        .ifPresent(annotation -> generator.addReferenceGenerators(method.returnType().actualType(), annotation.value()))
-                );
+        methods.forEach(method -> method.annotations().find(References.class)
+                .ifPresent(annotation -> generator.addReferenceGenerators(method.returnType().actualType(), annotation.value()))
+        );
     }
 
     private static void addFieldSettings(ObjectoGenerator generator, TargetMethods methods) {
-
-        methods.stream()
-                .forEach(method -> method.annotations().find(WithSettingsList.class)
+        methods.forEach(method ->
+                method.annotations().find(WithSettingsList.class)
                         .map(WithSettingsList::value).stream().flatMap(Stream::of)
                         .forEach(annotation -> generator.addFieldSettings(method.returnType(), annotation.path(), map(annotation)))
-                );
+        );
 
-        methods.stream()
-                .forEach(method -> method.annotations().find(WithSettings.class)
+        methods.forEach(method ->
+                method.annotations().find(WithSettings.class)
                         .ifPresent(annotation -> generator.addFieldSettings(method.returnType(), annotation.path(), map(annotation)))
-                );
+        );
     }
 
     private static void addGenerators(ObjectoGenerator generator, TargetMethods methods) {
-        methods.stream()
-                .forEach(method -> method.annotations().find(Generator.class)
+        methods.forEach(method ->
+                method.annotations().find(Generator.class)
                         .ifPresent(annotation -> generator.addCustomGenerator(annotation.type(), annotation.expression(), method))
-                );
+        );
     }
 
     private static void addPostProcessors(ObjectoGenerator generator, TargetMethods methods) {

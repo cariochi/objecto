@@ -9,58 +9,52 @@ import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameter;
 import com.cariochi.reflecto.parameters.ReflectoParameters;
-import com.cariochi.reflecto.proxy.ProxyFactory;
-import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
+import com.cariochi.reflecto.proxy.InvocationHandler;
+import com.cariochi.reflecto.proxy.ProxyType;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ProxyHandler<T> implements MethodHandler, ObjectModifier {
+public class ObjectoGeneratorProxy implements ObjectModifier, HasSeed, InvocationHandler {
 
-    private final Class<T> targetClass;
+    private final ProxyType proxyType;
     private final ObjectoGenerator generator;
     private final Settings settings;
     private final Map<String, Object[]> parameters = new LinkedHashMap<>();
 
     @Override
-    public Object invoke(Object proxy, ReflectoMethod thisMethod, Object[] args, TargetMethod proceed) throws Throwable {
+    public Object invoke(Object proxy, ReflectoMethod thisMethod, Object[] args, TargetMethod proceed) {
 
-        if (Object.class.equals(thisMethod.declaringType().actualClass())) {
-            return proceed.invoke(args);
-        }
-
-        if (thisMethod.declaringType().is(ObjectModifier.class)) {
-            return thisMethod.withTarget(this).invoke(args);
-        }
-
-        if (thisMethod.declaringType().is(HasSeed.class)) {
-            return thisMethod.withTarget(generator.getRandom()).invoke(args);
+        if (proceed != null) {
+            final Object result = proceed.invoke(args);
+            return Object.class.equals(thisMethod.declaringType().actualType())
+                    ? result
+                    : modifyObject(result);
         }
 
         final Map<String, Object[]> methodParameter = getMethodParameters(thisMethod, args);
-
-        if (proceed == null) {
-            if (thisMethod.returnType().equals(thisMethod.declaringType())) {
-                final ProxyHandler<T> childMethodHandler = new ProxyHandler<>(targetClass, generator, settings);
-                childMethodHandler.parameters.putAll(parameters);
-                childMethodHandler.parameters.putAll(methodParameter);
-                return ProxyFactory.createInstance(childMethodHandler, targetClass, com.cariochi.objecto.proxy.ObjectModifier.class);
-            } else {
-                thisMethod.annotations().find(Seed.class).map(Seed::value).ifPresent(seed -> generator.getRandom().setSeed(seed));
-                final Object instance = generator.generate(thisMethod.returnType().actualType(), settings);
-                final Map<String, Object[]> tmpMap = new LinkedHashMap<>();
-                tmpMap.putAll(parameters);
-                tmpMap.putAll(methodParameter);
-                return ObjectoModifier.modifyObject(instance, tmpMap);
-            }
+        if (thisMethod.returnType().equals(thisMethod.declaringType())) {
+            return proxyType.with(() -> {
+                        final ObjectoGeneratorProxy childHandler = new ObjectoGeneratorProxy(proxyType, generator, settings);
+                        childHandler.parameters.putAll(parameters);
+                        childHandler.parameters.putAll(methodParameter);
+                        return childHandler;
+                    })
+                    .getConstructor()
+                    .newInstance();
         } else {
-            return modifyObject(proceed.invoke(args));
+            thisMethod.annotations().find(Seed.class).map(Seed::value).ifPresent(seed -> generator.getRandom().setSeed(seed));
+            final Object instance = generator.generate(thisMethod.returnType().actualType(), settings);
+            final Map<String, Object[]> tmpMap = new LinkedHashMap<>();
+            tmpMap.putAll(parameters);
+            tmpMap.putAll(methodParameter);
+            return ObjectoModifier.modifyObject(instance, tmpMap);
         }
+
     }
 
     private Map<String, Object[]> getMethodParameters(ReflectoMethod method, Object[] args) {
@@ -90,15 +84,15 @@ public class ProxyHandler<T> implements MethodHandler, ObjectModifier {
         final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
         for (int i = 0; i < parameters.size(); i++) {
             final ReflectoParameter param = parameters.get(i);
-            final Optional<Modifier> modifierParameter = param.annotations().find(Modifier.class);
-            if (modifierParameter.isEmpty()) {
+            final Modifier modifierParameter = param.annotations().find(Modifier.class).orElse(null);
+            if (modifierParameter == null) {
                 if (param.isNamePresent()) {
                     methodParameters.put(param.name(), Stream.of(args[i]).toArray());
                 } else {
                     throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
                 }
             } else {
-                for (String value : modifierParameter.get().value()) {
+                for (String value : modifierParameter.value()) {
                     methodParameters.put(value, Stream.of(args[i]).toArray());
                 }
             }
@@ -109,6 +103,21 @@ public class ProxyHandler<T> implements MethodHandler, ObjectModifier {
     @Override
     public <T> T modifyObject(T object) {
         return ObjectoModifier.modifyObject(object, parameters);
+    }
+
+    @Override
+    public long getSeed() {
+        return generator.getRandom().getSeed();
+    }
+
+    @Override
+    public void setSeed(long seed) {
+        generator.getRandom().setSeed(seed);
+    }
+
+    @Override
+    public boolean isCustomSeed() {
+        return generator.getRandom().isCustomSeed();
     }
 
 }

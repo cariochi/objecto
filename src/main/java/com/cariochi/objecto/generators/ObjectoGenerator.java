@@ -1,8 +1,8 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.instantiators.ObjectoInstantiator;
 import com.cariochi.objecto.settings.Settings;
-import com.cariochi.objecto.utils.ObjectoRandom;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
@@ -115,6 +115,10 @@ public class ObjectoGenerator {
                     contextPath,
                     fieldContext.getType().actualType().getTypeName()
             );
+            return null;
+        }
+
+        if (fieldContext.getType().actualClass() == null) {
             return null;
         }
 

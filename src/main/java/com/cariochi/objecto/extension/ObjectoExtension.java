@@ -1,8 +1,8 @@
 package com.cariochi.objecto.extension;
 
+import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.Seed;
 import com.cariochi.objecto.proxy.HasSeed;
-import com.cariochi.objecto.utils.ObjectoRandom;
 import com.cariochi.reflecto.fields.TargetField;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
