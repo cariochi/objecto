@@ -28,10 +28,10 @@ class MapGenerator extends AbstractObjectsGenerator {
         if (map != null) {
             map.clear();
             for (int i = 0; i < context.getRandom().nextInt(context.getSettings().maps().size()); i++) {
-                Context context2 = context.nextContext("[key]", keyType);
-                final Object key = generator.generate(context2);
-                Context context1 = context.nextContext("[value]", valueType);
-                final Object value = generator.generate(context1);
+                Context keyContext = context.nextContext("[key]", keyType);
+                final Object key = generator.generate(keyContext);
+                Context valueContext = context.nextContext("[value]", valueType);
+                final Object value = generator.generate(valueContext);
                 if (key == null || value == null) {
                     return map;
                 }
