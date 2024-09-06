@@ -15,7 +15,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
 import static java.time.ZoneOffset.UTC;
@@ -24,7 +24,7 @@ class TemporalGenerator implements Generator {
 
     @Override
     public boolean isSupported(Context context) {
-        return context.getType().is(Temporal.class) || context.getType().is(Date.class);
+        return context.getType().is(TemporalAccessor.class) || context.getType().is(Date.class);
     }
 
     @Override

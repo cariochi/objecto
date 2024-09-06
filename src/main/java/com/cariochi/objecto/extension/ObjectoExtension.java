@@ -23,7 +23,7 @@ public class ObjectoExtension implements BeforeEachCallback, AfterEachCallback {
                 .map(Seed::value)
                 .orElseGet(ObjectoRandom::randomSeed);
 
-        reflect(extensionContext.getRequiredTestInstance()).includeEnclosing().fields().stream()
+        reflect(extensionContext.getRequiredTestInstance()).fields().stream()
                 .map(TargetField::getValue)
                 .filter(HasSeed.class::isInstance)
                 .map(HasSeed.class::cast)

@@ -33,10 +33,12 @@ public class ObjectoGenerator {
             new NumberGenerator(),
             new BooleanGenerator(),
             new CollectionGenerator(this),
+            new StreamGenerator(this),
             new MapGenerator(this),
             new ArrayGenerator(this),
             new TemporalGenerator(),
             new CharacterGenerator(),
+            new OptionalGenerator(this),
             new PrimitiveGenerator(),
             new EnumGenerator(),
             new CustomObjectGenerator(this)
