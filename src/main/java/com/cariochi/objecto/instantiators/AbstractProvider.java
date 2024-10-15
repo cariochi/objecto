@@ -6,7 +6,7 @@ import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class AbstractInstantiator implements Function<Context, Object> {
+public abstract class AbstractProvider implements Function<Context, Object> {
 
     private final ObjectoGenerator generator;
 

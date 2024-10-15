@@ -1,14 +1,21 @@
 package com.cariochi.objecto;
 
 import com.cariochi.objecto.proxy.HasSeed;
-import com.cariochi.objecto.settings.Range;
-import com.cariochi.objecto.settings.Settings.Strings;
+import com.cariochi.reflecto.invocations.model.Reflection;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import lombok.Getter;
+import net.datafaker.Faker;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.simple.JDKRandomWrapper;
 import org.apache.commons.rng.simple.RandomSource;
+
+import static com.cariochi.reflecto.Reflecto.reflect;
 
 public class ObjectoRandom implements HasSeed {
 
@@ -16,6 +23,8 @@ public class ObjectoRandom implements HasSeed {
     private final UniformRandomProvider randomProvider = new JDKRandomWrapper(random);
     @Getter private long seed;
     @Getter private boolean customSeed = false;
+
+    private final Map<String, Reflection> fakers = new HashMap<>();
 
     public ObjectoRandom() {
         seed = randomSeed();
@@ -26,53 +35,6 @@ public class ObjectoRandom implements HasSeed {
         return RandomSource.JDK.create().nextLong();
     }
 
-    public int nextInt(Range<Integer> range) {
-        return randomProvider.nextInt(range.min(), range.max());
-    }
-
-    public long nextLong(Range<Long> range) {
-        return randomProvider.nextLong(range.min(), range.max());
-    }
-
-    public boolean nextBoolean() {
-        return randomProvider.nextBoolean();
-    }
-
-    public float nextFloat(Range<Float> range) {
-        return randomProvider.nextFloat(range.min(), range.max());
-    }
-
-    public double nextDouble(Range<Double> range) {
-        return randomProvider.nextDouble(range.min(), range.max());
-    }
-
-    public String nextString(Strings stringsSettings) {
-        String string;
-        final int count = nextInt(stringsSettings.size());
-        switch (stringsSettings.type()) {
-            case ALPHANUMERIC:
-                string = RandomStringUtils.random(count, 0, 0, true, true, null, random);
-                break;
-            case NUMERIC:
-                string = RandomStringUtils.random(count, 0, 0, false, true, null, random);
-                break;
-            case ASCII:
-                string = RandomStringUtils.random(count, 32, 127, false, false, null, random);
-                break;
-            case GRAPH:
-                string = RandomStringUtils.random(count, 33, 126, false, false, null, random);
-                break;
-            case PRINT:
-                string = RandomStringUtils.random(count, 32, 126, false, false, null, random);
-                break;
-            case ALPHABETIC:
-            default:
-                string = RandomStringUtils.random(count, 0, 0, true, false, null, random);
-                break;
-        }
-        return stringsSettings.uppercase() ? string.toUpperCase() : string;
-    }
-
     @Override
     public void setSeed(long seed) {
         this.customSeed = true;
@@ -80,4 +42,91 @@ public class ObjectoRandom implements HasSeed {
         this.random.setSeed(seed);
     }
 
+    public int nextInt() {
+        return randomProvider.nextInt();
+    }
+
+    public int nextInt(int min, int max) {
+        return randomProvider.nextInt(min, max + 1);
+    }
+
+    public long nextLong() {
+        return randomProvider.nextLong();
+    }
+
+    public long nextLong(long min, long max) {
+        return randomProvider.nextLong(min, max + 1);
+    }
+
+    public float nextFloat() {
+        return randomProvider.nextFloat();
+    }
+
+    public float nextFloat(float min, float max) {
+        return randomProvider.nextFloat(min, max + 1);
+    }
+
+    public double nextDouble() {
+        return randomProvider.nextDouble();
+    }
+
+    public double nextDouble(double min, double max) {
+        return randomProvider.nextDouble(min, max + 1);
+    }
+
+    public boolean nextBoolean() {
+        return randomProvider.nextBoolean();
+    }
+
+    public String nextString() {
+        return nextString(8, 16, true, false, false);
+    }
+
+    public String nextString(int size) {
+        return nextString(size, size, true, false, false);
+    }
+
+    public String nextString(int minSize, int maxSize, boolean letters, boolean numbers, boolean uppercase) {
+        final int count = nextInt(minSize, maxSize);
+        String string = RandomStringUtils.random(count, 0, 0, letters, numbers, null, random);
+        return uppercase ? string.toUpperCase() : string;
+    }
+
+    public String nextDatafakerString(String method) {
+        return nextDatafakerString("en", method);
+    }
+
+    public String nextDatafakerString(String locale, String method) {
+        if (!method.contains("(")) {
+            method = method.replace(".", "().") + "()";
+        }
+        final Reflection faker = getFaker(locale);
+        return Objects.toString(faker.perform(method));
+    }
+
+    private Instant nextInstant() {
+        return Instant.ofEpochSecond(nextLong());
+    }
+
+    public Instant nextInstant(Instant min, Instant max) {
+        long minSeconds = min.getEpochSecond();
+        long maxSeconds = max.getEpochSecond();
+        return Instant.ofEpochSecond(nextLong(minSeconds, maxSeconds));
+    }
+
+    public Instant nextDatafakerInstant(String method) {
+        return nextDatafakerInstant("en", method);
+    }
+
+    public Instant nextDatafakerInstant(String locale, String method) {
+        if (!method.contains("(")) {
+            method = method.replace(".", "().") + "()";
+        }
+        final Reflection faker = getFaker(locale);
+        return faker.perform(method);
+    }
+
+    private Reflection getFaker(String locale) {
+        return fakers.computeIfAbsent(locale, key -> reflect(new Faker(new Locale(key), random)));
+    }
 }

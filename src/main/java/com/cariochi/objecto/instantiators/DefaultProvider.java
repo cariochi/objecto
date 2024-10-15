@@ -8,9 +8,9 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-abstract class DefaultInstantiator extends AbstractInstantiator {
+abstract class DefaultProvider extends AbstractProvider {
 
-    protected DefaultInstantiator(ObjectoGenerator generator) {
+    protected DefaultProvider(ObjectoGenerator generator) {
         super(generator);
     }
 

@@ -10,9 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import lombok.experimental.FieldNameConstants;
 
-@FieldNameConstants
 @Data
 @Builder
 @RequiredArgsConstructor

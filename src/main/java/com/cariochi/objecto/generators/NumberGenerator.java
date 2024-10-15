@@ -1,7 +1,8 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.ObjectoRandom;
+import com.cariochi.objecto.settings.ObjectoSettings;
 import com.cariochi.objecto.settings.Range;
-import com.cariochi.objecto.settings.Settings;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.math.BigDecimal;
 
@@ -17,21 +18,30 @@ class NumberGenerator implements Generator {
     @Override
     public Object generate(Context context) {
         final ReflectoType type = context.getType();
-        final Settings settings = context.getSettings();
+        final ObjectoSettings settings = context.getSettings();
+        final ObjectoRandom random = context.getRandom();
+
         if (type.is(Integer.class)) {
-            return context.getRandom().nextInt(settings.integers());
+            Range<Integer> range = settings.integers();
+            return random.nextInt(range.min(), range.max());
         } else if (type.is(Double.class)) {
-            return context.getRandom().nextDouble(settings.doubles());
+            Range<Double> range = settings.doubles();
+            return random.nextDouble(range.min(), range.max());
         } else if (type.is(Float.class)) {
-            return context.getRandom().nextFloat(settings.floats());
+            Range<Float> range = settings.floats();
+            return random.nextFloat(range.min(), range.max());
         } else if (type.is(Long.class)) {
-            return context.getRandom().nextLong(settings.longs());
+            Range<Long> range = settings.longs();
+            return random.nextLong(range.min(), range.max());
         } else if (type.is(Short.class)) {
-            return (short) context.getRandom().nextInt(settings.integers());
+            Range<Short> range = settings.shorts();
+            return (short) random.nextInt(range.min(), range.max());
         } else if (type.is(Byte.class)) {
-            return (byte) context.getRandom().nextInt(settings.bytes());
+            Range<Byte> range = settings.bytes();
+            return (byte) random.nextInt(range.min(), range.max());
         } else if (type.is(BigDecimal.class)) {
-            return BigDecimal.valueOf(context.getRandom().nextDouble(Range.of(settings.bigDecimals().min(), settings.bigDecimals().max())))
+            Range<Double> range = Range.of(settings.bigDecimals().min(), settings.bigDecimals().max());
+            return BigDecimal.valueOf(random.nextDouble(range.min(), range.max()))
                     .setScale(settings.bigDecimals().scale(), HALF_UP);
         } else {
             return null;

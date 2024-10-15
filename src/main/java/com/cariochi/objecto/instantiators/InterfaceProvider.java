@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class InterfaceInstantiator extends AbstractInstantiator {
+public class InterfaceProvider extends AbstractProvider {
 
     private static final List<Pair<Type, Supplier<Object>>> instantiators = List.of(
             Pair.of(Set.class, HashSet::new),
@@ -25,7 +25,7 @@ public class InterfaceInstantiator extends AbstractInstantiator {
             Pair.of(Map.class, HashMap::new)
     );
 
-    public InterfaceInstantiator(ObjectoGenerator generator) {
+    public InterfaceProvider(ObjectoGenerator generator) {
         super(generator);
     }
 

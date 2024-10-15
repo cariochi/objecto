@@ -5,9 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldNameConstants;
 
-@FieldNameConstants
 @Data
 @Builder
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

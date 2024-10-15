@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.settings.Range;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,8 @@ class StreamGenerator extends AbstractObjectsGenerator {
     public Object generate(Context context) {
         final ReflectoType elementType = context.getType().arguments().get(0);
         final List<Object> collection = new ArrayList<>();
-        for (int i = 0; i < context.getRandom().nextInt(context.getSettings().collections().size()); i++) {
+        Range<Integer> range = context.getSettings().collections().size();
+        for (int i = 0; i < context.getRandom().nextInt(range.min(), range.max()); i++) {
             Context nextContext = context.nextContext("[" + i + "]", elementType);
             final Object item = generator.generate(nextContext);
             if (item == null) {

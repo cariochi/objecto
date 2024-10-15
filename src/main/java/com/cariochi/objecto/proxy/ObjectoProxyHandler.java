@@ -2,28 +2,35 @@ package com.cariochi.objecto.proxy;
 
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.Seed;
+import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.ObjectoGenerator;
+import com.cariochi.objecto.generators.model.FieldSettings;
 import com.cariochi.objecto.modifiers.ObjectoModifier;
-import com.cariochi.objecto.settings.Settings;
+import com.cariochi.objecto.settings.ObjectoSettings;
+import com.cariochi.objecto.utils.SettingsUtils;
 import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameter;
 import com.cariochi.reflecto.parameters.ReflectoParameters;
 import com.cariochi.reflecto.proxy.InvocationHandler;
 import com.cariochi.reflecto.proxy.ProxyType;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.cariochi.objecto.settings.ObjectoSettings.DEFAULT_SETTINGS;
+
 @Slf4j
 @RequiredArgsConstructor
-public class ObjectoGeneratorProxy implements ObjectModifier, HasSeed, InvocationHandler {
+public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationHandler {
 
     private final ProxyType proxyType;
     private final ObjectoGenerator generator;
-    private final Settings settings;
     private final Map<String, Object[]> parameters = new LinkedHashMap<>();
 
     @Override
@@ -39,7 +46,7 @@ public class ObjectoGeneratorProxy implements ObjectModifier, HasSeed, Invocatio
         final Map<String, Object[]> methodParameter = getMethodParameters(thisMethod, args);
         if (thisMethod.returnType().equals(thisMethod.declaringType())) {
             return proxyType.with(() -> {
-                        final ObjectoGeneratorProxy childHandler = new ObjectoGeneratorProxy(proxyType, generator, settings);
+                        final ObjectoProxyHandler childHandler = new ObjectoProxyHandler(proxyType, generator);
                         childHandler.parameters.putAll(parameters);
                         childHandler.parameters.putAll(methodParameter);
                         return childHandler;
@@ -47,17 +54,44 @@ public class ObjectoGeneratorProxy implements ObjectModifier, HasSeed, Invocatio
                     .getConstructor()
                     .newInstance();
         } else {
-            thisMethod.annotations().find(Seed.class).map(Seed::value).ifPresent(seed -> generator.getRandom().setSeed(seed));
-            final Object instance = generator.generate(thisMethod.returnType().actualType(), settings);
-            final Map<String, Object[]> tmpMap = new LinkedHashMap<>();
-            tmpMap.putAll(parameters);
-            tmpMap.putAll(methodParameter);
-            return ObjectoModifier.modifyObject(instance, tmpMap);
+
+            final Context context = Context.builder()
+                    .settings(DEFAULT_SETTINGS)
+                    .type(thisMethod.returnType())
+                    .random(generator.getRandom())
+                    .build();
+
+            return invoke(thisMethod, methodParameter, context);
         }
 
     }
 
-    private Map<String, Object[]> getMethodParameters(ReflectoMethod method, Object[] args) {
+    public Object invoke(ReflectoMethod thisMethod, Map<String, ? extends Object[]> methodParameter, Context context) {
+
+        ObjectoSettings settings = context.getSettings();
+
+        final List<UnaryOperator<ObjectoSettings>> methodSettings = SettingsUtils.getMethodSettings(thisMethod);
+        for (UnaryOperator<ObjectoSettings> func : methodSettings) {
+            settings = func.apply(settings);
+        }
+        context = context.withSettings(settings);
+
+        List<FieldSettings> fieldSettings = new ArrayList<>(SettingsUtils.getFieldSettings(thisMethod));
+        fieldSettings.addAll(context.getFieldSettings());
+        context = context.withFieldSettings(fieldSettings);
+
+        thisMethod.annotations().find(Seed.class).map(Seed::value).ifPresent(context.getRandom()::setSeed);
+
+        final Object instance = generator.generate(context);
+
+        final Map<String, Object[]> tmpMap = new LinkedHashMap<>();
+        tmpMap.putAll(parameters);
+        tmpMap.putAll(methodParameter);
+        return ObjectoModifier.modifyObject(instance, tmpMap);
+
+    }
+
+    public Map<String, Object[]> getMethodParameters(ReflectoMethod method, Object[] args) {
         return method.annotations().find(Modifier.class)
                 .map(methodModifier -> getParametersFromMethodAnnotation(methodModifier, method.parameters(), args))
                 .orElseGet(() -> getParametersFromParametersAnnotations(method.parameters(), args));

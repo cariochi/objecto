@@ -1,23 +1,13 @@
 package com.cariochi.issuestest.factories;
 
-import com.cariochi.objecto.Generator;
+import com.cariochi.objecto.Settings;
+import com.cariochi.objecto.TypeFactory;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import net.datafaker.Faker;
-
-import static java.time.Month.FEBRUARY;
-import static java.time.ZoneOffset.UTC;
 
 public interface BaseFactory {
 
-    @Generator
-    private Instant instantGenerator() {
-        return LocalDateTime.of(1978, FEBRUARY, 20, 12, 0).atZone(UTC).toInstant();
-    }
-
-    @Generator
-    private String stringGenerator() {
-        return new Faker().lorem().sentence();
-    }
+    @TypeFactory
+    @Settings.Dates.Range(min = "1978-02-20T12:00:00Z", max = "1978-02-20T12:00:00Z")
+    Instant instantGenerator();
 
 }

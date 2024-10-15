@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static java.util.Collections.emptyList;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.cariochi.utils.JsonUtils.assertJson;
 
 @ExtendWith(ObjectoExtension.class)
 class SeedTest {
@@ -27,59 +26,31 @@ class SeedTest {
     @Seed(SEED_TO_IGNORE)
     void testFactoryInterfaceLevelSeed() {
         final Dto dto = factory.createDto();
-        assertThat(dto)
-                .isEqualTo(Dto.builder()
-                        .string("ZTNUVNEANPAWQ")
-                        .seed(INTERFACE_LEVEL_SEED)
-                        .number(60228)
-                        .children(List.of(
-                                Dto.builder().string("XWNSEJOXE").seed(INTERFACE_LEVEL_SEED).number(39650).children(emptyList()).build(),
-                                Dto.builder().string("BNPFOGAKBAYXEZQ").seed(INTERFACE_LEVEL_SEED).number(41636).children(emptyList()).build(),
-                                Dto.builder().string("STAIJSDYNVDTM").seed(INTERFACE_LEVEL_SEED).number(51421).children(emptyList()).build()
-                        ))
-                        .build());
+        assertJson(dto, "/testFactoryInterfaceLevelSeed.json");
     }
 
     @Test
     void testFactoryMethodLevelSeed() {
         final Dto dto = factory.createDtoWithCustomSeed();
-        assertThat(dto)
-                .isEqualTo(Dto.builder()
-                        .string("DFLJBOYNORQHL")
-                        .seed(METHOD_LEVEL_SEED)
-                        .number(83516)
-                        .children(List.of(
-                                Dto.builder().string("LFVPQPHNF").seed(METHOD_LEVEL_SEED).number(38733).children(emptyList()).build(),
-                                Dto.builder().string("XTRAJDFQ").seed(METHOD_LEVEL_SEED).number(68764).children(emptyList()).build()
-                        ))
-                        .build());
+        assertJson(dto, "/testFactoryMethodLevelSeed.json");
     }
 
     @Test
     void testFactoryInstanceLevelSeed() {
         final Dto dto = factoryWithSeed.createDto();
-        assertThat(dto)
-                .isEqualTo(Dto.builder()
-                        .string("GKWWBRGRUTRMJ")
-                        .seed(INSTANCE_LEVEL_SEED)
-                        .number(99098)
-                        .children(List.of(
-                                Dto.builder().string("ZGMVREZEJIYSNZP").seed(INSTANCE_LEVEL_SEED).number(68707).children(emptyList()).build(),
-                                Dto.builder().string("TOGJCMCGYIT").seed(INSTANCE_LEVEL_SEED).number(91389).children(emptyList()).build(),
-                                Dto.builder().string("WADKLQBNOS").seed(INSTANCE_LEVEL_SEED).number(71739).children(emptyList()).build()
-                        ))
-                        .build());
+        assertJson(dto, "/testFactoryInstanceLevelSeed.json");
     }
 
     @Seed(INTERFACE_LEVEL_SEED)
     private interface DtoFactory {
 
+        @TypeFactory
         Dto createDto();
 
         @Seed(METHOD_LEVEL_SEED)
         Dto createDtoWithCustomSeed();
 
-        @Generator(type = Dto.class, expression = "seed")
+        @FieldFactory(type = Dto.class, field = "seed")
         private long generateSeed(ObjectoRandom random) {
             return random.getSeed();
         }
