@@ -1,0 +1,31 @@
+{
+  "string": "VEAPBUDLNKQTNT",
+  "seed": 123,
+  "number": 80587,
+  "children": [
+    {
+      "string": "UWHMAEOXOWXWBKX",
+      "seed": 123,
+      "number": 57872,
+      "children": []
+    },
+    {
+      "string": "JETHGEVRUXNVC",
+      "seed": 123,
+      "number": 12226,
+      "children": []
+    },
+    {
+      "string": "AAGOZTFYWTZ",
+      "seed": 123,
+      "number": 49987,
+      "children": []
+    },
+    {
+      "string": "NVLQNJCLC",
+      "seed": 123,
+      "number": 23450,
+      "children": []
+    }
+  ]
+}

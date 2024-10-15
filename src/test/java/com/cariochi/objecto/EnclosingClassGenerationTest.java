@@ -14,9 +14,8 @@ class EnclosingClassGenerationTest {
     @Test
     void test() {
         final InnerDto innerDto = factory.innerDto();
-
         final Dto dto = new Dto("ZJDOIKKRIMC");
-        dto.getInnerDto().setValue("XATKTPWNY");
+        dto.getInnerDto().setValue("KYIOSABBDUZR");
         assertThat(innerDto).isEqualTo(dto.getInnerDto());
     }
 

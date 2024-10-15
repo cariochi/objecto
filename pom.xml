@@ -7,7 +7,7 @@
 
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>1.0.7</version>
+    <version>2.0.0</version>
     <name>Objecto</name>
     <description>A testing library for streamlined object creation and modification in test scenarios.</description>
     <url>https://cariochi.com/objecto</url>
@@ -36,19 +36,19 @@
     </developers>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <reflecto.version>1.2.2</reflecto.version>
-        <lombok.version>1.18.30</lombok.version>
+        <reflecto.version>2.0.0</reflecto.version>
+        <lombok.version>1.18.34</lombok.version>
         <instancio.version>3.7.1</instancio.version>
-        <junit.version>5.10.2</junit.version>
-        <assertj.version>3.25.3</assertj.version>
-        <slf4j.version>2.0.12</slf4j.version>
+        <assertj.version>3.26.3</assertj.version>
+        <slf4j.version>2.0.16</slf4j.version>
         <logback.version>1.4.14</logback.version>
-        <datafaker.version>1.9.0</datafaker.version>
-        <commons-rng.version>1.5</commons-rng.version>
-        <jupiter.version>5.10.2</jupiter.version>
+        <datafaker.version>2.4.0</datafaker.version>
+        <commons-rng.version>1.6</commons-rng.version>
+        <junit.version>5.11.2</junit.version>
+        <jackson.version>2.18.0</jackson.version>
     </properties>
 
     <dependencies>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>${jupiter.version}</version>
+            <version>${junit.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -78,17 +78,16 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>${datafaker.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.datafaker</groupId>
-            <artifactId>datafaker</artifactId>
-            <version>${datafaker.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -103,6 +102,13 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 
@@ -111,7 +117,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.12.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>

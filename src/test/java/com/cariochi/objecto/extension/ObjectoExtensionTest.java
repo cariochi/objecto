@@ -1,6 +1,6 @@
 package com.cariochi.objecto.extension;
 
-import com.cariochi.objecto.Generator;
+import com.cariochi.objecto.FieldFactory;
 import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.Seed;
@@ -23,7 +23,7 @@ class ObjectoExtensionTest {
     @Seed(2024)
     void testMethodLevelSeed() {
         final Dto dto = factory.createDto();
-        assertThat(dto).isEqualTo(Dto.builder().string("HIXSPWVGVOKI").seed(2024).build());
+        assertThat(dto).isEqualTo(Dto.builder().string("FKUZFKTUAMDIR").seed(2024).build());
     }
 
     @Test
@@ -36,7 +36,7 @@ class ObjectoExtensionTest {
 
         Dto createDto();
 
-        @Generator(type = Dto.class, expression = "seed")
+        @FieldFactory(type = Dto.class, field = "seed")
         private long generateSeed(ObjectoRandom random) {
             return random.getSeed();
         }

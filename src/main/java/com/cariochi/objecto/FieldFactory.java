@@ -8,6 +8,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(METHOD)
 @Retention(RUNTIME)
-public @interface Instantiator {
+public @interface FieldFactory {
+
+    Class<?> type();
+
+    String field();
 
 }

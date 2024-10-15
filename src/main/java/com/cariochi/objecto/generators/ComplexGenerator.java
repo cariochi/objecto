@@ -2,16 +2,17 @@ package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.modifiers.ObjectoModifier;
 import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.Map;
 import lombok.Getter;
 
 @Getter
 class ComplexGenerator extends AbstractCustomGenerator {
 
-    private final Class<?> ownerType;
+    private final ReflectoType ownerType;
     private final String expression;
 
-    public ComplexGenerator(Class<?> ownerType, String expression, TargetMethod method) {
+    public ComplexGenerator(ReflectoType ownerType, String expression, TargetMethod method) {
         super(method);
         this.ownerType = ownerType;
         this.expression = expression;
@@ -19,7 +20,7 @@ class ComplexGenerator extends AbstractCustomGenerator {
 
     @Override
     public boolean isSupported(Context context) {
-        return ownerType.equals(context.getType().actualClass());
+        return !context.isDirty() && ownerType.is(context.getType().actualClass());
     }
 
     @Override

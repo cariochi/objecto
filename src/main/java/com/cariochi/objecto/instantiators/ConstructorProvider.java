@@ -13,12 +13,12 @@ import static java.util.Comparator.comparingLong;
 import static java.util.stream.Collectors.joining;
 
 @Slf4j
-public class ConstructorInstantiator extends DefaultInstantiator {
+public class ConstructorProvider extends DefaultProvider {
 
     private static final Comparator<ReflectoConstructor> MODIFIERS_COMPARATOR = comparingInt(constructor -> getAccessibilityOrder(constructor.modifiers()));
     private static final Comparator<ReflectoConstructor> PARAMETERS_COMPARATOR = comparingLong(constructor -> constructor.parameters().size());
 
-    public ConstructorInstantiator(ObjectoGenerator generator) {
+    public ConstructorProvider(ObjectoGenerator generator) {
         super(generator);
     }
 

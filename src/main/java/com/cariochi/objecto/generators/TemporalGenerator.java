@@ -1,8 +1,11 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.ObjectoRandom;
+import com.cariochi.objecto.settings.ObjectoSettings;
+import com.cariochi.objecto.settings.ObjectoSettings.Datafaker;
+import com.cariochi.objecto.settings.Range;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +22,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
 import static java.time.ZoneOffset.UTC;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 class TemporalGenerator implements Generator {
 
@@ -29,8 +33,18 @@ class TemporalGenerator implements Generator {
 
     @Override
     public Object generate(Context context) {
+
+        final ObjectoRandom random = context.getRandom();
+
         final ReflectoType typeReflection = context.getType();
-        final Instant instant = generateInstant(context);
+        final ObjectoSettings settings = context.getSettings();
+        final Range<Instant> datesSettings = settings.dates();
+        final Datafaker datafakerSettings = settings.datafaker();
+
+        final Instant instant = isEmpty(datafakerSettings.method())
+                ? random.nextInstant(datesSettings.min(), datesSettings.max())
+                : random.nextDatafakerInstant(datafakerSettings.locale(), datafakerSettings.method());
+
         final ZonedDateTime zonedDateTime = instant.atZone(UTC);
         if (typeReflection.is(Date.class)) {
             return Date.from(instant);
@@ -63,12 +77,6 @@ class TemporalGenerator implements Generator {
         } else {
             return null;
         }
-    }
-
-    private Instant generateInstant(Context context) {
-        long yearInSeconds = Duration.ofDays(365).getSeconds();
-        long randomSeconds = (long) (context.getRandom().nextDouble(context.getSettings().years()) * yearInSeconds);
-        return Instant.now().plusSeconds(randomSeconds);
     }
 
 }

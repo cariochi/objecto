@@ -8,10 +8,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(METHOD)
 @Retention(RUNTIME)
-public @interface Generator {
-
-    Class<?> type() default Object.class;
-
-    String expression() default "";
+public @interface InstanceFactory {
 
 }

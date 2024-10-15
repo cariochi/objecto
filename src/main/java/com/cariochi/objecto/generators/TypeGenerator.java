@@ -7,14 +7,13 @@ import lombok.Getter;
 @Getter
 class TypeGenerator extends AbstractCustomGenerator {
 
-
     public TypeGenerator(TargetMethod method) {
         super(method);
     }
 
     @Override
     public boolean isSupported(Context context) {
-        return method.returnType().equals(context.getType());
+        return context.getPrevious() != null && !context.isDirty() && method.returnType().equals(context.getType());
     }
 
     @Override

@@ -1,0 +1,26 @@
+{
+  "string" : "ULWEFTJRNDPNHY",
+  "seed" : 100,
+  "number" : 61861,
+  "children" : [ {
+    "string" : "KLARQMPUELYRA",
+    "seed" : 100,
+    "number" : 52455,
+    "children" : [ ]
+  }, {
+    "string" : "KURMYGZBCLH",
+    "seed" : 100,
+    "number" : 46948,
+    "children" : [ ]
+  }, {
+    "string" : "IKGCFCVAERNGX",
+    "seed" : 100,
+    "number" : 23322,
+    "children" : [ ]
+  }, {
+    "string" : "WGRVHMCHEB",
+    "seed" : 100,
+    "number" : 23314,
+    "children" : [ ]
+  } ]
+}

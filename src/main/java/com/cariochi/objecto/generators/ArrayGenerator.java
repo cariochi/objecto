@@ -1,5 +1,6 @@
 package com.cariochi.objecto.generators;
 
+import com.cariochi.objecto.settings.Range;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Array;
 
@@ -22,7 +23,8 @@ class ArrayGenerator extends AbstractObjectsGenerator {
         if (firstItem == null) {
             return null;
         }
-        int arrayLength = context.getRandom().nextInt(context.getSettings().arrays().size());
+        Range<Integer> range = context.getSettings().arrays().size();
+        int arrayLength = context.getRandom().nextInt(range.min(), range.max());
         final Object array = Array.newInstance(type.actualClass(), arrayLength);
         Array.set(array, 0, firstItem);
         for (int i = 1; i < arrayLength; i++) {

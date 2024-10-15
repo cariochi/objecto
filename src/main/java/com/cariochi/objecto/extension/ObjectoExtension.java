@@ -4,6 +4,7 @@ import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.Seed;
 import com.cariochi.objecto.proxy.HasSeed;
 import com.cariochi.reflecto.fields.TargetField;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -17,13 +18,13 @@ public class ObjectoExtension implements BeforeEachCallback, AfterEachCallback {
     private long seed;
 
     @Override
-    public void beforeEach(ExtensionContext extensionContext) {
+    public void beforeEach(ExtensionContext context) {
 
-        seed = reflect(extensionContext.getRequiredTestMethod()).annotations().find(Seed.class)
+        seed = reflect(context.getRequiredTestMethod()).annotations().find(Seed.class)
                 .map(Seed::value)
                 .orElseGet(ObjectoRandom::randomSeed);
 
-        reflect(extensionContext.getRequiredTestInstance()).fields().stream()
+        reflect(context.getRequiredTestInstance()).fields().stream()
                 .map(TargetField::getValue)
                 .filter(HasSeed.class::isInstance)
                 .map(HasSeed.class::cast)
@@ -32,9 +33,12 @@ public class ObjectoExtension implements BeforeEachCallback, AfterEachCallback {
     }
 
     @Override
-    public void afterEach(ExtensionContext extensionContext) {
-        if (extensionContext.getExecutionException().isPresent()) {
-            log.info("Test method '{}' failed with seed: {}", extensionContext.getRequiredTestMethod().getName(), seed);
+    public void afterEach(ExtensionContext context) {
+        if (context.getExecutionException().isPresent()) {
+            context.publishReportEntry(Map.of(
+                    "Test Method", context.getRequiredTestMethod().getName(),
+                    "Objecto Seed", String.valueOf(seed)
+            ));
         }
     }
 

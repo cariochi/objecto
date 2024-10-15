@@ -2,7 +2,7 @@ package com.cariochi.objecto.references;
 
 import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.References;
-import com.cariochi.objecto.WithSettings;
+import com.cariochi.objecto.Settings;
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,7 +34,11 @@ class ComplexStructureTest {
         student.getEnrollments().stream().map(Enrollment::getCourse).map(Course::getProfessor).forEach(this::verifyProfessor);
         verifyStudent(student);
         student.getEnrollments().forEach(this::verifyEnrollment);
-        student.getEnrollments().stream().map(Enrollment::getCourse).map(Course::getProfessor).flatMap(professor -> professor.getAssignments().stream()).forEach(this::verifyAssignment);
+        student.getEnrollments().stream()
+                .map(Enrollment::getCourse)
+                .map(Course::getProfessor)
+                .flatMap(professor -> professor.getAssignments().stream())
+                .forEach(this::verifyAssignment);
     }
 
     @Test
@@ -54,8 +58,15 @@ class ComplexStructureTest {
 
         professor.getAssignments().stream().map(Assignment::getCourse).forEach(this::verifyCourse);
         verifyProfessor(professor);
-        professor.getAssignments().stream().map(Assignment::getCourse).flatMap(course -> course.getEnrollments().stream()).map(Enrollment::getStudent).forEach(this::verifyStudent);
-        professor.getAssignments().stream().map(Assignment::getCourse).flatMap(course -> course.getEnrollments().stream()).forEach(this::verifyEnrollment);
+        professor.getAssignments().stream()
+                .map(Assignment::getCourse)
+                .flatMap(course -> course.getEnrollments().stream())
+                .map(Enrollment::getStudent)
+                .forEach(this::verifyStudent);
+        professor.getAssignments().stream()
+                .map(Assignment::getCourse)
+                .flatMap(course -> course.getEnrollments().stream())
+                .forEach(this::verifyEnrollment);
         professor.getAssignments().forEach(this::verifyAssignment);
     }
 
@@ -104,7 +115,7 @@ class ComplexStructureTest {
                 .contains(assignment);
     }
 
-    @WithSettings(maxDepth = 5)
+    @Settings.MaxDepth(5)
     private interface ObjectoFactory {
 
         @References({"professor.assignments[*].course", "enrollments[*].course"})

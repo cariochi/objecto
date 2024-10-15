@@ -1,7 +1,5 @@
 package com.cariochi.objecto;
 
-import com.cariochi.objecto.WithSettings.IntRange;
-import com.cariochi.objecto.WithSettings.Strings;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
 
@@ -21,17 +19,22 @@ class FieldNamePrefixTest {
                 .containsExactly(1, 2024);
     }
 
-    @WithSettings(strings = @Strings(fieldNamePrefix = true))
+    @Settings.Strings.Parameters(uppercase = true, letters = true, numbers = false, useFieldNamePrefix = true)
     private interface SuperFactory {
 
     }
 
     private interface DtoFactory extends SuperFactory {
 
-        @WithSettings(path = "month", integers = @IntRange(min = 1, max = 2))
-        @WithSettings(path = "year", integers = @IntRange(min = 2024, max = 2025))
         Dto createDto();
 
+        @FieldFactory(type = Dto.class, field = "month")
+        @Settings.Integers.Range(min = 1, max = 1)
+        Integer month();
+
+        @FieldFactory(type = Dto.class, field = "year")
+        @Settings.Integers.Range(min = 2024, max = 2024)
+        Integer year();
     }
 
     @Data

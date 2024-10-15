@@ -27,7 +27,7 @@ class CustomObjectGenerator extends AbstractObjectsGenerator {
             return null;
         }
 
-        final Object instance = generator.getInstantiator().newInstance(context);
+        final Object instance = generator.newInstance(context);
         context.setInstance(instance);
 
         if (instance != null) {
@@ -50,6 +50,7 @@ class CustomObjectGenerator extends AbstractObjectsGenerator {
                     }
                 }
             }
+
         }
         return instance;
     }

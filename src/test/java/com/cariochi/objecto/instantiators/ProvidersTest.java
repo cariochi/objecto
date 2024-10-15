@@ -1,5 +1,6 @@
 package com.cariochi.objecto.instantiators;
 
+import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -23,13 +24,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static com.cariochi.reflecto.types.Types.type;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-class InstantiatorsTest {
+class ProvidersTest {
 
-    private final ObjectoInstantiator instantiator = new ObjectoInstantiator(new ObjectoGenerator());
+    private final ObjectoGenerator generator = new ObjectoGenerator();
 
     private static Stream<Arguments> types() {
         return Stream.of(
@@ -57,7 +59,8 @@ class InstantiatorsTest {
     @ParameterizedTest
     @MethodSource("types")
     void should_create_instance(Type type) {
-        final Object instance = instantiator.newInstance(type);
+        final Context context = Context.builder().type(reflect(type)).build();
+        final Object instance = generator.newInstance(context);
         assertThat(instance).isNotNull();
     }
 

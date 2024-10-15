@@ -15,12 +15,12 @@ import static java.util.Comparator.comparingLong;
 import static java.util.stream.Collectors.joining;
 
 @Slf4j
-public class StaticMethodInstantiator extends DefaultInstantiator {
+public class StaticMethodProvider extends DefaultProvider {
 
     private static final Comparator<TargetMethod> MODIFIERS_COMPARATOR = comparingInt(method -> getAccessibilityOrder(method.modifiers()));
     private static final Comparator<TargetMethod> PARAMETERS_COMPARATOR = comparingLong(method -> method.parameters().size());
 
-    public StaticMethodInstantiator(ObjectoGenerator generator) {
+    public StaticMethodProvider(ObjectoGenerator generator) {
         super(generator);
     }
 

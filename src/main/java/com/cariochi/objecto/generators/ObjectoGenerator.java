@@ -1,29 +1,37 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.ObjectoRandom;
-import com.cariochi.objecto.instantiators.ObjectoInstantiator;
-import com.cariochi.objecto.settings.Settings;
+import com.cariochi.objecto.generators.model.FieldSettings;
+import com.cariochi.objecto.generators.model.PostProcessor;
+import com.cariochi.objecto.instantiators.ConstructorProvider;
+import com.cariochi.objecto.instantiators.InterfaceProvider;
+import com.cariochi.objecto.instantiators.StaticMethodProvider;
+import com.cariochi.objecto.settings.ObjectoSettings;
+import com.cariochi.objecto.utils.ConstructorUtils;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.cariochi.objecto.Objecto.defaultSettings;
+import static com.cariochi.objecto.settings.ObjectoSettings.DEFAULT_SETTINGS;
+import static com.cariochi.reflecto.Reflecto.reflect;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
 
 @Slf4j
 public class ObjectoGenerator {
 
+    @Getter private final ObjectoRandom random = new ObjectoRandom();
+
+    private final List<Function<Context, Object>> providers;
     private final List<ReferenceGenerator> referenceGenerators = new ArrayList<>();
     private final List<FieldGenerator> fieldGenerators = new ArrayList<>();
     private final List<TypeGenerator> typeGenerators = new ArrayList<>();
@@ -44,13 +52,33 @@ public class ObjectoGenerator {
             new CustomObjectGenerator(this)
     );
 
-    private final Map<ReflectoType, List<FieldSettings>> fieldSettings = new HashMap<>();
-    private final Map<ReflectoType, List<Consumer<Object>>> postProcessors = new HashMap<>();
-    @Getter private final ObjectoInstantiator instantiator = new ObjectoInstantiator(this);
-    @Getter private final ObjectoRandom random = new ObjectoRandom();
+    private final List<PostProcessor> postProcessors = new ArrayList<>();
 
-    public void addCustomConstructor(ReflectoType type, Supplier<Object> instantiator) {
-        this.instantiator.addCustomConstructor(type, instantiator);
+    public ObjectoGenerator() {
+        this.providers = new ArrayList<>(List.of(
+                new InterfaceProvider(this),
+                new StaticMethodProvider(this),
+                new ConstructorProvider(this)
+        ));
+    }
+
+    public void addProvider(ReflectoType type, Supplier<Object> instantiator) {
+        providers.add(0, context -> type.equals(context.getType()) ? instantiator.get() : null);
+    }
+
+    public <T> T newInstance(Type type) {
+        final Context context = Context.builder().type(reflect(type)).build();
+        return newInstance(context);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T newInstance(Context context) {
+        log.trace("Creating instance of `{}` with type `{}`", context.getPath(), context.getType().name());
+        return (T) providers.stream()
+                .map(creator -> creator.apply(context))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     public void addReferenceGenerators(Type type, String[] paths) {
@@ -58,14 +86,12 @@ public class ObjectoGenerator {
                 .forEach(path -> referenceGenerators.add(new ReferenceGenerator(type, path)));
     }
 
-    public void addFieldSettings(ReflectoType type, String path, Settings settings) {
-        fieldSettings.computeIfAbsent(type, t -> new ArrayList<>()).add(new FieldSettings(path, settings));
+    public void addTypeFactory(TargetMethod method) {
+        typeGenerators.add(new TypeGenerator(method));
     }
 
-    public void addCustomGenerator(Class<?> objectType, String expression, TargetMethod method) {
-        if (objectType.equals(Object.class)) {
-            typeGenerators.add(new TypeGenerator(method));
-        } else if (expression.contains("(")) {
+    public void addFieldFactory(ReflectoType objectType, String expression, TargetMethod method) {
+        if (expression.contains("(")) {
             complexGenerators.add(new ComplexGenerator(objectType, expression, method));
         } else {
             fieldGenerators.add(new FieldGenerator(objectType, expression, method));
@@ -73,66 +99,91 @@ public class ObjectoGenerator {
     }
 
     public void addPostProcessor(ReflectoType type, Consumer<Object> postProcessor) {
-        postProcessors.computeIfAbsent(type, t -> new ArrayList<>()).add(postProcessor);
+        postProcessors.add(new PostProcessor(type, postProcessor));
     }
 
     public Object generate(Type type) {
-        return generate(type, defaultSettings());
+        return generate(reflect(type), DEFAULT_SETTINGS, List.of());
     }
 
-    public Object generate(Type type, Settings settings) {
-        return generate(new Context(type, settings, random));
+    public Object generate(ReflectoType type, ObjectoSettings objectoSettings, List<FieldSettings> fieldSettings) {
+        final Context context = Context.builder()
+                .type(type)
+                .random(random)
+                .settings(objectoSettings)
+                .build();
+        return generate(context);
     }
 
     public Object generate(Context context) {
+
         final ReflectoType type = context.getType();
         final String contextPath = context.getPath();
-        final Context fieldContext = Optional.ofNullable(context.getPrevious())
-                .map(Context::getType)
-                .map(fieldSettings::get)
-                .flatMap(typeSettings -> typeSettings.stream()
-                        .filter(s -> s.getPath().isEmpty() || context.findPreviousContext(s.getPath()).isPresent()).findFirst()
-                        .map(FieldSettings::getSettings)
-                        .map(context::withFieldSettings))
-                .orElse(context);
 
+        ObjectoSettings settings = context.getSettings();
         log.trace("Generating `{}` with type `{}`", contextPath, type.getTypeName());
-        if (fieldContext.getDepth() > fieldContext.getSettings().maxDepth() + 1) {
-            log.debug("Maximum depth ({}) reached. Path: {}", fieldContext.getSettings().maxDepth(), contextPath);
+        if (context.getDepth() > settings.maxDepth() + 1) {
+            log.debug("Maximum depth ({}) reached. Path: {}", settings.maxDepth(), contextPath);
             return null;
         }
 
-        final Object backReferenceObject = referenceGenerators.stream()
-                .filter(generator -> generator.isSupported(fieldContext)).findFirst()
-                .map(generator -> generator.generate(fieldContext))
-                .orElse(null);
-        if (backReferenceObject != null) {
-            return backReferenceObject;
+        for (ReferenceGenerator generator : referenceGenerators) {
+            if (generator.isSupported(context)) {
+                return generator.generate(context);
+            }
         }
 
-        if (fieldContext.getRecursionDepth(type) >= fieldContext.getSettings().maxRecursionDepth()) {
+        if (context.getRecursionDepth(type) >= settings.maxRecursionDepth()) {
             log.debug(
                     "Maximum recursion depth ({}) reached. Path: {}. Type: {}",
-                    fieldContext.getSettings().maxRecursionDepth(),
+                    settings.maxRecursionDepth(),
                     contextPath,
-                    fieldContext.getType().actualType().getTypeName()
+                    context.getType().actualType().getTypeName()
             );
             return null;
         }
 
-        if (fieldContext.getType().actualClass() == null) {
+        if (context.getType().actualClass() == null) {
             return null;
         }
 
-        return Stream.of(fieldGenerators, typeGenerators, defaultGenerators).flatMap(List::stream)
-                .filter(generator -> generator.isSupported(fieldContext)).findFirst()
-                .map(generator -> generator.generate(fieldContext))
-                .map(instance -> {
-                    applyComplexGenerators(fieldContext);
-                    return instance;
-                })
-                .map(instance -> postProcess(type, instance))
-                .orElse(null);
+        if (context.getPrevious() != null) {
+
+            final String value = settings.setValue();
+            if (isNoneBlank(value)) {
+                final Object o = ConstructorUtils.parseString(type, value).orElse(null);
+                if (o != null) {
+                    return o;
+                }
+            }
+
+            final ReflectoType parentType = context.getPrevious().getType();
+            boolean isCollection = parentType.isArray() || parentType.is(Iterable.class);
+            if (!isCollection) {
+                if (settings.setNull()) {
+                    return null;
+                }
+                boolean withNulls = settings.nullable() && (type.actualClass() == null || !type.isPrimitive());
+                if (withNulls && context.getRandom().nextBoolean()) {
+                    return null;
+                }
+            }
+
+        }
+
+        final List<? extends Generator> generators = Stream.of(fieldGenerators, typeGenerators, defaultGenerators)
+                .flatMap(List::stream)
+                .toList();
+
+        for (Generator generator : generators) {
+            if (generator.isSupported(context)) {
+                final Object instance = generator.generate(context);
+                applyComplexGenerators(context);
+                return postProcess(type, instance);
+            }
+        }
+
+        return null;
     }
 
     private void applyComplexGenerators(Context context) {
@@ -145,9 +196,9 @@ public class ObjectoGenerator {
         if (instance == null) {
             return null;
         }
-        Optional.ofNullable(postProcessors.get(type)).stream()
-                .flatMap(Collection::stream)
-                .forEach(postProcessor -> postProcessor.accept(instance));
+        postProcessors.stream()
+                .filter(postProcessor -> postProcessor.getType().equals(type))
+                .forEach(postProcessor -> postProcessor.getConsumer().accept(instance));
         return instance;
     }
 

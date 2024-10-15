@@ -3,24 +3,26 @@ package com.cariochi.objecto;
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.objecto.proxy.HasSeed;
 import com.cariochi.objecto.proxy.ObjectModifier;
-import com.cariochi.objecto.proxy.ObjectoGeneratorProxy;
-import com.cariochi.objecto.settings.Settings;
-import com.cariochi.objecto.settings.SettingsMapper;
-import com.cariochi.reflecto.methods.TargetMethods;
+import com.cariochi.objecto.proxy.ObjectoProxyHandler;
+import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.parameters.ReflectoParameters;
 import com.cariochi.reflecto.proxy.ProxyType;
 import com.cariochi.reflecto.types.ReflectoType;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Map;
+import java.util.Random;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.cariochi.objecto.settings.SettingsMapper.map;
 import static com.cariochi.reflecto.Reflecto.proxy;
 import static com.cariochi.reflecto.Reflecto.reflect;
+import static java.text.MessageFormat.format;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @UtilityClass
-@WithSettings
 public class Objecto {
 
     public static <T> T create(Class<T> targetClass) {
@@ -35,65 +37,96 @@ public class Objecto {
         }
         final ProxyType proxyType = proxy(targetClass, ObjectModifier.class, HasSeed.class);
         final T proxy = proxyType
-                .with(() -> new ObjectoGeneratorProxy(proxyType, generator, getSettings(targetClass)))
+                .with(() -> new ObjectoProxyHandler(proxyType, generator))
                 .getConstructor()
                 .newInstance();
 
-        final TargetMethods methods = reflect(proxy).methods();
-        addConstructors(generator, methods);
+        final List<TargetMethod> methods = reflect(targetClass).methods().stream()
+                .map(m -> m.withTarget(proxy))
+                .collect(toList());
+
+        addProviders(generator, methods);
         addReferenceGenerators(generator, methods);
-        addFieldSettings(generator, methods);
-        addGenerators(generator, methods);
+        addFactoryMethods(generator, methods);
         addPostProcessors(generator, methods);
+
         return proxy;
     }
 
-    public static Settings defaultSettings() {
-        return map(Objecto.class.getAnnotation(WithSettings.class));
-    }
-
-    private static <T> Settings getSettings(Class<T> targetClass) {
-        final ReflectoType reflectoType = reflect(targetClass);
-        return Stream.of(List.of(reflectoType), reflectoType.allInterfaces(), reflectoType.allSuperTypes()).flatMap(List::stream)
-                .flatMap(type -> type.annotations().find(WithSettings.class).stream())
-                .findFirst()
-                .map(SettingsMapper::map)
-                .orElseGet(Objecto::defaultSettings);
-    }
-
-    private static void addConstructors(ObjectoGenerator generator, TargetMethods methods) {
+    private static void addProviders(ObjectoGenerator generator, List<TargetMethod> methods) {
         methods.stream()
-                .filter(method -> method.annotations().contains(Instantiator.class))
-                .forEach(method -> generator.addCustomConstructor(method.returnType(), method::invoke));
+                .filter(method -> method.annotations().contains(InstanceFactory.class))
+                .forEach(method -> generator.addProvider(method.returnType(), method::invoke));
     }
 
-    private static void addReferenceGenerators(ObjectoGenerator generator, TargetMethods methods) {
+    private static void addReferenceGenerators(ObjectoGenerator generator, List<TargetMethod> methods) {
         methods.forEach(method -> method.annotations().find(References.class)
                 .ifPresent(annotation -> generator.addReferenceGenerators(method.returnType().actualType(), annotation.value()))
         );
     }
 
-    private static void addFieldSettings(ObjectoGenerator generator, TargetMethods methods) {
-        methods.forEach(method ->
-                method.annotations().find(WithSettingsList.class)
-                        .map(WithSettingsList::value).stream().flatMap(Stream::of)
-                        .forEach(annotation -> generator.addFieldSettings(method.returnType(), annotation.path(), map(annotation)))
-        );
+    private static void addFactoryMethods(ObjectoGenerator generator, List<TargetMethod> methods) {
 
-        methods.forEach(method ->
-                method.annotations().find(WithSettings.class)
-                        .ifPresent(annotation -> generator.addFieldSettings(method.returnType(), annotation.path(), map(annotation)))
-        );
+        final List<TargetMethod> factoryMethods = methods.stream()
+                .filter(method -> !method.declaringType().actualClass().equals(Object.class))
+                .filter(method -> {
+                    final ReflectoParameters parameters = method.parameters();
+                    if (parameters.isEmpty()) {
+                        return true;
+                    } else if (parameters.size() == 1) {
+                        final ReflectoType type = parameters.get(0).type();
+                        return type.is(Random.class) || type.is(ObjectoRandom.class);
+                    } else {
+                        return false;
+                    }
+                })
+                .toList();
+
+        // Fields Factories
+        factoryMethods.stream()
+                .filter(method -> method.annotations().contains(FieldFactory.class))
+                .forEach(method -> {
+                    final FieldFactory annotation = method.annotations().get(FieldFactory.class);
+                    generator.addFieldFactory(reflect(annotation.type()), annotation.field(), method);
+                });
+
+        // Type Factories
+        final Map<ReflectoType, List<TargetMethod>> map = factoryMethods.stream()
+                .filter(method -> !method.annotations().contains(FieldFactory.class))
+                .collect(groupingBy(TargetMethod::returnType, LinkedHashMap::new, toList()));
+
+        map.forEach((type, list) -> {
+
+            if (list.size() == 1) {
+                generator.addTypeFactory(list.get(0));
+                return;
+            }
+
+            final List<TargetMethod> annotatedMethods = list.stream()
+                    .filter(method -> method.annotations().contains(TypeFactory.class))
+                    .toList();
+
+            if (annotatedMethods.size() == 1) {
+                generator.addTypeFactory(annotatedMethods.get(0));
+                return;
+            }
+
+            if (annotatedMethods.size() > 1) {
+                throw new IllegalArgumentException(format(
+                        "Multiple factory methods annotated with @TypeFactory for type `{0}`: {1}. "
+                        + "Please ensure only one method is annotated with @TypeFactory.",
+                        type, annotatedMethods
+                ));
+            } else {
+                log.warn("Multiple factory methods found for type `{}`. "
+                         + "To designate a default factory method, annotate one with @TypeFactory: {}.", type, list);
+            }
+
+        });
+
     }
 
-    private static void addGenerators(ObjectoGenerator generator, TargetMethods methods) {
-        methods.forEach(method ->
-                method.annotations().find(Generator.class)
-                        .ifPresent(annotation -> generator.addCustomGenerator(annotation.type(), annotation.expression(), method))
-        );
-    }
-
-    private static void addPostProcessors(ObjectoGenerator generator, TargetMethods methods) {
+    private static void addPostProcessors(ObjectoGenerator generator, List<TargetMethod> methods) {
         methods.stream()
                 .filter(method -> method.annotations().contains(PostProcessor.class))
                 .filter(method -> method.returnType().is(void.class))

@@ -15,7 +15,7 @@ To use **Objecto** in your project, add the following dependency to your build c
 <dependency>
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>1.0.5</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -24,36 +24,28 @@ To use **Objecto** in your project, add the following dependency to your build c
 ## Declaration
 
 ```java
-import com.cariochi.objecto.Instantiator;
+import com.cariochi.objecto.DatafakerMethod;
+import com.cariochi.objecto.FieldFactory;
+import com.cariochi.objecto.Fields;
+import com.cariochi.objecto.InstanceFactory;
 import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.Generator;
-import com.cariochi.objecto.WithSettings;
-import com.cariochi.issuestest.model.issues.Issue;
-import com.cariochi.issuestest.model.issues.Issue.Fields;
-import com.cariochi.issuestest.model.issues.Issue.Status;
-import com.cariochi.issuestest.model.issues.Issue.Type;
-import com.cariochi.issuestest.model.issues.User;
-import net.datafaker.Faker;
+import com.cariochi.objecto.References;
+import com.cariochi.objecto.Settings;
 
-@WithSettings(maxDepth = 5)
 public interface IssueFactory {
 
     @References("subtasks[*].parent")
+    @Fields.Datafaker(field = "creationDate", method = DatafakerMethod.TimeAndDate.Past)
     Issue createIssue();
 
     Issue createIssue(@Modifier("type") Type type);
 
-    @Instantiator
+    @InstanceFactory
     private Attachment<?> newAttachment() {
         return Attachment.builder().fileContent(new byte[0]).build();
     }
 
-    @Generator
-    private String stringGenerator() {
-        return new Faker().lorem().sentence();
-    }
-
-    @Generator(type = Issue.class, expression = Issue.Fields.key)
+    @FieldFactory(type = Issue.class, field = "key")
     private String issueKeyGenerator() {
         return "ID-" + new Faker().number().randomNumber(4, true);
     }
@@ -61,11 +53,17 @@ public interface IssueFactory {
     @Modifier("type")
     IssueFactory withType(Type type);
 
-    @Modifier("status")
+    @Modifier("setStatus(?)")
     IssueFactory withStatus(Status status);
 
     @Modifier("subtasks[*].status")
     IssueFactory withAllSubtaskStatuses(Status status);
+
+    @Settings.MaxDepth(5)
+    @Fields.Datafaker(field = "fullName", method = Datafaker.Name.FullName)
+    @Fields.Datafaker(field = "phone", method = Datafaker.PhoneNumber.CellPhone)
+    @Fields.Datafaker(field = "companyName", method = Datafaker.Company.Name)
+    User createUser();
 
 }
 ```

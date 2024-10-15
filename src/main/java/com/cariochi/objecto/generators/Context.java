@@ -1,69 +1,76 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.ObjectoRandom;
-import com.cariochi.objecto.settings.Settings;
+import com.cariochi.objecto.generators.model.FieldSettings;
+import com.cariochi.objecto.settings.ObjectoSettings;
 import com.cariochi.reflecto.types.ReflectoType;
-import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.With;
 
-import static com.cariochi.reflecto.Reflecto.reflect;
+import static com.cariochi.objecto.settings.ObjectoSettings.DEFAULT_SETTINGS;
 import static java.util.Arrays.asList;
-import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.replace;
 import static org.apache.commons.lang3.StringUtils.split;
 
 @Getter
-@With(PRIVATE)
+@With
+@Builder
+@AllArgsConstructor
 public class Context {
 
-    private final ObjectoRandom random;
-    private final String fieldName;
+    @Builder.Default private final ObjectoRandom random = new ObjectoRandom();
+    @Builder.Default private final String fieldName = "";
     private final ReflectoType type;
-    private final Settings settings;
     private final Context previous;
+
+    @Builder.Default private final ObjectoSettings settings = DEFAULT_SETTINGS;
+    @Builder.Default private final List<FieldSettings> fieldSettings = new ArrayList<>();
+
+    private final boolean dirty;
+
     @Setter private Object instance;
-
-    public Context(Type type) {
-        this(type, Objecto.defaultSettings());
-    }
-
-    public Context(Type type, Settings settings) {
-        this(type, settings, new ObjectoRandom());
-    }
-
-    public Context(Type type, Settings settings, ObjectoRandom random) {
-        this(random, "", reflect(type), settings, null, null);
-    }
-
-    private Context(ObjectoRandom random, String fieldName, ReflectoType type, Settings settings, Context previous, Object instance) {
-        this.random = random;
-        this.fieldName = fieldName;
-        this.settings = settings;
-        this.previous = previous;
-        this.instance = instance;
-
-        this.type = type.actualClass() == null && instance != null
-                ? type.reflect(instance.getClass())
-                : type;
-    }
 
     public Context nextContext(String fieldName, ReflectoType type) {
         return withPrevious(this)
                 .withFieldName(fieldName)
                 .withType(type)
-                .withInstance(null);
+                .withInstance(null)
+                .withDirty(false);
     }
 
-    public Context withFieldSettings(Settings settings) {
-        return withSettings(settings);
+    public ObjectoSettings getSettings() {
+        ObjectoSettings settings = this.settings;
+        for (UnaryOperator<ObjectoSettings> setting : getCurrentFieldSettings()) {
+            settings = setting.apply(settings);
+        }
+        return settings;
+    }
+
+    public List<UnaryOperator<ObjectoSettings>> getCurrentFieldSettings() {
+        return fieldSettings.stream()
+                .filter(setting -> {
+                    final Context parentContext = findPreviousContext(setting.getField()).map(Context::getPrevious).orElse(null);
+                    return parentContext != null && setting.getType().equals(parentContext.getType());
+                })
+                .map(FieldSettings::getSettings)
+                .toList();
+    }
+
+    public ReflectoType getType() {
+        return type.actualClass() == null && instance != null
+                ? type.reflect(instance.getClass())
+                : type;
     }
 
     public int getDepth() {
