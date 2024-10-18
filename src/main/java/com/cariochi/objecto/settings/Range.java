@@ -13,11 +13,11 @@ import static lombok.AccessLevel.PRIVATE;
 @RequiredArgsConstructor(access = PRIVATE)
 public class Range<T> {
 
-    T min;
-    T max;
+    T from;
+    T to;
 
-    public static <T> Range<T> of(T min, T max) {
-        return new Range<>(min, max);
+    public static <T> Range<T> of(T from, T to) {
+        return new Range<>(from, to);
     }
 
 }

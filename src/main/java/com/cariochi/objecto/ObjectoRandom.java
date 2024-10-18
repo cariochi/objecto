@@ -46,32 +46,32 @@ public class ObjectoRandom implements HasSeed {
         return randomProvider.nextInt();
     }
 
-    public int nextInt(int min, int max) {
-        return randomProvider.nextInt(min, max + 1);
+    public int nextInt(int from, int to) {
+        return randomProvider.nextInt(from, to);
     }
 
     public long nextLong() {
         return randomProvider.nextLong();
     }
 
-    public long nextLong(long min, long max) {
-        return randomProvider.nextLong(min, max + 1);
+    public long nextLong(long from, long to) {
+        return randomProvider.nextLong(from, to);
     }
 
     public float nextFloat() {
         return randomProvider.nextFloat();
     }
 
-    public float nextFloat(float min, float max) {
-        return randomProvider.nextFloat(min, max + 1);
+    public float nextFloat(float from, float to) {
+        return randomProvider.nextFloat(from, to);
     }
 
     public double nextDouble() {
         return randomProvider.nextDouble();
     }
 
-    public double nextDouble(double min, double max) {
-        return randomProvider.nextDouble(min, max + 1);
+    public double nextDouble(double from, double to) {
+        return randomProvider.nextDouble(from, to);
     }
 
     public boolean nextBoolean() {
@@ -79,15 +79,14 @@ public class ObjectoRandom implements HasSeed {
     }
 
     public String nextString() {
-        return nextString(8, 16, true, false, false);
+        return nextString(8, true, false, false);
     }
 
     public String nextString(int size) {
-        return nextString(size, size, true, false, false);
+        return nextString(size, true, false, false);
     }
 
-    public String nextString(int minSize, int maxSize, boolean letters, boolean numbers, boolean uppercase) {
-        final int count = nextInt(minSize, maxSize);
+    public String nextString(int count, boolean letters, boolean numbers, boolean uppercase) {
         String string = RandomStringUtils.random(count, 0, 0, letters, numbers, null, random);
         return uppercase ? string.toUpperCase() : string;
     }
@@ -108,9 +107,9 @@ public class ObjectoRandom implements HasSeed {
         return Instant.ofEpochSecond(nextLong());
     }
 
-    public Instant nextInstant(Instant min, Instant max) {
-        long minSeconds = min.getEpochSecond();
-        long maxSeconds = max.getEpochSecond();
+    public Instant nextInstant(Instant from, Instant to) {
+        long minSeconds = from.getEpochSecond();
+        long maxSeconds = to.getEpochSecond();
         return Instant.ofEpochSecond(nextLong(minSeconds, maxSeconds));
     }
 

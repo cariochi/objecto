@@ -18,6 +18,8 @@ import com.cariochi.objecto.Settings.MaxDepth;
 import com.cariochi.objecto.Settings.MaxRecursionDepth;
 import com.cariochi.objecto.Settings.Shorts;
 import com.cariochi.objecto.Settings.Strings;
+import com.cariochi.objecto.Settings.Strings.Length;
+import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.model.FieldSettings;
 import com.cariochi.objecto.settings.ObjectoSettings;
 import com.cariochi.objecto.settings.Range;
@@ -25,6 +27,7 @@ import com.cariochi.reflecto.base.ReflectoAnnotations;
 import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.annotation.Annotation;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +36,8 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
@@ -70,9 +75,13 @@ public class SettingsUtils {
                         findAnnotation(annotations, Settings.Floats.Range.class).map(SettingsUtils::floatsRange),
                         findAnnotation(annotations, Settings.Dates.Range.class).map(SettingsUtils::datesRange),
                         findAnnotation(annotations, Settings.Collections.Size.class).map(SettingsUtils::collectionsSize),
+                        findAnnotation(annotations, Settings.Collections.Size.Range.class).map(SettingsUtils::collectionsSizeRange),
                         findAnnotation(annotations, Settings.Arrays.Size.class).map(SettingsUtils::arraysSize),
+                        findAnnotation(annotations, Settings.Arrays.Size.Range.class).map(SettingsUtils::arraysSizeRange),
                         findAnnotation(annotations, Settings.Maps.Size.class).map(SettingsUtils::mapsSize),
-                        findAnnotation(annotations, Settings.Strings.Size.class).map(SettingsUtils::stringsSize),
+                        findAnnotation(annotations, Settings.Maps.Size.Range.class).map(SettingsUtils::mapsSizeRange),
+                        findAnnotation(annotations, Settings.Strings.Length.class).map(SettingsUtils::stringsLength),
+                        findAnnotation(annotations, Settings.Strings.Length.Range.class).map(SettingsUtils::stringsLengthRange),
                         findAnnotation(annotations, Settings.Strings.Parameters.class).map(SettingsUtils::stringsParameters),
                         findAnnotation(annotations, Settings.Datafaker.Locale.class).map(SettingsUtils::datafakerLocale),
                         findAnnotation(annotations, Settings.Datafaker.Method.class).map(SettingsUtils::datafakerMethod),
@@ -112,6 +121,20 @@ public class SettingsUtils {
                 .map(annotation -> new FieldSettings(method.returnType(), annotation.field(), setValue(annotation)))
                 .forEach(fieldSettings::add);
 
+        concat(
+                method.annotations().find(Fields.Size.Repeatable.class).stream().map(Fields.Size.Repeatable::value).flatMap(Stream::of),
+                method.annotations().find(Fields.Size.class).stream()
+        )
+                .map(annotation -> new FieldSettings(method.returnType(), annotation.field(), size(annotation)))
+                .forEach(fieldSettings::add);
+
+        concat(
+                method.annotations().find(Fields.Range.Repeatable.class).stream().map(Fields.Range.Repeatable::value).flatMap(Stream::of),
+                method.annotations().find(Fields.Range.class).stream()
+        )
+                .map(annotation -> new FieldSettings(method.returnType(), annotation.field(), range(annotation)))
+                .forEach(fieldSettings::add);
+
         return fieldSettings;
     }
 
@@ -131,27 +154,27 @@ public class SettingsUtils {
     }
 
     public static UnaryOperator<ObjectoSettings> longsRange(Longs.Range annotation) {
-        return settings -> settings.withLongs(Range.of(annotation.min(), annotation.max()));
+        return settings -> settings.withLongs(Range.of(annotation.from(), annotation.to()));
     }
 
     public static UnaryOperator<ObjectoSettings> integersRange(Integers.Range annotation) {
-        return settings -> settings.withIntegers(Range.of(annotation.min(), annotation.max()));
+        return settings -> settings.withIntegers(Range.of(annotation.from(), annotation.to()));
     }
 
     public static UnaryOperator<ObjectoSettings> shortsRange(Shorts.Range annotation) {
-        return settings -> settings.withShorts(Range.of(annotation.min(), annotation.max()));
+        return settings -> settings.withShorts(Range.of(annotation.from(), annotation.to()));
     }
 
     public static UnaryOperator<ObjectoSettings> bytesRange(Bytes.Range annotation) {
-        return settings -> settings.withBytes(Range.of(annotation.min(), annotation.max()));
+        return settings -> settings.withBytes(Range.of(annotation.from(), annotation.to()));
     }
 
     public static UnaryOperator<ObjectoSettings> charsRange(Chars.Range annotation) {
-        return settings -> settings.withChars(Range.of(annotation.min(), annotation.max()));
+        return settings -> settings.withChars(Range.of(annotation.from(), annotation.to()));
     }
 
     public static UnaryOperator<ObjectoSettings> bigDecimalsRange(BigDecimals.Range annotation) {
-        return settings -> settings.withBigDecimals(settings.bigDecimals().withMin(annotation.min()).withMax(annotation.max()));
+        return settings -> settings.withBigDecimals(settings.bigDecimals().withFrom(annotation.from()).withTo(annotation.to()));
     }
 
     public static UnaryOperator<ObjectoSettings> bigDecimalsScale(BigDecimals.Scale annotation) {
@@ -159,41 +182,95 @@ public class SettingsUtils {
     }
 
     public static UnaryOperator<ObjectoSettings> doublesRange(Doubles.Range annotation) {
-        return settings -> settings.withDoubles(Range.of(annotation.min(), annotation.max()));
+        return settings -> settings.withDoubles(Range.of(annotation.from(), annotation.to()));
     }
 
     public static UnaryOperator<ObjectoSettings> floatsRange(Floats.Range annotation) {
-        return settings -> settings.withFloats(Range.of(annotation.min(), annotation.max()));
+        return settings -> settings.withFloats(Range.of(annotation.from(), annotation.to()));
     }
 
     public static UnaryOperator<ObjectoSettings> datesRange(Dates.Range annotation) {
         return settings -> settings.withDates(Range.of(
-                parseToInstant(annotation.min(), annotation.timezone()),
-                parseToInstant(annotation.max(), annotation.timezone())
+                parseToInstant(annotation.from(), annotation.timezone()),
+                parseToInstant(annotation.to(), annotation.timezone())
         ));
     }
 
     public static UnaryOperator<ObjectoSettings> collectionsSize(Collections.Size annotation) {
-        return settings -> settings.withCollections(settings.collections().withSize(Range.of(annotation.min(), annotation.max())));
+        return settings -> {
+            final ObjectoSettings.Collections collections = settings.collections();
+            return settings.withCollections(
+                    collections.withSize(collections.size().withValue(annotation.value()))
+            );
+        };
+    }
+
+    public static UnaryOperator<ObjectoSettings> collectionsSizeRange(Collections.Size.Range annotation) {
+        return settings -> {
+            final ObjectoSettings.Collections collections = settings.collections();
+            return settings.withCollections(
+                    collections.withSize(collections.size().withRange(Range.of(annotation.from(), annotation.to())))
+            );
+        };
     }
 
     public static UnaryOperator<ObjectoSettings> arraysSize(Arrays.Size annotation) {
-        return settings -> settings.withArrays(settings.arrays().withSize(Range.of(annotation.min(), annotation.max())));
+        return settings -> {
+            final ObjectoSettings.Collections arrays = settings.arrays();
+            return settings.withArrays(
+                    arrays.withSize(arrays.size().withValue(annotation.value()))
+            );
+        };
+    }
+
+    public static UnaryOperator<ObjectoSettings> arraysSizeRange(Arrays.Size.Range annotation) {
+        return settings -> {
+            final ObjectoSettings.Collections arrays = settings.arrays();
+            return settings.withArrays(
+                    arrays.withSize(arrays.size().withRange(Range.of(annotation.from(), annotation.to())))
+            );
+        };
     }
 
     public static UnaryOperator<ObjectoSettings> mapsSize(Maps.Size annotation) {
-        return settings -> settings.withMaps(settings.maps().withSize(Range.of(annotation.min(), annotation.max())));
+        return settings -> {
+            final ObjectoSettings.Collections maps = settings.maps();
+            return settings.withMaps(
+                    maps.withSize(maps.size().withValue(annotation.value()))
+            );
+        };
     }
 
-    public static UnaryOperator<ObjectoSettings> stringsSize(Strings.Size annotation) {
-        return settings -> settings.withStrings(settings.strings().withSize(Range.of(annotation.min(), annotation.max())));
+    public static UnaryOperator<ObjectoSettings> mapsSizeRange(Maps.Size.Range annotation) {
+        return settings -> {
+            final ObjectoSettings.Collections maps = settings.maps();
+            return settings.withMaps(
+                    maps.withSize(maps.size().withRange(Range.of(annotation.from(), annotation.to())))
+            );
+        };
+    }
+
+    public static UnaryOperator<ObjectoSettings> stringsLength(Length annotation) {
+        return settings -> {
+            final ObjectoSettings.Strings strings = settings.strings();
+            return settings.withStrings(
+                    strings.withLength(strings.length().withValue(annotation.value()))
+            );
+        };
+    }
+
+    public static UnaryOperator<ObjectoSettings> stringsLengthRange(Length.Range annotation) {
+        return settings -> {
+            final ObjectoSettings.Strings strings = settings.strings();
+            return settings.withStrings(strings.withLength(strings.length().withRange(Range.of(annotation.from(), annotation.to()))));
+        };
     }
 
     public static UnaryOperator<ObjectoSettings> stringsParameters(Strings.Parameters annotation) {
         return settings -> settings.withStrings(
                 settings.strings()
                         .withLetters(annotation.letters())
-                        .withNumbers(annotation.numbers())
+                        .withNumbers(annotation.digits())
                         .withUppercase(annotation.uppercase())
                         .withFieldNamePrefix(annotation.useFieldNamePrefix())
         );
@@ -211,8 +288,8 @@ public class SettingsUtils {
         return settings -> settings.withNullable(annotation.value());
     }
 
-    public static UnaryOperator<ObjectoSettings> fieldDatafaker(Datafaker annotation) {
-        return settings -> {
+    public static BiFunction<ObjectoSettings, Context, ObjectoSettings> fieldDatafaker(Datafaker annotation) {
+        return (settings, context) -> {
             if (!annotation.method().isEmpty()) {
                 settings = settings.withDatafaker(settings.datafaker().withMethod(annotation.method()));
             }
@@ -223,16 +300,71 @@ public class SettingsUtils {
         };
     }
 
-    public static UnaryOperator<ObjectoSettings> fieldNullable(Fields.Nullable annotation) {
-        return settings -> settings.withNullable(annotation.value());
+    public static BiFunction<ObjectoSettings, Context, ObjectoSettings> fieldNullable(Fields.Nullable annotation) {
+        return (settings, context) -> settings.withNullable(annotation.value());
     }
 
-    public static UnaryOperator<ObjectoSettings> setNull() {
-        return settings -> settings.withSetNull(true);
+    public static BiFunction<ObjectoSettings, Context, ObjectoSettings> setNull() {
+        return (settings, context) -> settings.withSetNull(true);
     }
 
-    public static UnaryOperator<ObjectoSettings> setValue(Fields.SetValue annotation) {
-        return settings -> settings.withSetValue(annotation.value());
+    public static BiFunction<ObjectoSettings, Context, ObjectoSettings> setValue(Fields.SetValue annotation) {
+        return (settings, context) -> settings.withSetValue(annotation.value());
+    }
+
+    public static BiFunction<ObjectoSettings, Context, ObjectoSettings> size(Fields.Size annotation) {
+        return (settings, context) -> {
+            if (context.getType().isArray()) {
+                final ObjectoSettings.Collections arrays = settings.arrays();
+                settings = settings.withArrays(arrays.withSize(arrays.size().withValue(annotation.value())));
+            } else if (context.getType().is(Iterable.class)) {
+                final ObjectoSettings.Collections collections = settings.collections();
+                settings = settings.withCollections(collections.withSize(collections.size().withValue(annotation.value())));
+            } else if (context.getType().is(Map.class)) {
+                final ObjectoSettings.Collections maps = settings.maps();
+                settings = settings.withMaps(maps.withSize(maps.size().withValue(annotation.value())));
+            } else if (context.getType().is(String.class)) {
+                final ObjectoSettings.Strings strings = settings.strings();
+                settings = settings.withStrings(strings.withLength(strings.length().withValue(annotation.value())));
+            }
+            return settings;
+        };
+    }
+
+    public static BiFunction<ObjectoSettings, Context, ObjectoSettings> range(Fields.Range annotation) {
+        return (settings, context) -> {
+            if (context.getType().isArray()) {
+                final ObjectoSettings.Collections arrays = settings.arrays();
+                settings = settings.withArrays(arrays.withSize(arrays.size().withRange(Range.of((int) annotation.from(), (int) annotation.to()))));
+            } else if (context.getType().is(Iterable.class)) {
+                final ObjectoSettings.Collections collections = settings.collections();
+                settings = settings.withCollections(
+                        collections.withSize(collections.size().withRange(Range.of((int) annotation.from(), (int) annotation.to()))));
+            } else if (context.getType().is(Map.class)) {
+                final ObjectoSettings.Collections maps = settings.maps();
+                settings = settings.withMaps(maps.withSize(maps.size().withRange(Range.of((int) annotation.from(), (int) annotation.to()))));
+            } else if (context.getType().is(String.class)) {
+                final ObjectoSettings.Strings strings = settings.strings();
+                settings = settings.withStrings(strings.withLength(strings.length().withRange(Range.of((int) annotation.from(), (int) annotation.to()))));
+            } else if (context.getType().is(Long.class)) {
+                settings = settings.withLongs(Range.of((long) annotation.from(), (long) annotation.to()));
+            } else if (context.getType().is(Integer.class)) {
+                settings = settings.withIntegers(Range.of((int) annotation.from(), (int) annotation.to()));
+            } else if (context.getType().is(Short.class)) {
+                settings = settings.withShorts(Range.of((short) annotation.from(), (short) annotation.to()));
+            } else if (context.getType().is(Byte.class)) {
+                settings = settings.withBytes(Range.of((byte) annotation.from(), (byte) annotation.to()));
+            } else if (context.getType().is(Character.class)) {
+                settings = settings.withChars(Range.of((char) annotation.from(), (char) annotation.to()));
+            } else if (context.getType().is(BigDecimal.class)) {
+                settings = settings.withBigDecimals(settings.bigDecimals().withFrom(annotation.from()).withTo(annotation.to()));
+            } else if (context.getType().is(Double.class)) {
+                settings = settings.withDoubles(Range.of(annotation.from(), annotation.to()));
+            } else if (context.getType().is(Float.class)) {
+                settings = settings.withFloats(Range.of((float) annotation.from(), (float) annotation.to()));
+            }
+            return settings;
+        };
     }
 
     private static Instant parseToInstant(String dateStr, String timezone) {

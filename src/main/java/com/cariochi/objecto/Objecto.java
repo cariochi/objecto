@@ -55,7 +55,7 @@ public class Objecto {
 
     private static void addProviders(ObjectoGenerator generator, List<TargetMethod> methods) {
         methods.stream()
-                .filter(method -> method.annotations().contains(InstanceFactory.class))
+                .filter(method -> method.annotations().contains(Constructor.class))
                 .forEach(method -> generator.addProvider(method.returnType(), method::invoke));
     }
 

@@ -5,8 +5,7 @@ import com.cariochi.objecto.settings.ObjectoSettings;
 import com.cariochi.objecto.settings.Range;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.math.BigDecimal;
-
-import static java.math.RoundingMode.HALF_UP;
+import java.math.RoundingMode;
 
 class NumberGenerator implements Generator {
 
@@ -23,26 +22,26 @@ class NumberGenerator implements Generator {
 
         if (type.is(Integer.class)) {
             Range<Integer> range = settings.integers();
-            return random.nextInt(range.min(), range.max());
+            return random.nextInt(range.from(), range.to());
         } else if (type.is(Double.class)) {
             Range<Double> range = settings.doubles();
-            return random.nextDouble(range.min(), range.max());
+            return random.nextDouble(range.from(), range.to());
         } else if (type.is(Float.class)) {
             Range<Float> range = settings.floats();
-            return random.nextFloat(range.min(), range.max());
+            return random.nextFloat(range.from(), range.to());
         } else if (type.is(Long.class)) {
             Range<Long> range = settings.longs();
-            return random.nextLong(range.min(), range.max());
+            return random.nextLong(range.from(), range.to());
         } else if (type.is(Short.class)) {
             Range<Short> range = settings.shorts();
-            return (short) random.nextInt(range.min(), range.max());
+            return (short) random.nextInt(range.from(), range.to());
         } else if (type.is(Byte.class)) {
             Range<Byte> range = settings.bytes();
-            return (byte) random.nextInt(range.min(), range.max());
+            return (byte) random.nextInt(range.from(), range.to());
         } else if (type.is(BigDecimal.class)) {
-            Range<Double> range = Range.of(settings.bigDecimals().min(), settings.bigDecimals().max());
-            return BigDecimal.valueOf(random.nextDouble(range.min(), range.max()))
-                    .setScale(settings.bigDecimals().scale(), HALF_UP);
+            Range<Double> range = Range.of(settings.bigDecimals().from(), settings.bigDecimals().to());
+            return BigDecimal.valueOf(random.nextDouble(range.from(), range.to()))
+                    .setScale(settings.bigDecimals().scale(), RoundingMode.DOWN);
         } else {
             return null;
         }

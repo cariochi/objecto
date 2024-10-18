@@ -19,18 +19,30 @@ public class ObjectoSettings {
             .maxDepth(4)
             .maxRecursionDepth(2)
             .longs(Range.of(1L, 100_000L))
-            .integers(Range.of(1, 100_000))
+            .integers(Range.of(1, Integer.MAX_VALUE))
             .shorts(Range.of((short) 1, Short.MAX_VALUE))
-            .bytes(Range.of((byte) 65, (byte) 91))
+            .bytes(Range.of((byte) 1, Byte.MAX_VALUE))
             .chars(Range.of('a', 'z'))
-            .bigDecimals(BigDecimals.builder().min(1).max(100_000).scale(4).build())
+            .bigDecimals(BigDecimals.builder().from(1).to(100_000).scale(4).build())
             .doubles(Range.of(1.0, 100_000.0))
             .floats(Range.of(1F, 100_000F))
             .dates(Range.of(Instant.now().minus(365, DAYS), Instant.now().plus(365, DAYS)))
-            .collections(Collections.builder().size(Range.of(2, 5)).build())
-            .arrays(Collections.builder().size(Range.of(2, 5)).build())
-            .maps(Collections.builder().size(Range.of(2, 5)).build())
-            .strings(Strings.builder().letters(true).numbers(false).uppercase(true).fieldNamePrefix(false).size(Range.of(8, 16)).build())
+            .collections(Collections.builder()
+                    .size(Size.builder().value(null).range(Range.of(2, 5)).build())
+                    .build())
+            .arrays(Collections.builder()
+                    .size(Size.builder().value(null).range(Range.of(2, 5)).build())
+                    .build())
+            .maps(Collections.builder()
+                    .size(Size.builder().value(null).range(Range.of(2, 5)).build())
+                    .build())
+            .strings(Strings.builder()
+                    .letters(true)
+                    .numbers(false)
+                    .uppercase(true)
+                    .fieldNamePrefix(false)
+                    .length(Size.builder().value(null).range(Range.of(8, 17)).build())
+                    .build())
             .datafaker(Datafaker.builder().locale("en").build())
             .nullable(false)
             .setNull(false)
@@ -63,7 +75,7 @@ public class ObjectoSettings {
     @Builder
     public static class Strings {
 
-        @Builder.Default Range<Integer> size = Range.of(8, 16);
+        @Builder.Default Size length = Size.builder().value(null).range(Range.of(8, 16)).build();
         @Builder.Default boolean letters = true;
         @Builder.Default boolean numbers = false;
         @Builder.Default boolean uppercase = false;
@@ -77,8 +89,8 @@ public class ObjectoSettings {
     @Builder(access = AccessLevel.PACKAGE)
     public static class BigDecimals {
 
-        double min;
-        double max;
+        double from;
+        double to;
         int scale;
 
     }
@@ -89,7 +101,7 @@ public class ObjectoSettings {
     @Builder(access = AccessLevel.PACKAGE)
     public static class Collections {
 
-        Range<Integer> size;
+        Size size;
 
     }
 

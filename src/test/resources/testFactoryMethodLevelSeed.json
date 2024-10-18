@@ -1,16 +1,25 @@
 {
-  "string" : "AZEYNODEBANBSS",
-  "seed" : 320,
-  "number" : 51711,
-  "children" : [ {
-    "string" : "HEYVTIEIQ",
-    "seed" : 320,
-    "number" : 55231,
-    "children" : [ ]
-  }, {
-    "string" : "CEKHXXJNYGFMWFT",
-    "seed" : 320,
-    "number" : 25510,
-    "children" : [ ]
-  } ]
+  "string": "AZEYNODEBANBSS",
+  "seed": 320,
+  "number": 1110475845,
+  "children": [
+    {
+      "string": "HEYVTIEIQ",
+      "seed": 320,
+      "number": 1186061519,
+      "children": []
+    },
+    {
+      "string": "HTAPSIPZHXX",
+      "seed": 320,
+      "number": 515618226,
+      "children": []
+    },
+    {
+      "string": "DNPFDDHTOS",
+      "seed": 320,
+      "number": 2014517643,
+      "children": []
+    }
+  ]
 }

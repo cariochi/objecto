@@ -1,7 +1,6 @@
 package com.cariochi.objecto.generators;
 
 import com.cariochi.objecto.ObjectoRandom;
-import com.cariochi.objecto.generators.model.FieldSettings;
 import com.cariochi.objecto.generators.model.PostProcessor;
 import com.cariochi.objecto.instantiators.ConstructorProvider;
 import com.cariochi.objecto.instantiators.InterfaceProvider;
@@ -62,13 +61,8 @@ public class ObjectoGenerator {
         ));
     }
 
-    public void addProvider(ReflectoType type, Supplier<Object> instantiator) {
-        providers.add(0, context -> type.equals(context.getType()) ? instantiator.get() : null);
-    }
-
-    public <T> T newInstance(Type type) {
-        final Context context = Context.builder().type(reflect(type)).build();
-        return newInstance(context);
+    public void addProvider(ReflectoType type, Supplier<Object> provider) {
+        providers.add(0, context -> type.equals(context.getType()) ? provider.get() : null);
     }
 
     @SuppressWarnings("unchecked")
@@ -103,10 +97,10 @@ public class ObjectoGenerator {
     }
 
     public Object generate(Type type) {
-        return generate(reflect(type), DEFAULT_SETTINGS, List.of());
+        return generate(reflect(type), DEFAULT_SETTINGS);
     }
 
-    public Object generate(ReflectoType type, ObjectoSettings objectoSettings, List<FieldSettings> fieldSettings) {
+    public Object generate(ReflectoType type, ObjectoSettings objectoSettings) {
         final Context context = Context.builder()
                 .type(type)
                 .random(random)

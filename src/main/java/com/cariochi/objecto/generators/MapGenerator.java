@@ -1,6 +1,5 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.settings.Range;
 import com.cariochi.reflecto.types.ReflectoType;
 import com.cariochi.reflecto.types.ReflectoType.TypeArguments;
 import java.util.Map;
@@ -28,8 +27,8 @@ class MapGenerator extends AbstractObjectsGenerator {
         context.setInstance(map);
         if (map != null) {
             map.clear();
-            Range<Integer> range = context.getSettings().maps().size();
-            for (int i = 0; i < context.getRandom().nextInt(range.min(), range.max()); i++) {
+            final int size = context.getSettings().maps().size().generate(generator.getRandom());
+            for (int i = 0; i < size; i++) {
                 Context keyContext = context.nextContext("[key]", keyType);
                 final Object key = generator.generate(keyContext);
                 Context valueContext = context.nextContext("[value]", valueType);

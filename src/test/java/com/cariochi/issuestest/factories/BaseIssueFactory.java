@@ -7,9 +7,9 @@ import com.cariochi.issuestest.model.Issue.DependencyType;
 import com.cariochi.issuestest.model.Issue.Status;
 import com.cariochi.issuestest.model.Issue.Type;
 import com.cariochi.issuestest.model.User;
+import com.cariochi.objecto.Constructor;
 import com.cariochi.objecto.DatafakerMethod;
 import com.cariochi.objecto.FieldFactory;
-import com.cariochi.objecto.InstanceFactory;
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.PostProcessor;
@@ -50,7 +50,7 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
                 .build();
     }
 
-    @InstanceFactory
+    @Constructor
     private Attachment<?> newAttachment() {
         return Attachment.builder().fileContent("").build();
     }

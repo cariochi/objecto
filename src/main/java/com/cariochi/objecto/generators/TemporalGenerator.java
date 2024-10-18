@@ -42,7 +42,7 @@ class TemporalGenerator implements Generator {
         final Datafaker datafakerSettings = settings.datafaker();
 
         final Instant instant = isEmpty(datafakerSettings.method())
-                ? random.nextInstant(datesSettings.min(), datesSettings.max())
+                ? random.nextInstant(datesSettings.from(), datesSettings.to())
                 : random.nextDatafakerInstant(datafakerSettings.locale(), datafakerSettings.method());
 
         final ZonedDateTime zonedDateTime = instant.atZone(UTC);

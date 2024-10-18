@@ -1,5 +1,6 @@
 package com.cariochi.objecto;
 
+import com.cariochi.objecto.Settings.Collections;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
@@ -42,7 +43,7 @@ public class NullableTest {
                 .containsOnly(tuple(123, Enum.B, LocalDate.of(2024, 1, 1)));
     }
 
-    @Settings.Collections.Size(min = 10, max = 20)
+    @Collections.Size.Range(from = 10, to = 21)
     private interface ObjectFactory {
 
         @TypeFactory

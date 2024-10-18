@@ -14,7 +14,7 @@ class CharacterGenerator implements Generator {
     public Object generate(Context context) {
         final ObjectoSettings settings = context.getSettings();
         Range<Character> range = settings.chars();
-        return (char) context.getRandom().nextInt(range.min(), range.max());
+        return (char) context.getRandom().nextInt(range.from(), range.to());
     }
 
 }

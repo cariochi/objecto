@@ -7,7 +7,7 @@ import java.time.Instant;
 public interface BaseFactory {
 
     @TypeFactory
-    @Settings.Dates.Range(min = "1978-02-20T12:00:00Z", max = "1978-02-20T12:00:00Z")
+    @Settings.Dates.Range(from = "1978-02-20T12:00:00Z", to = "1978-02-21T12:00:00Z")
     Instant instantGenerator();
 
 }

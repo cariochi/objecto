@@ -35,20 +35,29 @@ public @interface Settings {
     }
 
     /**
+     * The Nullable annotation is used to specify whether a field or method can be null.
+     */
+    @Target({TYPE, METHOD})
+    @Retention(RUNTIME)
+    @Inherited
+    @interface Nullable {
+        boolean value();
+    }
+
+    /**
      * The Longs annotation contains nested annotations for configuring long values.
      */
     @interface Longs {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for long fields.
+         * The Range annotation is used to specify the minimum (inclusive) and maximum (exclusive) values for long fields.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            long min();
-
-            long max();
+            long from();
+            long to();
         }
     }
 
@@ -58,15 +67,14 @@ public @interface Settings {
     @interface Integers {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for integer fields.
+         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for integer fields.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            int min();
-
-            int max();
+            int from();
+            int to();
         }
     }
 
@@ -76,15 +84,14 @@ public @interface Settings {
     @interface Shorts {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for short fields.
+         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for short fields.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            short min();
-
-            short max();
+            short from();
+            short to();
         }
     }
 
@@ -94,15 +101,14 @@ public @interface Settings {
     @interface Bytes {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for byte fields.
+         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for byte fields.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            byte min();
-
-            byte max();
+            byte from();
+            byte to();
         }
     }
 
@@ -112,15 +118,14 @@ public @interface Settings {
     @interface Chars {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for char fields.
+         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for char fields.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            char min();
-
-            char max();
+            char from();
+            char to();
         }
     }
 
@@ -130,15 +135,14 @@ public @interface Settings {
     @interface BigDecimals {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for BigDecimal fields.
+         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for BigDecimal fields.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            double min();
-
-            double max();
+            double from();
+            double to();
         }
 
         /**
@@ -158,15 +162,14 @@ public @interface Settings {
     @interface Doubles {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for double fields.
+         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for double fields.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            double min();
-
-            double max();
+            double from();
+            double to();
         }
     }
 
@@ -176,15 +179,14 @@ public @interface Settings {
     @interface Floats {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for float fields.
+         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for float fields.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            float min();
-
-            float max();
+            float from();
+            float to();
         }
     }
 
@@ -194,16 +196,14 @@ public @interface Settings {
     @interface Dates {
 
         /**
-         * The Range annotation is used to specify the minimum and maximum values for date fields. The values should be in ISO-8601 format.
+         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for date fields. The values should be in ISO-8601 format.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            String min();
-
-            String max();
-
+            String from();
+            String to();
             String timezone() default "UTC";
         }
     }
@@ -214,15 +214,24 @@ public @interface Settings {
     @interface Collections {
 
         /**
-         * The Size annotation is used to specify the minimum and maximum sizes for collections.
+         * The Size annotation is used to specify the size of collections.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Size {
-            int min();
 
-            int max();
+            int value();
+            /**
+             * The Range annotation is used to specify the minimum (inclusive) and maximum (exclusive) sizes for collections.
+             */
+            @Target({TYPE, METHOD})
+            @Retention(RUNTIME)
+            @Inherited
+            @interface Range {
+                int from();
+                int to();
+            }
         }
     }
 
@@ -232,15 +241,25 @@ public @interface Settings {
     @interface Arrays {
 
         /**
-         * The Size annotation is used to specify the minimum and maximum sizes for arrays.
+         * The Size annotation is used to specify the size of arrays.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Size {
-            int min();
 
-            int max();
+            int value();
+
+            /**
+             * The  annotation is used to specify the minimum (inclusive) and maximum (exclusive) sizes for arrays.
+             */
+            @Target({TYPE, METHOD})
+            @Retention(RUNTIME)
+            @Inherited
+            @interface Range {
+                int from();
+                int to();
+            }
         }
     }
 
@@ -250,15 +269,25 @@ public @interface Settings {
     @interface Maps {
 
         /**
-         * The Size annotation is used to specify the minimum and maximum sizes for maps.
+         * The Size annotation is used to specify the size of maps.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Size {
-            int min();
 
-            int max();
+            int value();
+
+            /**
+             * The  annotation is used to specify the minimum (inclusive) and maximum (exclusive) sizes for maps.
+             */
+            @Target({TYPE, METHOD})
+            @Retention(RUNTIME)
+            @Inherited
+            @interface Range {
+                int from();
+                int to();
+            }
         }
     }
 
@@ -268,15 +297,25 @@ public @interface Settings {
     @interface Strings {
 
         /**
-         * The Size annotation is used to specify the minimum and maximum lengths for strings.
+         * The Length annotation is used to specify the length of strings.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
-        @interface Size {
-            int min();
+        @interface Length {
 
-            int max();
+            int value();
+
+            /**
+             * The Range annotation is used to specify the minimum (inclusive) and maximum (exclusive) lengths for strings.
+             */
+            @Target({TYPE, METHOD})
+            @Retention(RUNTIME)
+            @Inherited
+            @interface Range {
+                int from();
+                int to();
+            }
         }
 
         /**
@@ -287,17 +326,22 @@ public @interface Settings {
         @Inherited
         @interface Parameters {
             boolean letters();
-
-            boolean numbers();
-
+            boolean digits();
             boolean uppercase();
-
             boolean useFieldNamePrefix();
         }
+
     }
 
+
+    /**
+     * The Datafaker annotation contains nested annotations for configuring Datafaker properties.
+     */
     @interface Datafaker {
 
+        /**
+         * The Locale annotation is used to specify the locale for data generation.
+         */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
@@ -305,6 +349,9 @@ public @interface Settings {
             String value();
         }
 
+        /**
+         * The Method annotation is used to specify the Datafaker method for data generation.
+         */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
@@ -312,12 +359,4 @@ public @interface Settings {
             String value();
         }
     }
-
-    @Target({TYPE, METHOD})
-    @Retention(RUNTIME)
-    @Inherited
-    @interface Nullable {
-        boolean value();
-    }
-
 }
