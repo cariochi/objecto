@@ -1,30 +1,24 @@
 {
   "string": "VEAPBUDLNKQTNT",
   "seed": 123,
-  "number": 80587,
+  "number": 1730591584,
   "children": [
     {
       "string": "UWHMAEOXOWXWBKX",
       "seed": 123,
-      "number": 57872,
+      "number": 1242785153,
       "children": []
     },
     {
-      "string": "JETHGEVRUXNVC",
+      "string": "LKSLJIRGIVFUNVSA",
       "seed": 123,
-      "number": 12226,
+      "number": 262536244,
       "children": []
     },
     {
-      "string": "AAGOZTFYWTZ",
+      "string": "FZVKMMAYOZS",
       "seed": 123,
-      "number": 49987,
-      "children": []
-    },
-    {
-      "string": "NVLQNJCLC",
-      "seed": 123,
-      "number": 23450,
+      "number": 851470535,
       "children": []
     }
   ]

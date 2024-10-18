@@ -14,13 +14,11 @@ import com.cariochi.issuestest.model.Issue.Type;
 import com.cariochi.issuestest.model.User;
 import com.cariochi.objecto.Objecto;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.List;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 
 import static com.cariochi.issuestest.model.Issue.Status.CLOSED;
-import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class IssueFactoryTest {
@@ -52,12 +50,17 @@ class IssueFactoryTest {
                 .containsOnly("PROP", 101);
 
         // Type Generators
-        final Instant expected = LocalDateTime.of(1978, Month.FEBRUARY, 20, 12, 0).atZone(UTC).toInstant();
-        assertThat(issue.getCreationDate())
-                .isEqualTo(expected);
+        final Instant from = Instant.parse("1978-02-20T12:00:00Z");
+        final Instant to = Instant.parse("1978-02-21T12:00:00Z");
+        assertThat(issue.getCreationDate()).isBetween(from, to);
         assertThat(issue.getComments())
                 .extracting(Comment::getDate)
-                .containsOnly(expected);
+                .have(new Condition<>() {
+                    @Override
+                    public boolean matches(Instant value) {
+                        return value.isAfter(from) && value.isBefore(to);
+                    }
+                });
     }
 
     @Test

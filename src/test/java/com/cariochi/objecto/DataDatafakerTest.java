@@ -1,5 +1,6 @@
 package com.cariochi.objecto;
 
+import com.cariochi.objecto.DatafakerMethod.Lorem;
 import java.time.Instant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class DataDatafakerTest {
 
     @Seed(1)
     @Settings.Datafaker.Locale("fr")
+    @Settings.Datafaker.Method(Lorem.Paragraph)
     private interface DtoFactory {
 
         @Settings.Datafaker.Locale("pl")
@@ -33,7 +35,7 @@ public class DataDatafakerTest {
         @Fields.Datafaker(field = "country", method = DatafakerMethod.Address.Country, locale = "en")
         @Fields.Datafaker(field = "address", method = DatafakerMethod.Address.FullAddress, locale = "en")
         @Fields.Datafaker(field = "image", method = DatafakerMethod.Avatar.Image)
-        @Fields.Datafaker(field = "description", method = DatafakerMethod.Yoda.Quote)
+        @Fields.Datafaker(field = "yodaQuote", method = DatafakerMethod.Yoda.Quote)
         @Fields.Datafaker(field = "past", method = DatafakerMethod.TimeAndDate.Past)
         @Fields.Datafaker(field = "future", method = DatafakerMethod.TimeAndDate.Future)
         Dto createDto();
@@ -48,7 +50,8 @@ public class DataDatafakerTest {
         private String country;
         private String address;
         private String image;
-        private String description;
+        private String yodaQuote;
+        private String loremParagraph;
         private Instant past;
         private Instant future;
 

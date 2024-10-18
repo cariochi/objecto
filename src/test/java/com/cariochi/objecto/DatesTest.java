@@ -11,17 +11,17 @@ public class DatesTest {
 
     @Test
     void test() {
-        assertThat(datesFactory.instant1()).hasToString("2025-01-01T05:00:00Z");
-        assertThat(datesFactory.instant2()).hasToString("2025-01-02T05:00:00Z");
+        assertThat(datesFactory.instant1()).isBetween("2024-01-01T05:00:00Z", "2024-01-02T05:00:00Z");
+        assertThat(datesFactory.instant2()).isBetween("2025-01-01T05:00:00Z", "2025-01-02T05:00:00Z");
     }
 
-    @Settings.Dates.Range(min = "2025-01-01T00:00:00-05:00", max = "2025-01-01T00:00:00-05:00")
+    @Settings.Dates.Range(from = "2024-01-01T00:00:00-05:00", to = "2024-01-02T00:00:00-05:00")
     interface DatesFactory {
 
         @TypeFactory
         Instant instant1();
 
-        @Settings.Dates.Range(min = "2025-01-02", max = "2025-01-02", timezone = "America/New_York")
+        @Settings.Dates.Range(from = "2025-01-01", to = "2025-01-02", timezone = "America/New_York")
         Instant instant2();
     }
 }

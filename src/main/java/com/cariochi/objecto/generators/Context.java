@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.UnaryOperator;
+import java.util.function.BiFunction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,13 +51,13 @@ public class Context {
 
     public ObjectoSettings getSettings() {
         ObjectoSettings settings = this.settings;
-        for (UnaryOperator<ObjectoSettings> setting : getCurrentFieldSettings()) {
-            settings = setting.apply(settings);
+        for (BiFunction<ObjectoSettings, Context, ObjectoSettings> setting : getCurrentFieldSettings()) {
+            settings = setting.apply(settings, this);
         }
         return settings;
     }
 
-    public List<UnaryOperator<ObjectoSettings>> getCurrentFieldSettings() {
+    public List<BiFunction<ObjectoSettings, Context, ObjectoSettings>> getCurrentFieldSettings() {
         return fieldSettings.stream()
                 .filter(setting -> {
                     final Context parentContext = findPreviousContext(setting.getField()).map(Context::getPrevious).orElse(null);
