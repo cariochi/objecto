@@ -29,7 +29,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
-import static java.util.stream.Collectors.toList;
 
 public class DatafakerConstantsTest {
 
@@ -66,6 +65,6 @@ public class DatafakerConstantsTest {
                 .map(TargetField::getValue)
                 .map(String.class::cast)
                 .map(random::nextDatafakerString)
-                .collect(toList());
+                .toList();
     }
 }

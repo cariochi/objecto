@@ -88,7 +88,7 @@ public class SettingsUtils {
                         findAnnotation(annotations, Settings.Nullable.class).map(SettingsUtils::nullable)
                 )
                 .flatMap(identity())
-                .collect(toList());
+                .toList();
     }
 
     public static List<FieldSettings> getFieldSettings(ReflectoMethod method) {

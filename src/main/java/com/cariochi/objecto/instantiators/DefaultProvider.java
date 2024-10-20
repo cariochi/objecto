@@ -6,8 +6,6 @@ import com.cariochi.reflecto.base.ReflectoModifiers;
 import com.cariochi.reflecto.parameters.ReflectoParameters;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 abstract class DefaultProvider extends AbstractProvider {
 
     protected DefaultProvider(ObjectoGenerator generator) {
@@ -20,7 +18,7 @@ abstract class DefaultProvider extends AbstractProvider {
                     final Context childContext = context.nextContext(parameter.name(), parameter.type());
                     return generate(childContext);
                 })
-                .collect(toList());
+                .toList();
     }
 
     protected static int getAccessibilityOrder(ReflectoModifiers modifiers) {

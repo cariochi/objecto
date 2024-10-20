@@ -43,7 +43,7 @@ public class Objecto {
 
         final List<TargetMethod> methods = reflect(targetClass).methods().stream()
                 .map(m -> m.withTarget(proxy))
-                .collect(toList());
+                .toList();
 
         addProviders(generator, methods);
         addReferenceGenerators(generator, methods);

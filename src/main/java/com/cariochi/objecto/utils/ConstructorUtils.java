@@ -22,7 +22,7 @@ public class ConstructorUtils {
                 .map(method -> method.invoke(value))
                 .findFirst();
 
-        final Optional<Object> regularConstructor = actualType.declared().constructors().stream()
+        final Optional<Object> regularConstructor = actualType.constructors().declared().stream()
                 .filter(constructor -> constructor.modifiers().isPublic())
                 .filter(constructor -> constructor.parameters().size() == 1 && constructor.parameters().get(0).type().is(CharSequence.class))
                 .map(constructor -> constructor.newInstance(value))
