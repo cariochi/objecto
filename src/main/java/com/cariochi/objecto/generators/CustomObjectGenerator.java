@@ -6,8 +6,6 @@ import com.cariochi.reflecto.types.ReflectoType;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
-import static java.util.stream.Collectors.toList;
-
 @Slf4j
 class CustomObjectGenerator extends AbstractObjectsGenerator {
 
@@ -34,7 +32,7 @@ class CustomObjectGenerator extends AbstractObjectsGenerator {
 
             final List<ReflectoField> fields = context.getType().fields().stream()
                     .filter(field -> !field.modifiers().isStatic())
-                    .collect(toList());
+                    .toList();
 
             for (ReflectoField field : fields) {
                 final ReflectoType fieldType = field.type();

@@ -24,7 +24,7 @@ public class ConstructorProvider extends DefaultProvider {
 
     @Override
     public Object apply(Context context) {
-        return context.getType().declared().constructors().stream()
+        return context.getType().constructors().declared().stream()
                 .sorted(MODIFIERS_COMPARATOR.thenComparing(PARAMETERS_COMPARATOR))
                 .map(c -> newInstance(c, context))
                 .filter(Objects::nonNull)

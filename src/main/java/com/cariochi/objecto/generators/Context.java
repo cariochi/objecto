@@ -19,7 +19,6 @@ import lombok.Setter;
 import lombok.With;
 
 import static com.cariochi.objecto.settings.ObjectoSettings.DEFAULT_SETTINGS;
-import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.replace;
 import static org.apache.commons.lang3.StringUtils.split;
 
@@ -110,7 +109,7 @@ public class Context {
     }
 
     public Optional<Context> findPreviousContext(String path) {
-        final Deque<String> fields = new LinkedList<>(asList(split(replace(path, "[", ".["), ".")));
+        final Deque<String> fields = new LinkedList<>(List.of(split(replace(path, "[", ".["), ".")));
         return findPreviousContext(fields);
     }
 
