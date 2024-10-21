@@ -7,6 +7,7 @@ import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.objecto.generators.model.FieldSettings;
 import com.cariochi.objecto.modifiers.ObjectoModifier;
 import com.cariochi.objecto.settings.ObjectoSettings;
+import com.cariochi.objecto.utils.FieldsSettingsUtils;
 import com.cariochi.objecto.utils.SettingsUtils;
 import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.methods.TargetMethod;
@@ -76,7 +77,7 @@ public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationH
         }
         context = context.withSettings(settings);
 
-        List<FieldSettings> fieldSettings = new ArrayList<>(SettingsUtils.getFieldSettings(thisMethod));
+        List<FieldSettings> fieldSettings = new ArrayList<>(FieldsSettingsUtils.getFieldSettings(thisMethod));
         fieldSettings.addAll(context.getFieldSettings());
         context = context.withFieldSettings(fieldSettings);
 
