@@ -130,10 +130,10 @@ public class Objecto {
         methods.stream()
                 .filter(method -> method.annotations().contains(PostProcessor.class))
                 .filter(method -> method.returnType().is(void.class))
-                .filter(method -> method.parameters().size() == 1)
+                .filter(method -> method.parameters().size() == 1 || method.parameters().size() == 2)
                 .forEach(method -> {
                     final ReflectoType type = method.parameters().get(0).type();
-                    generator.addPostProcessor(type, method::invoke);
+                    generator.addPostProcessor(type, method);
                 });
     }
 

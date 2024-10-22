@@ -19,7 +19,7 @@ import static com.cariochi.reflecto.Reflecto.reflect;
 
 public class ObjectoRandom implements HasSeed {
 
-    @Getter private final java.util.Random random = new Random();
+    @Getter private final Random random = new Random();
     private final UniformRandomProvider randomProvider = new JDKRandomWrapper(random);
     @Getter private long seed;
     @Getter private boolean customSeed = false;

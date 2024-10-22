@@ -8,7 +8,7 @@ import com.cariochi.issuestest.model.Issue.Status;
 import com.cariochi.issuestest.model.Issue.Type;
 import com.cariochi.issuestest.model.User;
 import com.cariochi.objecto.Constructor;
-import com.cariochi.objecto.DatafakerMethod;
+import com.cariochi.objecto.DatafakerMethod.Lorem;
 import com.cariochi.objecto.FieldFactory;
 import com.cariochi.objecto.Modifier;
 import com.cariochi.objecto.ObjectoRandom;
@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import net.datafaker.Faker;
+
+import static com.cariochi.objecto.DatafakerMethod.Company;
+import static com.cariochi.objecto.DatafakerMethod.File;
 
 @Settings.MaxRecursionDepth(3)
 public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
@@ -56,26 +58,25 @@ public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
     }
 
     @FieldFactory(type = Attachment.class, field = "fileName")
-    @Settings.Datafaker.Method(DatafakerMethod.File.FileName)
+    @Settings.Datafaker.Method(File.FileName)
     String attachmentFileNameGenerator();
 
     @FieldFactory(type = Issue.class, field = "key")
-    private String issueKeyGenerator(ObjectoRandom random) {
+    private String issueKeyGenerator(Random random) {
         return "ID-" + random.nextInt(1000, 10000);
     }
 
     @FieldFactory(type = Comment.class, field = "commenter")
-    private User commenterGenerator(Random random) {
-        Faker faker = new Faker(random);
+    private User commenterGenerator(ObjectoRandom random) {
         return User.builder()
                 .fullName("Vadym Deineka")
-                .companyName(faker.company().name())
+                .companyName(random.nextDatafakerString(Company.Name))
                 .build();
     }
 
     @FieldFactory(type = Issue.class, field = "labels")
-    private List<String> labelsGenerator(Random random) {
-        return List.of("LABEL1", new Faker(random).lorem().word().toUpperCase());
+    private List<String> labelsGenerator(ObjectoRandom random) {
+        return List.of("LABEL1", random.nextDatafakerString(Lorem.Word).toUpperCase());
     }
 
     @FieldFactory(type = Issue.class, field = "properties.value")

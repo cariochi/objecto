@@ -13,7 +13,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -92,7 +91,7 @@ public class ObjectoGenerator {
         }
     }
 
-    public void addPostProcessor(ReflectoType type, Consumer<Object> postProcessor) {
+    public void addPostProcessor(ReflectoType type, TargetMethod postProcessor) {
         postProcessors.add(new PostProcessor(type, postProcessor));
     }
 
@@ -173,7 +172,7 @@ public class ObjectoGenerator {
             if (generator.isSupported(context)) {
                 final Object instance = generator.generate(context);
                 applyComplexGenerators(context);
-                return postProcess(type, instance);
+                return postProcess(context, instance);
             }
         }
 
@@ -186,13 +185,13 @@ public class ObjectoGenerator {
                 .forEach(generator -> generator.generate(context));
     }
 
-    private Object postProcess(ReflectoType type, Object instance) {
+    private Object postProcess(Context context, Object instance) {
         if (instance == null) {
             return null;
         }
         postProcessors.stream()
-                .filter(postProcessor -> postProcessor.getType().equals(type))
-                .forEach(postProcessor -> postProcessor.getConsumer().accept(instance));
+                .filter(postProcessor -> postProcessor.getType().equals(context.getType()))
+                .forEach(postProcessor -> postProcessor.invoke(context, instance));
         return instance;
     }
 
