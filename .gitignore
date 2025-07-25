@@ -10,7 +10,7 @@
 *.iml
 hs_err_pid*
 
-/.idea/**
+/.idea/
 /build/
 /.gradle/
 /target/
