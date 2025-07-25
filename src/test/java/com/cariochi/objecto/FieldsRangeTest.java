@@ -1,6 +1,7 @@
 package com.cariochi.objecto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import lombok.Data;
@@ -15,52 +16,59 @@ public class FieldsRangeTest {
     @Test
     void test() {
         final Dto dto = objectFactory.createDto();
-        assertThat(dto.getArray()).hasSizeBetween(10, 11);
-        assertThat(dto.getList()).hasSizeBetween(12, 13);
-        assertThat(dto.getMap()).hasSizeBetween(14, 15);
+        assertThat(dto.getIntArray()).hasSizeBetween(10, 11);
+        assertThat(dto.getIntegerList()).hasSizeBetween(12, 13);
+        assertThat(dto.getStringIntegerMap()).hasSizeBetween(14, 15);
         assertThat(dto.getString()).hasSizeBetween(16, 17);
 
-        assertThat(dto.getAnInt()).isBetween(100, 109);
-        assertThat(dto.getALong()).isBetween(110L, 119L);
-        assertThat(dto.getAShort()).isBetween((short) 120, (short) 129);
-        assertThat(dto.getAByte()).isBetween((byte) 130, (byte) 139);
-        assertThat(dto.getAChar()).isBetween((char) 140, (char) 149);
-        assertThat(dto.getBigDecimal().doubleValue()).isBetween(150D, 159D);
-        assertThat(dto.getADouble()).isBetween(160D, 169D);
-        assertThat(dto.getAFloat()).isBetween(170F, 179F);
+        assertThat(dto.getIntPrimitive()).isBetween(20, 29);
+        assertThat(dto.getLongPrimitive()).isBetween(30L, 39L);
+        assertThat(dto.getShortPrimitive()).isBetween((short) 40, (short) 49);
+        assertThat(dto.getBytePrimitive()).isBetween((byte) 50, (byte) 59);
+        assertThat(dto.getCharPrimitive()).isBetween('a', 'c');
+        assertThat(dto.getBigDecimal().doubleValue()).isBetween(70D, 80D);
+        assertThat(dto.getDoublePrimitive()).isBetween(80D, 90D);
+        assertThat(dto.getFloatPrimitive()).isBetween(90F, 100F);
+
+        assertThat(dto.getLocalDate()).isBetween(LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 30));
     }
 
     interface ObjectFactory {
 
-        @Fields.Range(field = "array", from = 10, to = 11)
-        @Fields.Range(field = "list", from = 12, to = 13)
-        @Fields.Range(field = "map", from = 14, to = 15)
-        @Fields.Range(field = "string", from = 16, to = 17)
-        @Fields.Range(field = "anInt", from = 100, to = 109)
-        @Fields.Range(field = "aLong", from = 110, to = 119)
-        @Fields.Range(field = "aShort", from = 120, to = 129)
-        @Fields.Range(field = "aByte", from = 130, to = 139)
-        @Fields.Range(field = "aChar", from = 140, to = 149)
-        @Fields.Range(field = "bigDecimal", from = 150, to = 159)
-        @Fields.Range(field = "aDouble", from = 160, to = 169)
-        @Fields.Range(field = "aFloat", from = 170, to = 179)
+        @Spec.Arrays.Size.Range(from = 1, to = 2)
+        @Spec.Arrays.Size.Range(field = "intArray", from = 10, to = 11)
+        @Spec.Collections.Size.Range(field = "integerList", from = 12, to = 13)
+        @Spec.Maps.Size.Range(field = "stringIntegerMap", from = 14, to = 15)
+        @Spec.Strings.Length.Range(field = "string", from = 16, to = 17)
+        @Spec.Integers.Range(field = "intPrimitive", from = 20, to = 30)
+        @Spec.Longs.Range(field = "longPrimitive", from = 30, to = 40)
+        @Spec.Shorts.Range(field = "shortPrimitive", from = 40, to = 50)
+        @Spec.Bytes.Range(field = "bytePrimitive", from = 50, to = 60)
+        @Spec.Chars.Range(field = "charPrimitive", from = 'a', to = 'd')
+        @Spec.BigDecimals.Range(field = "bigDecimal", from = 70, to = 80)
+        @Spec.Doubles.Range(field = "doublePrimitive", from = 80.0, to = 90.0)
+        @Spec.Floats.Range(field = "floatPrimitive", from = 90, to = 100)
+        @Spec.Dates.Range(field = "localDate", from = "2025-01-01", to = "2025-01-31")
         Dto createDto();
     }
 
     @Data
     public static class Dto {
-        int[] array;
-        List<Integer> list;
-        Map<String, Integer> map;
+
+        int[] intArray;
+        List<Integer> integerList;
+        Map<String, Integer> stringIntegerMap;
         String string;
 
-        int anInt;
-        long aLong;
-        short aShort;
-        byte aByte;
-        char aChar;
+        int intPrimitive;
+        long longPrimitive;
+        short shortPrimitive;
+        byte bytePrimitive;
+        char charPrimitive;
         BigDecimal bigDecimal;
-        double aDouble;
-        float aFloat;
+        double doublePrimitive;
+        float floatPrimitive;
+
+        LocalDate localDate;
     }
 }

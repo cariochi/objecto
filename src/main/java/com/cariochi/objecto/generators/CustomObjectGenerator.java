@@ -21,7 +21,7 @@ class CustomObjectGenerator extends AbstractObjectsGenerator {
     @Override
     public Object generate(Context context) {
 
-        if (context.getDepth() > context.getSettings().maxDepth()) {
+        if (context.getDepth() > context.getConfig().maxDepth()) {
             return null;
         }
 
@@ -44,7 +44,7 @@ class CustomObjectGenerator extends AbstractObjectsGenerator {
                     try {
                         targetField.setValue(fieldValue);
                     } catch (Exception e) {
-                        log.error("Cannot set field value: {}", fieldContext.getPath());
+                        log.error("Cannot set field type: {}", fieldContext.getPath());
                     }
                 }
             }

@@ -1,9 +1,9 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.ObjectoRandom;
-import com.cariochi.objecto.settings.ObjectoSettings;
-import com.cariochi.objecto.settings.ObjectoSettings.Datafaker;
-import com.cariochi.objecto.settings.Range;
+import com.cariochi.objecto.config.ObjectoConfig;
+import com.cariochi.objecto.config.ObjectoConfig.FakerConfig;
+import com.cariochi.objecto.config.Range;
+import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -37,13 +37,14 @@ class TemporalGenerator implements Generator {
         final ObjectoRandom random = context.getRandom();
 
         final ReflectoType typeReflection = context.getType();
-        final ObjectoSettings settings = context.getSettings();
-        final Range<Instant> datesSettings = settings.dates();
-        final Datafaker datafakerSettings = settings.datafaker();
+        final ObjectoConfig config = context.getConfig();
+        final Range<Instant> datesSettings = config.dates();
+        final FakerConfig fakerConfig = config.faker();
 
-        final Instant instant = isEmpty(datafakerSettings.method())
+        final Instant instant = isEmpty(fakerConfig.expression())
                 ? random.nextInstant(datesSettings.from(), datesSettings.to())
-                : random.nextDatafakerInstant(datafakerSettings.locale(), datafakerSettings.method());
+                : Instant.parse(random.strings().faker(fakerConfig.locale()).nextString(fakerConfig.expression()));
+
 
         final ZonedDateTime zonedDateTime = instant.atZone(UTC);
         if (typeReflection.is(Date.class)) {

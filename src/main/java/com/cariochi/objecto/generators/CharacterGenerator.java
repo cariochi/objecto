@@ -1,7 +1,6 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.settings.ObjectoSettings;
-import com.cariochi.objecto.settings.Range;
+import com.cariochi.objecto.config.Range;
 
 class CharacterGenerator implements Generator {
 
@@ -12,8 +11,7 @@ class CharacterGenerator implements Generator {
 
     @Override
     public Object generate(Context context) {
-        final ObjectoSettings settings = context.getSettings();
-        Range<Character> range = settings.chars();
+        Range<Character> range = context.getConfig().chars();
         return (char) context.getRandom().nextInt(range.from(), range.to());
     }
 

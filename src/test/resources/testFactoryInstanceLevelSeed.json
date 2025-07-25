@@ -1,31 +1,21 @@
 {
-  "string": "ULWEFTJRNDPNHY",
-  "seed": 100,
-  "number": 1328449722,
-  "children": [
-    {
-      "string": "KLARQMPUELYRA",
-      "seed": 100,
-      "number": 1126452772,
-      "children": []
-    },
-    {
-      "string": "ZKZKQRRNGGFA",
-      "seed": 100,
-      "number": 1008186100,
-      "children": []
-    },
-    {
-      "string": "TOICGKFKUBERM",
-      "seed": 100,
-      "number": 260601506,
-      "children": []
-    },
-    {
-      "string": "JNCBZGZSFGW",
-      "seed": 100,
-      "number": 1950795214,
-      "children": []
-    }
-  ]
+  "string" : "DUAZGKGXRFAXSOVQD",
+  "seed" : 100,
+  "number" : 1572984276,
+  "children" : [ {
+    "string" : "YQTYYAIMCTIWOYN",
+    "seed" : 100,
+    "number" : 290414046,
+    "children" : [ ]
+  }, {
+    "string" : "DQEGCSDHMPGKPOI",
+    "seed" : 100,
+    "number" : 1127324353,
+    "children" : [ ]
+  }, {
+    "string" : "TUENEBOTTVKMT",
+    "seed" : 100,
+    "number" : 452264066,
+    "children" : [ ]
+  } ]
 }

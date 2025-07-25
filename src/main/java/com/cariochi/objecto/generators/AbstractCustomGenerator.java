@@ -1,12 +1,13 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.proxy.ObjectoProxyHandler;
+import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameter;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import lombok.Getter;
 
 @Getter
@@ -34,7 +35,7 @@ public abstract class AbstractCustomGenerator implements Generator {
             if (parameterType.is(ObjectoRandom.class)) {
                 return method.invoke(context.getRandom());
             }
-            if (parameterType.is(java.util.Random.class)) {
+            if (parameterType.is(Random.class)) {
                 return method.invoke(context.getRandom().getRandom());
             }
         }

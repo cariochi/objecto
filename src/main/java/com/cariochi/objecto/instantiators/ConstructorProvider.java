@@ -36,7 +36,7 @@ public class ConstructorProvider extends DefaultProvider {
         try {
             log.trace("Using constructor `{}`", constructor.toGenericString());
             final List<Object> args = generateRandomParameters(constructor.parameters(), context);
-            log.trace("Constructor parameters: `{}({})`", constructor.name(), args.stream().map(String::valueOf).collect(joining(", ")));
+            log.trace("Construct parameters: `{}({})`", constructor.name(), args.stream().map(String::valueOf).collect(joining(", ")));
             return constructor.newInstance(args.toArray());
         } catch (Exception e) {
             return null;

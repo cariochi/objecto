@@ -41,9 +41,9 @@ public class StaticMethodProvider extends DefaultProvider {
 
     private Object newInstance(TargetMethod staticConstructor, Context context) {
         try {
-            log.trace("Using static method `{}`", staticConstructor.toGenericString());
+            log.trace("Using static type `{}`", staticConstructor.toGenericString());
             final List<Object> args = generateRandomParameters(staticConstructor.parameters(), context);
-            log.trace("Static method parameters: `{}({})`", staticConstructor.name(), args.stream().map(String::valueOf).collect(joining(", ")));
+            log.trace("Static type parameters: `{}({})`", staticConstructor.name(), args.stream().map(String::valueOf).collect(joining(", ")));
             return staticConstructor.invoke(args.toArray());
         } catch (Exception e) {
             log.warn(e.getMessage(), e);

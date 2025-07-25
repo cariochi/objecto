@@ -1,11 +1,11 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.ObjectoRandom;
+import com.cariochi.objecto.config.ObjectoConfig;
 import com.cariochi.objecto.generators.model.PostProcessor;
 import com.cariochi.objecto.instantiators.ConstructorProvider;
 import com.cariochi.objecto.instantiators.InterfaceProvider;
 import com.cariochi.objecto.instantiators.StaticMethodProvider;
-import com.cariochi.objecto.settings.ObjectoSettings;
+import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.objecto.utils.ConstructorUtils;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.types.ReflectoType;
@@ -13,14 +13,13 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.cariochi.objecto.settings.ObjectoSettings.DEFAULT_SETTINGS;
+import static com.cariochi.objecto.config.ObjectoConfig.DEFAULT_SETTINGS;
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
@@ -38,6 +37,7 @@ public class ObjectoGenerator {
     private final List<Generator> defaultGenerators = List.of(
             new StringGenerator(),
             new NumberGenerator(),
+            new UUIDGenerator(),
             new BooleanGenerator(),
             new CollectionGenerator(this),
             new StreamGenerator(this),
@@ -61,6 +61,15 @@ public class ObjectoGenerator {
         ));
     }
 
+    public void use(ObjectoGenerator generator) {
+        generator.providers.stream().filter(p -> !providers.contains(p)).forEach(providers::add);
+        generator.referenceGenerators.stream().filter(p -> !referenceGenerators.contains(p)).forEach(referenceGenerators::add);
+        generator.fieldGenerators.stream().filter(p -> !fieldGenerators.contains(p)).forEach(fieldGenerators::add);
+        generator.typeGenerators.stream().filter(p -> !typeGenerators.contains(p)).forEach(typeGenerators::add);
+        generator.complexGenerators.stream().filter(p -> !complexGenerators.contains(p)).forEach(complexGenerators::add);
+        generator.postProcessors.stream().filter(p -> !postProcessors.contains(p)).forEach(postProcessors::add);
+    }
+
     public void addProvider(ReflectoType type, Supplier<Object> provider) {
         providers.add(0, context -> type.equals(context.getType()) ? provider.get() : null);
     }
@@ -80,11 +89,11 @@ public class ObjectoGenerator {
                 .forEach(path -> referenceGenerators.add(new ReferenceGenerator(type, path)));
     }
 
-    public void addTypeFactory(TargetMethod method) {
+    public void addTypeGenerator(TargetMethod method) {
         typeGenerators.add(new TypeGenerator(method));
     }
 
-    public void addFieldFactory(ReflectoType objectType, String expression, TargetMethod method) {
+    public void addFieldGenerator(ReflectoType objectType, String expression, TargetMethod method) {
         if (expression.contains("(")) {
             complexGenerators.add(new ComplexGenerator(objectType, expression, method));
         } else {
@@ -92,7 +101,7 @@ public class ObjectoGenerator {
         }
     }
 
-    public void addPostProcessor(ReflectoType type, Consumer<Object> postProcessor) {
+    public void addPostProcessor(ReflectoType type, TargetMethod postProcessor) {
         postProcessors.add(new PostProcessor(type, postProcessor));
     }
 
@@ -100,11 +109,11 @@ public class ObjectoGenerator {
         return generate(reflect(type), DEFAULT_SETTINGS);
     }
 
-    public Object generate(ReflectoType type, ObjectoSettings objectoSettings) {
+    public Object generate(ReflectoType type, ObjectoConfig objectoSettings) {
         final Context context = Context.builder()
                 .type(type)
                 .random(random)
-                .settings(objectoSettings)
+                .config(objectoSettings)
                 .build();
         return generate(context);
     }
@@ -114,10 +123,10 @@ public class ObjectoGenerator {
         final ReflectoType type = context.getType();
         final String contextPath = context.getPath();
 
-        ObjectoSettings settings = context.getSettings();
+        ObjectoConfig config = context.getConfig();
         log.trace("Generating `{}` with type `{}`", contextPath, type.getTypeName());
-        if (context.getDepth() > settings.maxDepth() + 1) {
-            log.debug("Maximum depth ({}) reached. Path: {}", settings.maxDepth(), contextPath);
+        if (context.getDepth() > config.maxDepth() + 1) {
+            log.debug("Maximum depth ({}) reached. Path: {}", config.maxDepth(), contextPath);
             return null;
         }
 
@@ -127,10 +136,10 @@ public class ObjectoGenerator {
             }
         }
 
-        if (context.getRecursionDepth(type) >= settings.maxRecursionDepth()) {
+        if (context.getRecursionDepth(type) >= config.maxRecursionDepth()) {
             log.debug(
                     "Maximum recursion depth ({}) reached. Path: {}. Type: {}",
-                    settings.maxRecursionDepth(),
+                    config.maxRecursionDepth(),
                     contextPath,
                     context.getType().actualType().getTypeName()
             );
@@ -143,7 +152,7 @@ public class ObjectoGenerator {
 
         if (context.getPrevious() != null) {
 
-            final String value = settings.setValue();
+            final String value = config.setValue();
             if (isNoneBlank(value)) {
                 final Object o = ConstructorUtils.parseString(type, value).orElse(null);
                 if (o != null) {
@@ -154,10 +163,10 @@ public class ObjectoGenerator {
             final ReflectoType parentType = context.getPrevious().getType();
             boolean isCollection = parentType.isArray() || parentType.is(Iterable.class);
             if (!isCollection) {
-                if (settings.setNull()) {
+                if (config.setNull()) {
                     return null;
                 }
-                boolean withNulls = settings.nullable() && (type.actualClass() == null || !type.isPrimitive());
+                boolean withNulls = config.nullable() && (type.actualClass() == null || !type.isPrimitive());
                 if (withNulls && context.getRandom().nextBoolean()) {
                     return null;
                 }
@@ -173,7 +182,7 @@ public class ObjectoGenerator {
             if (generator.isSupported(context)) {
                 final Object instance = generator.generate(context);
                 applyComplexGenerators(context);
-                return postProcess(type, instance);
+                return postProcess(context, instance);
             }
         }
 
@@ -186,14 +195,13 @@ public class ObjectoGenerator {
                 .forEach(generator -> generator.generate(context));
     }
 
-    private Object postProcess(ReflectoType type, Object instance) {
+    private Object postProcess(Context context, Object instance) {
         if (instance == null) {
             return null;
         }
         postProcessors.stream()
-                .filter(postProcessor -> postProcessor.getType().equals(type))
-                .forEach(postProcessor -> postProcessor.getConsumer().accept(instance));
+                .filter(postProcessor -> postProcessor.getType().equals(context.getType()))
+                .forEach(postProcessor -> postProcessor.invoke(context, instance));
         return instance;
     }
-
 }

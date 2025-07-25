@@ -1,7 +1,7 @@
 package com.cariochi.objecto.references;
 
 import com.cariochi.objecto.Objecto;
-import com.cariochi.objecto.References;
+import com.cariochi.objecto.Reference;
 import java.util.List;
 import lombok.Data;
 import lombok.ToString;
@@ -40,10 +40,10 @@ class OneToManyWithChainTest {
 
     private interface ObjectoFactory {
 
-        @References("childrenHolders[*].children[*].parent")
+        @Reference("childrenHolders[*].children[*].parent")
         Parent createParent();
 
-        //        @References("parent.childrenHolders[*].children[*]")
+        //        @Reference("parent.childrenHolders[*].children[*]")
         Child createChild();
 
     }

@@ -15,13 +15,13 @@ public class DatesTest {
         assertThat(datesFactory.instant2()).isBetween("2025-01-01T05:00:00Z", "2025-01-02T05:00:00Z");
     }
 
-    @Settings.Dates.Range(from = "2024-01-01T00:00:00-05:00", to = "2024-01-02T00:00:00-05:00")
+    @Spec.Dates.Range(from = "2024-01-01T00:00:00-05:00", to = "2024-01-02T00:00:00-05:00")
     interface DatesFactory {
 
-        @TypeFactory
+        @DefaultGenerator
         Instant instant1();
 
-        @Settings.Dates.Range(from = "2025-01-01", to = "2025-01-02", timezone = "America/New_York")
+        @Spec.Dates.Range(from = "2025-01-01", to = "2025-01-02", timezone = "America/New_York")
         Instant instant2();
     }
 }

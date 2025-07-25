@@ -1,9 +1,11 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.ObjectoRandom;
-import com.cariochi.objecto.settings.ObjectoSettings;
-import com.cariochi.objecto.settings.ObjectoSettings.Datafaker;
-import com.cariochi.objecto.settings.ObjectoSettings.Strings;
+import com.cariochi.objecto.config.ObjectoConfig;
+import com.cariochi.objecto.config.ObjectoConfig.FakerConfig;
+import com.cariochi.objecto.config.ObjectoConfig.Strings;
+import com.cariochi.objecto.config.Size;
+import com.cariochi.objecto.random.ObjectoRandom;
+import com.cariochi.objecto.random.StringRandom;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -17,14 +19,27 @@ class StringGenerator implements Generator {
     @Override
     public Object generate(Context context) {
         final ObjectoRandom objectoRandom = context.getRandom();
-        final ObjectoSettings settings = context.getSettings();
-        final Strings stringSettings = settings.strings();
-        final Datafaker datafakerSettings = settings.datafaker();
-        final int size = stringSettings.length().generate(objectoRandom);
+        final ObjectoConfig config = context.getConfig();
+        final Strings stringSettings = config.strings();
+        final FakerConfig datafakerSettings = config.faker();
 
-        String random = isEmpty(datafakerSettings.method())
-                ? objectoRandom.nextString(size, stringSettings.letters(), stringSettings.numbers(), stringSettings.uppercase())
-                : objectoRandom.nextDatafakerString(datafakerSettings.locale(), datafakerSettings.method());
+        final StringRandom stringRandom = objectoRandom.strings()
+                .selectFrom(stringSettings.chars())
+                .withinRange(stringSettings.from(), stringSettings.to());
+
+        String random;
+        if (isEmpty(datafakerSettings.expression())) {
+
+            final Size length = stringSettings.length();
+            if (length.value() != null) {
+                random = stringRandom.nextString(length.value());
+            } else {
+                random = stringRandom.nextString(length.range().from(), length.range().to());
+            }
+
+        } else {
+            random = stringRandom.faker(datafakerSettings.locale()).nextString(datafakerSettings.expression());
+        }
 
         if (stringSettings.fieldNamePrefix()) {
             random = context.getFieldName() + " " + random;

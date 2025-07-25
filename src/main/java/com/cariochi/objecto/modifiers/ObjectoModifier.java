@@ -30,7 +30,7 @@ public class ObjectoModifier {
                 reflection.perform(reflectoPath, value);
             } catch (Exception ex) {
                 log.warn(
-                        "Invalid @Modifier value '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
+                        "Invalid @Modify type '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
                         expression, object.getClass().getName()
                 );
             }

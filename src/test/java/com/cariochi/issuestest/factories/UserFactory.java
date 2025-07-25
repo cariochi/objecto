@@ -2,20 +2,24 @@ package com.cariochi.issuestest.factories;
 
 
 import com.cariochi.issuestest.model.User;
-import com.cariochi.objecto.DatafakerMethod;
-import com.cariochi.objecto.Fields;
-import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.TypeFactory;
+import com.cariochi.objecto.DefaultGenerator;
+import com.cariochi.objecto.Faker;
+import com.cariochi.objecto.Faker.Base.Company;
+import com.cariochi.objecto.Faker.Base.Name;
+import com.cariochi.objecto.Faker.Base.PhoneNumber;
+import com.cariochi.objecto.Modify;
+import com.cariochi.objecto.UseFactory;
 
-public abstract class UserFactory implements BaseFactory, BaseUserGenerators {
+@UseFactory(DatesFactory.class)
+public abstract class UserFactory implements BaseUserFactory {
 
-    @TypeFactory
-    @Fields.Datafaker(field = "fullName", method = DatafakerMethod.Name.FullName)
-    @Fields.Datafaker(field = "phone", method = DatafakerMethod.PhoneNumber.CellPhone)
-    @Fields.Datafaker(field = "companyName", method = DatafakerMethod.Company.Name)
+    @DefaultGenerator
+    @Faker(field = "fullName", expression = Name.FULL_NAME)
+    @Faker(field = "phone", expression = PhoneNumber.CELL_PHONE)
+    @Faker(field = "companyName", expression = Company.NAME)
     public abstract User createUser();
 
-    @Modifier("username=?")
+    @Modify("username=?")
     public abstract UserFactory withUsername(String username);
 
     public User createDefaultUser() {

@@ -22,10 +22,10 @@ public class FieldsSizeTest {
 
     interface ObjectFactory {
 
-        @Fields.Size(field = "array", value = 10)
-        @Fields.Size(field = "list", value = 11)
-        @Fields.Size(field = "map", value = 12)
-        @Fields.Size(field = "string", value = 13)
+        @Spec.Arrays.Size(field = "array", value = 10)
+        @Spec.Collections.Size(field = "list", value = 11)
+        @Spec.Maps.Size(field = "map", value = 12)
+        @Spec.Strings.Length(field = "string", value = 13)
         Dto createDto();
     }
 

@@ -15,14 +15,14 @@ class EnclosingClassGenerationTest {
     void test() {
         final InnerDto innerDto = factory.innerDto();
         final Dto dto = new Dto("ZJDOIKKRIMC");
-        dto.getInnerDto().setValue("KYIOSABBDUZR");
+        dto.getInnerDto().setValue("PUPJKHLE");
         assertThat(innerDto).isEqualTo(dto.getInnerDto());
     }
 
     @Seed(1)
     private interface DtoFactory {
 
-        @References("this$0.innerDto")
+        @Reference("this$0.innerDto")
         InnerDto innerDto();
 
     }

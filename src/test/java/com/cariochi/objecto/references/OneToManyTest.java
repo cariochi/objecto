@@ -1,7 +1,7 @@
 package com.cariochi.objecto.references;
 
 import com.cariochi.objecto.Objecto;
-import com.cariochi.objecto.References;
+import com.cariochi.objecto.Reference;
 import java.util.List;
 import lombok.Data;
 import lombok.ToString;
@@ -36,10 +36,10 @@ class OneToManyTest {
 
     private interface ObjectoFactory {
 
-        @References("tactics[*].campaign")
+        @Reference("tactics[*].campaign")
         Campaign createParent();
 
-        //        @References("campaign.tactics[*]")
+        //        @Reference("campaign.tactics[*]")
         Tactic createChild();
 
     }

@@ -1,7 +1,7 @@
 package com.cariochi.objecto.references;
 
 import com.cariochi.objecto.Objecto;
-import com.cariochi.objecto.References;
+import com.cariochi.objecto.Reference;
 import lombok.Data;
 import lombok.ToString;
 import org.junit.jupiter.api.Test;
@@ -28,10 +28,10 @@ class OneToOneTest {
 
     private interface ObjectoFactory {
 
-        @References("child.parent")
+        @Reference("child.parent")
         Parent createParent();
 
-        //        @References("parent.child")
+        //        @Reference("parent.child")
         Child createChild();
 
     }

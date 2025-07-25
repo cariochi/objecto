@@ -9,7 +9,7 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * The Seed annotation is used to specify a seed value for methods or types.
+ * The Seed annotation is used to specify a seed type for methods or types.
  */
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
@@ -17,9 +17,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Seed {
 
     /**
-     * Specifies the seed value.
+     * Specifies the seed type.
      *
-     * @return the seed value
+     * @return the seed type
      */
     long value();
 
