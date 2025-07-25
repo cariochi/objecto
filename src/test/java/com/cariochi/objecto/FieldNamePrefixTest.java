@@ -19,22 +19,17 @@ class FieldNamePrefixTest {
                 .containsExactly(1, 2024);
     }
 
-    @Settings.Strings.Parameters(uppercase = true, letters = true, digits = false, useFieldNamePrefix = true)
+    @Spec.Strings.Parameters(from = 'A', to = 'Z', useFieldNamePrefix = true)
     private interface SuperFactory {
 
     }
 
     private interface DtoFactory extends SuperFactory {
 
+        @Spec.Integers.Range(field = "month", from = 1, to = 2)
+        @Spec.Integers.Range(field = "year", from = 2024, to = 2025)
         Dto createDto();
 
-        @FieldFactory(type = Dto.class, field = "month")
-        @Settings.Integers.Range(from = 1, to = 2)
-        Integer month();
-
-        @FieldFactory(type = Dto.class, field = "year")
-        @Settings.Integers.Range(from = 2024, to = 2025)
-        Integer year();
     }
 
     @Data

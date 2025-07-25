@@ -1,9 +1,9 @@
 package com.cariochi.objecto.extension;
 
-import com.cariochi.objecto.FieldFactory;
+import com.cariochi.objecto.GenerateField;
 import com.cariochi.objecto.Objecto;
-import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.Seed;
+import com.cariochi.objecto.random.ObjectoRandom;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,20 +23,20 @@ class ObjectoExtensionTest {
     @Seed(2024)
     void testMethodLevelSeed() {
         final Dto dto = factory.createDto();
-        assertThat(dto).isEqualTo(Dto.builder().string("FKUZFKTUAMDIR").seed(2024).build());
+        assertThat(dto).isEqualTo(Dto.builder().string("QCCJHRDKVKOXDPPJE").seed(2024).build());
     }
 
     @Test
     @Disabled
     void testFail() {
-        throw new RuntimeException();
+        assertThat(true).isFalse();
     }
 
     private interface DtoFactory {
 
         Dto createDto();
 
-        @FieldFactory(type = Dto.class, field = "seed")
+        @GenerateField(type = Dto.class, field = "seed")
         private long generateSeed(ObjectoRandom random) {
             return random.getSeed();
         }

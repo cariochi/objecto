@@ -24,15 +24,15 @@ public class TypeGenerationTest {
 
     interface ObjectFactory {
 
-        @Fields.SetValue(field = "a", value = "1")
+        @Spec.SetValue(field = "a", value = "1")
         Dto dto();
 
-        @TypeFactory
-        @Fields.SetValue(field = "[*].b", value = "22")
+        @DefaultGenerator
+        @Spec.SetValue(field = "[*].b", value = "22")
         List<Dto> list1();
 
-        @Fields.SetValue(field = "[*].a", value = "11")
-        @Fields.SetValue(field = "[*].b", value = "22")
+        @Spec.SetValue(field = "[*].a", value = "11")
+        @Spec.SetValue(field = "[*].b", value = "22")
         List<Dto> list2();
 
     }
@@ -42,7 +42,6 @@ public class TypeGenerationTest {
 
         private int a;
         private int b;
-
 
     }
 }

@@ -16,7 +16,7 @@ To use **Objecto** in your project, add the following dependency to your build c
 <dependency>
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.3</version>
 </dependency>
 ```
 
@@ -25,45 +25,50 @@ To use **Objecto** in your project, add the following dependency to your build c
 ### Declaration
 
 ```java
-import com.cariochi.objecto.Constructor;
-import com.cariochi.objecto.DatafakerMethod;
-import com.cariochi.objecto.FieldFactory;
-import com.cariochi.objecto.Fields;
-import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.References;
-import com.cariochi.objecto.Settings;
+import com.cariochi.objecto.Spec;
+import com.cariochi.objecto.Faker;
+import com.cariochi.objecto.Construct;
+import com.cariochi.objecto.Faker.Base.Company;
+com.cariochi.objecto.Faker.Base.File;
+import com.cariochi.objecto.Faker.Base.Name;
+import com.cariochi.objecto.Faker.Base.PhoneNumber;
+import com.cariochi.objecto.Faker.Base.TimeAndDate;
+import com.cariochi.objecto.GenerateField;
+import com.cariochi.objecto.Modify;
+import com.cariochi.objecto.Reference;
 
 public interface IssueFactory {
 
-    @References("subtasks[*].parent")
-    @Fields.Datafaker(field = "creationDate", method = DatafakerMethod.TimeAndDate.Past)
+    @Reference("subtasks[*].parent")
+    @Faker(field = "key", expression = "#{numerify 'ID-####'}")
+    @Faker(field = "creationDate", expression = TimeAndDate.PAST)
     Issue createIssue();
 
-    Issue createIssue(@Modifier("type") Type type);
+    @Faker(field = "key", expression = "#{numerify 'ID-####'}")
+    Issue createIssue(@Modify("type") Type type);
 
-    @Constructor
+    @Construct
     private Attachment<?> newAttachment() {
         return Attachment.builder().fileContent(new byte[0]).build();
     }
 
-    @FieldFactory(type = Issue.class, field = "key")
-    private String issueKeyGenerator() {
-        return "ID-" + new Faker().number().randomNumber(4, true);
-    }
+    @GenerateField(type = Attachment.class, field = "fileName")
+    @Faker(expression = File.FILE_NAME)
+    String attachmentFileNameGenerator();
 
-    @Modifier("type")
+    @Modify("type")
     IssueFactory withType(Type type);
 
-    @Modifier("setStatus(?)")
+    @Modify("setStatus(?)")
     IssueFactory withStatus(Status status);
 
-    @Modifier("subtasks[*].status")
+    @Modify("subtasks[*].status")
     IssueFactory withAllSubtaskStatuses(Status status);
 
-    @Settings.MaxDepth(5)
-    @Fields.Datafaker(field = "fullName", method = Datafaker.Name.FullName)
-    @Fields.Datafaker(field = "phone", method = Datafaker.PhoneNumber.CellPhone)
-    @Fields.Datafaker(field = "companyName", method = Datafaker.Company.Name)
+    @Spec.MaxDepth(5)
+    @Faker(field = "fullName", expression = Name.FULL_NAME)
+    @Faker(field = "phone", expression = PhoneNumber.CELL_PHONE)
+    @Faker(field = "companyName", expression = Company.NAME)
     User createUser();
 
 }
@@ -92,21 +97,22 @@ Issue randomOpenBug = issueFactory
 
 ### Object Generation Steps
 
-| Step            | Description                                                          | Annotations                                                                      |
-|-----------------|----------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| Instantiation   | Creating an instance of the object.                                  | `@Constructor`                                                                   |
-| Randomization   | Randomly generating values for the object's fields.                  | `@Seed`, `@Settings`, `@Fields`,  `@TypeFactory`, `@FieldFactory`, `@References` |
-| Modification    | Setting values using methods and parameters marked with `@Modifier`. | `@Modifier`                                                                      |
-| Post-Processing | Processing the object after it has been created.                     | `@PostProcessor`                                                                 |
+| Step            | Description                                                        | Annotations                                                                             |
+|-----------------|--------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| Instantiation   | Creating an instance of the object.                                | `@Construct`                                                                            |
+| Randomization   | Randomly generating values for the object's fields.                | `@Seed`, `@Config`,  `@PrimaryGenerator`, `@FieldGenerator`, `@Reference`, `@Datafaker` |
+| Modification    | Setting values using methods and parameters marked with `@Modify`. | `@Modify`                                                                               |
+| Post-Processing | Processing the object after it has been created.                   | `@PostProcess`                                                                          |
 
 ### @Constructor
 
 Defines a method to instantiate a specific type.
 
 ```java
+import com.cariochi.objecto.Construct;
 import com.cariochi.objecto.Constructor;
 
-@Constructor
+@Construct
 private Attachment<?> newAttachment() {
     return Attachment.builder().fileContent(new byte[0]).build();
 }
@@ -123,38 +129,35 @@ import com.cariochi.objecto.Seed;
 Issue createIssue();
 ```
 
-### @Settings
+### @Config
 
 Configures various settings for object creation.
 
 ```java
-import com.cariochi.objecto.Settings;
-import com.cariochi.objecto.DatafakerMethod;
+import com.cariochi.objecto.Spec;
 
-@Settings.MaxDepth(5)
-@Settings.MaxRecursionDepth(5)
-@Settings.Nullable(true)
-@Settings.Integers.Range(from = 1, to = 10)
-@Settings.Longs.Range(from = 1L, to = 10L)
-@Settings.Shorts.Range(from = 1, to = 10)
-@Settings.Bytes.Range(from = 1, to = 10)
-@Settings.Chars.Range(from = 'a', to = 'z')
-@Settings.BigDecimals.Range(from = 1.0, to = 10.0)
-@Settings.BigDecimals.Scale(2)
-@Settings.Doubles.Range(from = 1.0, to = 10.0)
-@Settings.Floats.Range(from = 1.0, to = 10.0)
-@Settings.Dates.Range(from = "2024-01-01T00:00:00-05:00", to = "2024-01-02T00:00:00-05:00")
-@Settings.Collections.Size(5)
-@Settings.Collections.Size.Range(from = 1, to = 10)
-@Settings.Arrays.Size(5)
-@Settings.Arrays.Size.Range(from = 1, to = 10)
-@Settings.Maps.Size(5)
-@Settings.Maps.Size.Range(from = 1, to = 10)
-@Settings.Strings.Length(5)
-@Settings.Strings.Length.Range(from = 1, to = 10)
-@Settings.Strings.Parameters(letters = true, digits = true, uppercase = false, useFieldNamePrefix = false)
-@Settings.Datafaker.Locale("en")
-@Settings.Datafaker.Method(DatafakerMethod.TimeAndDate.Past)
+@Spec.MaxDepth(5)
+@Spec.MaxRecursionDepth(5)
+@Spec.Nullable(true)
+@Spec.Integers.Range(from = 1, to = 10)
+@Spec.Longs.Range(from = 1L, to = 10L)
+@Spec.Shorts.Range(from = 1, to = 10)
+@Spec.Bytes.Range(from = 1, to = 10)
+@Spec.Chars.Range(from = 'a', to = 'z')
+@Spec.BigDecimals.Range(from = 1.0, to = 10.0)
+@Spec.BigDecimals.Scale(2)
+@Spec.Doubles.Range(from = 1.0, to = 10.0)
+@Spec.Floats.Range(from = 1.0, to = 10.0)
+@Spec.Dates.Range(from = "2024-01-01T00:00:00-05:00", to = "2024-01-02T00:00:00-05:00")
+@Spec.Collections.Size(5)
+@Spec.Collections.Size.Range(from = 1, to = 10)
+@Spec.Arrays.Size(5)
+@Spec.Arrays.Size.Range(from = 1, to = 10)
+@Spec.Maps.Size(5)
+@Spec.Maps.Size.Range(from = 1, to = 10)
+@Spec.Strings.Length(5)
+@Spec.Strings.Length.Range(from = 1, to = 10)
+@Spec.Strings.Parameters(letters = true, digits = true, uppercase = false, useFieldNamePrefix = false)
 interface IssueFactory {
     Issue createIssue();
 }
@@ -165,30 +168,30 @@ interface IssueFactory {
 Specifies field-level configurations.
 
 ```java
-import com.cariochi.objecto.Fields;
+import com.cariochi.objecto.Spec;
 
-@Fields.Nullable(field = "description", value = true)
-@Fields.SetNull("id")
-@Fields.SetValue(field = "status", value = "OPEN")
-@Fields.Size(field = "subtasks", value = 5)
-@Fields.Range(field = "priority", from = 1, to = 10)
-@Fields.Datafaker(field = "creationDate", method = DatafakerMethod.TimeAndDate.Past)
+@Spec.Nullable(field = "description", value = true)
+@Spec.SetNull(field = "id")
+@Spec.SetValue(field = "status", value = "OPEN")
+@Spec.Collections.Size(field = "subtasks", value = 5)
+@Spec.Integers.Range(field = "priority", from = 1, to = 10)
 Issue createIssue();
 ```
 
-### @TypeFactory
+### @PrimaryGenerator
 
 Defines a method to create randomized instances of a specific type, which will be used whenever an instance of the specified type needs to be generated.
 
 ```java
-import com.cariochi.objecto.Fields;
-import com.cariochi.objecto.ObjectoRandom;
-import com.cariochi.objecto.References;
-import com.cariochi.objecto.TypeFactory;
+
+import com.cariochi.objecto.DefaultGenerator;
+import com.cariochi.objecto.PrimaryGenerator;
+import com.cariochi.objecto.random.ObjectoRandom;
+import com.cariochi.objecto.Reference;
 
 // custom factory implementation
 
-@TypeFactory
+@DefaultGenerator
 default Issue createIssue(ObjectoRandom random) {
     return Issue.builder()
             .key("ID-" + random.nextInt(1000, 9999))
@@ -197,66 +200,85 @@ default Issue createIssue(ObjectoRandom random) {
 }
 
 // or abstract factory
-@TypeFactory
-@References("subtasks[*].parent")
-@Fields.Datafaker(field = "creationDate", method = DatafakerMethod.TimeAndDate.Past)
+@DefaultGenerator
+@Reference("subtasks[*].parent")
 Issue createIssue();
 ```
 
-### @FieldFactory
+### @FieldGenerator
 
 Defines a method to generate values for a specific field.
 
 ```java
 
-import com.cariochi.objecto.FieldFactory;
+import com.cariochi.objecto.GenerateField;
+import com.cariochi.objecto.GenerateField;
 
 Issue createIssue();
 
-@FieldFactory(type = Issue.class, field = "key")
+@GenerateField(type = Issue.class, field = "key")
 private String issueKeyGenerator(ObjectoRandom random) {
     return "ID-" + random.nextInt(1000, 9999);
 }
 ```
 
-### @References
+### @Reference
 
 Specifies references between objects, useful for setting up relationships.
 
 ```java
-import com.cariochi.objecto.References;
+import com.cariochi.objecto.Reference;
 
-@References("subtasks[*].parent")
+@Reference("subtasks[*].parent")
     // sets the parent of each subtask to the generated issue 
 Issue createIssue();
 ```
 
-### @Modifier
+### @Datafaker
+
+Specifies data generation methods for various fields.
+
+```java
+import com.cariochi.objecto.Faker;
+import com.cariochi.objecto.Faker.Base.Company;
+import com.cariochi.objecto.Faker.Base.Name;
+import com.cariochi.objecto.Faker.Base.PhoneNumber;
+import com.cariochi.objecto.Faker.Base.TimeAndDate;
+
+@Faker(field = "fullName", expression = Name.FULL_NAME)
+@Faker(field = "phone", expression = PhoneNumber.CELL_PHONE)
+@Faker(field = "companyName", expression = Company.NAME)
+@Faker(field = "creationDate", expression = TimeAndDate.PAST)
+Issue createIssue();
+```
+
+### @Modify
 
 Specifies methods to modify the state of the factory or the objects it creates.
 
 ```java
-import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.Modify;
 
 Issue createIssue();
 
-@Modifier("type")
+@Modify("type")
 IssueFactory withType(Type type);
 
-@Modifier("setStatus(?)")
+@Modify("setStatus(?)")
 IssueFactory withStatus(Status status);
 ```
 
-### @PostProcessor
+### @PostProcess
 
-Defines methods to process objects after they are created.
+Defines methods to process objects after they are generated.
 
 ```java
-import com.cariochi.objecto.PostProcessor;
+import com.cariochi.objecto.PostGenerate;
+import com.cariochi.objecto.PostProcess;
 
 User createUser();
 
-@PostProcessor
+@PostGenerate
 default void processUser(User user) {
     final String username = replace(replace(lowerCase(user.getFullName()), ".", ""), " ", ".");
     user.setUsername(username);

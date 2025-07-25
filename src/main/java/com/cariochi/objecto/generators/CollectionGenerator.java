@@ -22,7 +22,7 @@ class CollectionGenerator extends AbstractObjectsGenerator {
         final Collection<Object> collection = generator.newInstance(context);
         context.setInstance(collection);
         if (collection != null) {
-            final int size = context.getSettings().collections().size().generate(generator.getRandom());
+            final int size = context.getConfig().collections().size().generate(generator.getRandom());
             for (int i = 0; i < size; i++) {
                 Context nextContext = context.nextContext("[" + i + "]", elementType);
                 final Object item = generator.generate(nextContext);

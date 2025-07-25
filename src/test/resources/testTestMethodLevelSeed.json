@@ -1,25 +1,16 @@
 {
-  "string": "PKVNINIDECQVVA",
-  "seed": 1000,
-  "number": 1044557264,
-  "children": [
-    {
-      "string": "OILITOZHFJZT",
-      "seed": 1000,
-      "number": 2092715322,
-      "children": []
-    },
-    {
-      "string": "OHJTAWXUZVRLR",
-      "seed": 1000,
-      "number": 1304556434,
-      "children": []
-    },
-    {
-      "string": "ABFLRERPFCJZHMWU",
-      "seed": 1000,
-      "number": 798449202,
-      "children": []
-    }
-  ]
+  "string" : "GVVEUWIORGV",
+  "seed" : 1000,
+  "number" : 1920696441,
+  "children" : [ {
+    "string" : "QKNPLMSMV",
+    "seed" : 1000,
+    "number" : 674222686,
+    "children" : [ ]
+  }, {
+    "string" : "YYLMMSHQF",
+    "seed" : 1000,
+    "number" : 2098197643,
+    "children" : [ ]
+  } ]
 }

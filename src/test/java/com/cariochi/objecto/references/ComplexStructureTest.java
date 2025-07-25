@@ -1,8 +1,8 @@
 package com.cariochi.objecto.references;
 
 import com.cariochi.objecto.Objecto;
-import com.cariochi.objecto.References;
-import com.cariochi.objecto.Settings;
+import com.cariochi.objecto.Reference;
+import com.cariochi.objecto.Spec;
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -115,22 +115,22 @@ class ComplexStructureTest {
                 .contains(assignment);
     }
 
-    @Settings.MaxDepth(5)
+    @Spec.MaxDepth(5)
     private interface ObjectoFactory {
 
-        @References({"professor.assignments[*].course", "enrollments[*].course"})
+        @Reference({"professor.assignments[*].course", "enrollments[*].course"})
         Course createCourse();
 
-        @References("enrollments[*].student")
+        @Reference("enrollments[*].student")
         Student createStudent();
 
-        @References({"student.enrollments[*]", "course.enrollments[*]"})
+        @Reference({"student.enrollments[*]", "course.enrollments[*]"})
         Enrollment createEnrollment();
 
-        @References({"assignments[*].professor", "assignments[*].course.professor"})
+        @Reference({"assignments[*].professor", "assignments[*].course.professor"})
         Professor createProfessor();
 
-        @References({"course.professor.assignments[*]", "professor.assignments[*]"})
+        @Reference({"course.professor.assignments[*]", "professor.assignments[*]"})
         Assignment createAssignment();
 
     }

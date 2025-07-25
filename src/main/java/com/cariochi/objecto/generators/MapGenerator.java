@@ -27,11 +27,11 @@ class MapGenerator extends AbstractObjectsGenerator {
         context.setInstance(map);
         if (map != null) {
             map.clear();
-            final int size = context.getSettings().maps().size().generate(generator.getRandom());
+            final int size = context.getConfig().maps().size().generate(generator.getRandom());
             for (int i = 0; i < size; i++) {
                 Context keyContext = context.nextContext("[key]", keyType);
                 final Object key = generator.generate(keyContext);
-                Context valueContext = context.nextContext("[value]", valueType);
+                Context valueContext = context.nextContext("[type]", valueType);
                 final Object value = generator.generate(valueContext);
                 if (key == null || value == null) {
                     return map;

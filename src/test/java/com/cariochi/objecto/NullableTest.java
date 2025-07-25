@@ -1,6 +1,6 @@
 package com.cariochi.objecto;
 
-import com.cariochi.objecto.Settings.Collections;
+import com.cariochi.objecto.Spec.Collections;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
@@ -46,21 +46,21 @@ public class NullableTest {
     @Collections.Size.Range(from = 10, to = 21)
     private interface ObjectFactory {
 
-        @TypeFactory
+        @DefaultGenerator
         List<Dto> dtoList1();
 
-        @Settings.Nullable(true)
+        @Spec.Nullable(true)
         List<Dto> dtoList2();
 
-        @Fields.Nullable(field = "[*].integer", value = true)
+        @Spec.Nullable(field = "[*].integer", value = true)
         List<Dto> dtoList3();
 
-        @Fields.SetNull("[*].integer")
+        @Spec.SetNull(field = "[*].integer")
         List<Dto> dtoList4();
 
-        @Fields.SetValue(field = "[*].integer", value = "123")
-        @Fields.SetValue(field = "[*].enumValue", value = "B")
-        @Fields.SetValue(field = "[*].localDate", value = "2024-01-01")
+        @Spec.SetValue(field = "[*].integer", value = "123")
+        @Spec.SetValue(field = "[*].enumValue", value = "B")
+        @Spec.SetValue(field = "[*].localDate", value = "2024-01-01")
         List<Dto> dtoList5();
 
     }
