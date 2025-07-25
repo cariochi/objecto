@@ -6,37 +6,37 @@ import com.cariochi.issuestest.model.Issue.DependencyType;
 import com.cariochi.issuestest.model.Issue.Status;
 import com.cariochi.issuestest.model.Issue.Type;
 import com.cariochi.issuestest.model.User;
-import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.Modify;
 
 public interface IssueFactory extends BaseIssueFactory {
 
-    @Modifier("key=?")
+    @Modify("key=?")
     IssueFactory withKey(String key);
 
-    @Modifier("setType(?)")
+    @Modify("setType(?)")
     IssueFactory withType(Type type);
 
-    @Modifier("setStatus(?)")
+    @Modify("setStatus(?)")
     IssueFactory withStatus(Status status);
 
-    IssueFactory withAssignee(@Modifier("setAssignee(?)") User assignee);
+    IssueFactory withAssignee(@Modify("setAssignee(?)") User assignee);
 
-    @Modifier("comments[*].commenter=?")
+    @Modify("comments[*].commenter=?")
     IssueFactory withAllCommenter(User commenter);
 
-    @Modifier("comments[*].setCommenter(?)")
+    @Modify("comments[*].setCommenter(?)")
     IssueFactory withAllCommenterByMethod(User commenter);
 
-    @Modifier("dependencies.put(?, ?)")
+    @Modify("dependencies.put(?, ?)")
     IssueFactory withDependency(DependencyType type, Issue issue);
 
-    @Modifier("comments[?].commenter=?")
+    @Modify("comments[?].commenter=?")
     IssueFactory withCommenter(int index, User commenter);
 
-    @Modifier("comments[100].commenter=?")
+    @Modify("comments[100].commenter=?")
     IssueFactory withWrongCommenter(User commenter);
 
-    @Modifier("subtasks[*].status")
+    @Modify("subtasks[*].status")
     IssueFactory withStatuses(Status status);
 
 }

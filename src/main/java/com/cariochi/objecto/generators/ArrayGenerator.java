@@ -22,7 +22,7 @@ class ArrayGenerator extends AbstractObjectsGenerator {
         if (firstItem == null) {
             return null;
         }
-        int arrayLength = context.getSettings().arrays().size().generate(generator.getRandom());
+        int arrayLength = context.getConfig().arrays().size().generate(generator.getRandom());
         final Object array = Array.newInstance(type.actualClass(), arrayLength);
         Array.set(array, 0, firstItem);
         for (int i = 1; i < arrayLength; i++) {

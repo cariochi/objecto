@@ -2,8 +2,10 @@ package com.cariochi.objecto;
 
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.objecto.proxy.HasSeed;
+import com.cariochi.objecto.proxy.IsGenerator;
 import com.cariochi.objecto.proxy.ObjectModifier;
 import com.cariochi.objecto.proxy.ObjectoProxyHandler;
+import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameters;
 import com.cariochi.reflecto.proxy.ProxyType;
@@ -12,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,19 +38,29 @@ public class Objecto {
         if (seed != null) {
             generator.getRandom().setSeed(seed);
         }
-        final ProxyType proxyType = proxy(targetClass, ObjectModifier.class, HasSeed.class);
+        final ProxyType proxyType = proxy(targetClass, IsGenerator.class, ObjectModifier.class, HasSeed.class);
         final T proxy = proxyType
                 .with(() -> new ObjectoProxyHandler(proxyType, generator))
                 .getConstructor()
                 .newInstance();
 
-        final List<TargetMethod> methods = reflect(targetClass).methods().stream()
+        final ReflectoType reflectoType = reflect(targetClass);
+        final List<TargetMethod> methods = reflectoType.methods().stream()
                 .map(m -> m.withTarget(proxy))
                 .toList();
 
+        Stream.of(List.of(reflectoType), reflectoType.allInterfaces(), reflectoType.allSuperTypes())
+                .flatMap(List::stream)
+                .map(ReflectoType::annotations)
+                .flatMap(annotations -> annotations.find(UseFactory.class).stream())
+                .flatMap(annotation -> Stream.of(annotation.value()))
+                .map(factoryClass -> create(factoryClass, seed))
+                .map(factory -> ((IsGenerator) factory).getObjectoGenerator())
+                .forEach(generator::use);
+
         addProviders(generator, methods);
         addReferenceGenerators(generator, methods);
-        addFactoryMethods(generator, methods);
+        addGeneratorMethods(generator, methods);
         addPostProcessors(generator, methods);
 
         return proxy;
@@ -55,19 +68,19 @@ public class Objecto {
 
     private static void addProviders(ObjectoGenerator generator, List<TargetMethod> methods) {
         methods.stream()
-                .filter(method -> method.annotations().contains(Constructor.class))
+                .filter(method -> method.annotations().contains(Construct.class))
                 .forEach(method -> generator.addProvider(method.returnType(), method::invoke));
     }
 
     private static void addReferenceGenerators(ObjectoGenerator generator, List<TargetMethod> methods) {
-        methods.forEach(method -> method.annotations().find(References.class)
+        methods.forEach(method -> method.annotations().find(Reference.class)
                 .ifPresent(annotation -> generator.addReferenceGenerators(method.returnType().actualType(), annotation.value()))
         );
     }
 
-    private static void addFactoryMethods(ObjectoGenerator generator, List<TargetMethod> methods) {
+    private static void addGeneratorMethods(ObjectoGenerator generator, List<TargetMethod> methods) {
 
-        final List<TargetMethod> factoryMethods = methods.stream()
+        final List<TargetMethod> generatorMethods = methods.stream()
                 .filter(method -> !method.declaringType().actualClass().equals(Object.class))
                 .filter(method -> {
                     final ReflectoParameters parameters = method.parameters();
@@ -82,53 +95,49 @@ public class Objecto {
                 })
                 .toList();
 
-        // Fields Factories
-        factoryMethods.stream()
-                .filter(method -> method.annotations().contains(FieldFactory.class))
+        // Fields Generators
+        generatorMethods.stream()
+                .filter(method -> method.annotations().contains(GenerateField.class))
                 .forEach(method -> {
-                    final FieldFactory annotation = method.annotations().get(FieldFactory.class);
-                    generator.addFieldFactory(reflect(annotation.type()), annotation.field(), method);
+                    final GenerateField annotation = method.annotations().get(GenerateField.class);
+                    generator.addFieldGenerator(reflect(annotation.type()), annotation.field(), method);
                 });
 
-        // Type Factories
-        final Map<ReflectoType, List<TargetMethod>> map = factoryMethods.stream()
-                .filter(method -> !method.annotations().contains(FieldFactory.class))
+        // Type Generators
+        final Map<ReflectoType, List<TargetMethod>> map = generatorMethods.stream()
+                .filter(method -> !method.annotations().contains(GenerateField.class))
                 .collect(groupingBy(TargetMethod::returnType, LinkedHashMap::new, toList()));
 
         map.forEach((type, list) -> {
 
             if (list.size() == 1) {
-                generator.addTypeFactory(list.get(0));
+                generator.addTypeGenerator(list.get(0));
                 return;
             }
 
-            final List<TargetMethod> annotatedMethods = list.stream()
-                    .filter(method -> method.annotations().contains(TypeFactory.class))
+            final List<TargetMethod> primaryMethods = list.stream()
+                    .filter(method -> method.annotations().contains(DefaultGenerator.class))
                     .toList();
 
-            if (annotatedMethods.size() == 1) {
-                generator.addTypeFactory(annotatedMethods.get(0));
-                return;
-            }
-
-            if (annotatedMethods.size() > 1) {
-                throw new IllegalArgumentException(format(
-                        "Multiple factory methods annotated with @TypeFactory for type `{0}`: {1}. "
-                        + "Please ensure only one method is annotated with @TypeFactory.",
-                        type, annotatedMethods
-                ));
+            if (primaryMethods.isEmpty()) {
+                log.warn("Multiple generator methods found for type `{}`. "
+                         + "To designate a default factory method, annotate one with @DefaultGenerator: {}.", type, list);
+            } else if (primaryMethods.size() == 1) {
+                generator.addTypeGenerator(primaryMethods.get(0));
             } else {
-                log.warn("Multiple factory methods found for type `{}`. "
-                         + "To designate a default factory method, annotate one with @TypeFactory: {}.", type, list);
+                throw new IllegalArgumentException(format(
+                        "Multiple generator methods annotated with @DefaultGenerator for type `{0}`: {1}. "
+                        + "Please ensure only one method is annotated with @DefaultGenerator.",
+                        type, primaryMethods
+                ));
             }
 
         });
-
     }
 
     private static void addPostProcessors(ObjectoGenerator generator, List<TargetMethod> methods) {
         methods.stream()
-                .filter(method -> method.annotations().contains(PostProcessor.class))
+                .filter(method -> method.annotations().contains(PostGenerate.class))
                 .filter(method -> method.returnType().is(void.class))
                 .filter(method -> method.parameters().size() == 1 || method.parameters().size() == 2)
                 .forEach(method -> {

@@ -1,14 +1,13 @@
 package com.cariochi.objecto.proxy;
 
-import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.Modify;
 import com.cariochi.objecto.Seed;
+import com.cariochi.objecto.config.ObjectoConfig;
 import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.ObjectoGenerator;
-import com.cariochi.objecto.generators.model.FieldSettings;
+import com.cariochi.objecto.generators.model.ConfigFunction;
 import com.cariochi.objecto.modifiers.ObjectoModifier;
-import com.cariochi.objecto.settings.ObjectoSettings;
-import com.cariochi.objecto.utils.FieldsSettingsUtils;
-import com.cariochi.objecto.utils.SettingsUtils;
+import com.cariochi.objecto.utils.ConfigUtils;
 import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameter;
@@ -19,16 +18,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.cariochi.objecto.settings.ObjectoSettings.DEFAULT_SETTINGS;
+import static com.cariochi.objecto.config.ObjectoConfig.DEFAULT_SETTINGS;
+import static java.util.stream.Collectors.toCollection;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationHandler {
+public class ObjectoProxyHandler implements IsGenerator, ObjectModifier, HasSeed, InvocationHandler {
 
     private final ProxyType proxyType;
     private final ObjectoGenerator generator;
@@ -57,7 +56,7 @@ public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationH
         } else {
 
             final Context context = Context.builder()
-                    .settings(DEFAULT_SETTINGS)
+                    .config(DEFAULT_SETTINGS)
                     .type(thisMethod.returnType())
                     .random(generator.getRandom())
                     .build();
@@ -69,17 +68,22 @@ public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationH
 
     public Object invoke(ReflectoMethod thisMethod, Map<String, ? extends Object[]> methodParameter, Context context) {
 
-        ObjectoSettings settings = context.getSettings();
+        ObjectoConfig config = context.getConfig();
 
-        final List<UnaryOperator<ObjectoSettings>> methodSettings = SettingsUtils.getMethodSettings(thisMethod);
-        for (UnaryOperator<ObjectoSettings> func : methodSettings) {
-            settings = func.apply(settings);
+        final List<ConfigFunction> methodSettings = ConfigUtils.getMethodSettings(thisMethod);
+
+        // Apply type config
+        for (ConfigFunction s : methodSettings) {
+            if (s.getField().isEmpty()) {
+                config = s.getFunction().apply(config, context);
+            }
         }
-        context = context.withSettings(settings);
+        context = context.withConfig(config);
 
-        List<FieldSettings> fieldSettings = new ArrayList<>(FieldsSettingsUtils.getFieldSettings(thisMethod));
-        fieldSettings.addAll(context.getFieldSettings());
-        context = context.withFieldSettings(fieldSettings);
+        // Apply field config
+        List<ConfigFunction> fieldSettings = methodSettings.stream().filter(s -> !s.getField().isEmpty()).collect(toCollection(ArrayList::new));
+        fieldSettings.addAll(context.getFieldConfigs());
+        context = context.withFieldConfigs(fieldSettings);
 
         thisMethod.annotations().find(Seed.class).map(Seed::value).ifPresent(context.getRandom()::setSeed);
 
@@ -93,12 +97,12 @@ public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationH
     }
 
     public Map<String, Object[]> getMethodParameters(ReflectoMethod method, Object[] args) {
-        return method.annotations().find(Modifier.class)
+        return method.annotations().find(Modify.class)
                 .map(methodModifier -> getParametersFromMethodAnnotation(methodModifier, method.parameters(), args))
                 .orElseGet(() -> getParametersFromParametersAnnotations(method.parameters(), args));
     }
 
-    private Map<String, Object[]> getParametersFromMethodAnnotation(Modifier methodModifier, ReflectoParameters parameters, Object[] args) {
+    private Map<String, Object[]> getParametersFromMethodAnnotation(Modify methodModifier, ReflectoParameters parameters, Object[] args) {
         final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
         if (methodModifier != null) {
             for (String value : methodModifier.value()) {
@@ -109,7 +113,7 @@ public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationH
             if (param.isNamePresent()) {
                 methodParameters.put(param.name(), args);
             } else {
-                throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
+                throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modify annotation");
             }
         }
         return methodParameters;
@@ -119,12 +123,12 @@ public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationH
         final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
         for (int i = 0; i < parameters.size(); i++) {
             final ReflectoParameter param = parameters.get(i);
-            final Modifier modifierParameter = param.annotations().find(Modifier.class).orElse(null);
+            final Modify modifierParameter = param.annotations().find(Modify.class).orElse(null);
             if (modifierParameter == null) {
                 if (param.isNamePresent()) {
                     methodParameters.put(param.name(), Stream.of(args[i]).toArray());
                 } else {
-                    throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
+                    throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modify annotation");
                 }
             } else {
                 for (String value : modifierParameter.value()) {
@@ -155,4 +159,8 @@ public class ObjectoProxyHandler implements ObjectModifier, HasSeed, InvocationH
         return generator.getRandom().isCustomSeed();
     }
 
+    @Override
+    public ObjectoGenerator getObjectoGenerator() {
+        return generator;
+    }
 }

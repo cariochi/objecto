@@ -24,29 +24,29 @@ public class ListGenerationTest {
                 .containsOnly(2);
     }
 
-    @Settings.Collections.Size.Range(from = 10, to = 11)
-    @Settings.Arrays.Size(10)
-    @Settings.Maps.Size(10)
+    @Spec.Collections.Size.Range(from = 10, to = 11)
+    @Spec.Arrays.Size(10)
+    @Spec.Maps.Size(10)
     private interface ObjectFactory {
 
         List<Double> doublesList();
 
-        @Settings.Collections.Size.Range(from = 1, to = 2)
+        @Spec.Collections.Size.Range(from = 1, to = 2)
         List<Integer> integersList();
 
-        @Settings.Arrays.Size(1)
+        @Spec.Arrays.Size(1)
         Integer[] integersArray();
 
 
-        @Settings.Maps.Size(1)
+        @Spec.Maps.Size(1)
         Map<Integer, Integer> integersMap();
 
 
-        @Settings.Collections.Size.Range(from = 3, to = 4)
+        @Spec.Collections.Size.Range(from = 3, to = 4)
         List<Dto> dtos();
 
-        @FieldFactory(type = Dto.class, field = "integers")
-        @Settings.Collections.Size.Range(from = 2, to = 3)
+        @GenerateField(type = Dto.class, field = "integers")
+        @Spec.Collections.Size.Range(from = 2, to = 3)
         List<Integer> integers();
 
     }

@@ -1,6 +1,7 @@
 package com.cariochi.objecto;
 
 import com.cariochi.objecto.extension.ObjectoExtension;
+import com.cariochi.objecto.random.ObjectoRandom;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -63,7 +64,7 @@ class SeedTest {
     @Seed(INTERFACE_LEVEL_SEED)
     private interface DtoFactory extends ParentDtoFactory {
 
-        @TypeFactory
+        @DefaultGenerator
         Dto createDto();
 
         @Seed(METHOD_LEVEL_SEED)
@@ -77,7 +78,7 @@ class SeedTest {
 
     private interface ParentDtoFactory {
 
-        @FieldFactory(type = Dto.class, field = "seed")
+        @GenerateField(type = Dto.class, field = "seed")
         private long seed(ObjectoRandom random) {
             return random.getSeed();
         }

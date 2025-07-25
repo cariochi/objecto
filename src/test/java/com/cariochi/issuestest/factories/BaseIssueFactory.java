@@ -5,91 +5,90 @@ import com.cariochi.issuestest.model.Comment;
 import com.cariochi.issuestest.model.Issue;
 import com.cariochi.issuestest.model.Issue.DependencyType;
 import com.cariochi.issuestest.model.Issue.Status;
-import com.cariochi.issuestest.model.Issue.Type;
 import com.cariochi.issuestest.model.User;
-import com.cariochi.objecto.Constructor;
-import com.cariochi.objecto.DatafakerMethod.Lorem;
-import com.cariochi.objecto.FieldFactory;
-import com.cariochi.objecto.Modifier;
-import com.cariochi.objecto.ObjectoRandom;
-import com.cariochi.objecto.PostProcessor;
-import com.cariochi.objecto.References;
-import com.cariochi.objecto.Settings;
-import com.cariochi.objecto.TypeFactory;
+import com.cariochi.objecto.Construct;
+import com.cariochi.objecto.DefaultGenerator;
+import com.cariochi.objecto.Faker;
+import com.cariochi.objecto.Faker.Base.Company;
+import com.cariochi.objecto.Faker.Base.File;
+import com.cariochi.objecto.Faker.Base.Lorem;
+import com.cariochi.objecto.GenerateField;
+import com.cariochi.objecto.Modify;
+import com.cariochi.objecto.PostGenerate;
+import com.cariochi.objecto.Reference;
+import com.cariochi.objecto.Spec;
+import com.cariochi.objecto.UseFactory;
+import com.cariochi.objecto.random.ObjectoRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
-import static com.cariochi.objecto.DatafakerMethod.Company;
-import static com.cariochi.objecto.DatafakerMethod.File;
 
-@Settings.MaxRecursionDepth(3)
-public interface BaseIssueFactory extends BaseFactory, BaseUserGenerators {
+@UseFactory({UserFactory.class, DatesFactory.class})
+@Spec.MaxRecursionDepth(3)
+public interface BaseIssueFactory {
 
-    @TypeFactory
-    @References("subtasks[*].parent")
+    @DefaultGenerator
+    @Reference("subtasks[*].parent")
+    @Faker(field = "key", expression = "#{numerify 'ID-####'}")
     Issue createIssue();
 
-    Issue createIssue(@Modifier("type=?") Type type);
+    @Faker(field = "key", expression = "#{numerify 'ID-####'}")
+    Issue createIssue(@Modify("type=?") Issue.Type type);
 
-    Issue createIssue(@Modifier("assignee=?") User assignee);
+    @Faker(field = "key", expression = "#{numerify 'ID-####'}")
+    Issue createIssue(@Modify("assignee=?") User assignee);
 
     List<Issue> createIssues();
 
-    List<Issue> createIssues(@Modifier("setType(?)") Type type);
+    List<Issue> createIssues(@Modify("setType(?)") Issue.Type type);
 
-    @Modifier("dependencies.put(?, ?)")
+    @Modify("dependencies.put(?, ?)")
     Issue createIssuesWithDependency(DependencyType type, Issue issue);
 
     default Issue createDefaultIssue() {
         return Issue.builder()
                 .key("DEFAULT")
-                .type(Type.STORY)
+                .type(Issue.Type.STORY)
                 .status(Status.OPEN)
                 .comments(List.of(Comment.builder().build()))
                 .dependencies(new HashMap<>())
                 .build();
     }
 
-    @Constructor
+    @Construct
     private Attachment<?> newAttachment() {
         return Attachment.builder().fileContent("").build();
     }
 
-    @FieldFactory(type = Attachment.class, field = "fileName")
-    @Settings.Datafaker.Method(File.FileName)
+    @GenerateField(type = Attachment.class, field = "fileName")
+    @Faker(expression = File.FILE_NAME)
     String attachmentFileNameGenerator();
 
-    @FieldFactory(type = Issue.class, field = "key")
-    private String issueKeyGenerator(Random random) {
-        return "ID-" + random.nextInt(1000, 10000);
-    }
-
-    @FieldFactory(type = Comment.class, field = "commenter")
+    @GenerateField(type = Comment.class, field = "commenter")
     private User commenterGenerator(ObjectoRandom random) {
         return User.builder()
                 .fullName("Vadym Deineka")
-                .companyName(random.nextDatafakerString(Company.Name))
+                .companyName(random.strings().faker().nextString(Company.NAME))
                 .build();
     }
 
-    @FieldFactory(type = Issue.class, field = "labels")
+    @GenerateField(type = Issue.class, field = "labels")
     private List<String> labelsGenerator(ObjectoRandom random) {
-        return List.of("LABEL1", random.nextDatafakerString(Lorem.Word).toUpperCase());
+        return List.of("LABEL1", random.strings().faker().nextString(Lorem.WORD).toUpperCase());
     }
 
-    @FieldFactory(type = Issue.class, field = "properties.value")
+    @GenerateField(type = Issue.class, field = "properties.value")
     private String issuePropertyValue() {
         return "PROP";
     }
 
-    @FieldFactory(type = Issue.class, field = "properties.setSize(?)")
+    @GenerateField(type = Issue.class, field = "properties.setSize(?)")
     private int issuePropertySize() {
         return 101;
     }
 
-    @PostProcessor
+    @PostGenerate
     private void issueLabelsPostProcessor(Issue issue) {
         final List<String> labels = new ArrayList<>(issue.getLabels());
         labels.add(0, issue.getKey());

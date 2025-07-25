@@ -17,7 +17,7 @@ public class OptionalGenerator extends AbstractObjectsGenerator {
     @Override
     public Object generate(Context context) {
         final ReflectoType elementType = context.getType().arguments().get(0);
-        final Context valueContext = context.nextContext("[value]", elementType);
+        final Context valueContext = context.nextContext("[type]", elementType);
         final Object object = generator.generate(valueContext);
         return Optional.of(object);
     }

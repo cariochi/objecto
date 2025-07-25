@@ -22,7 +22,7 @@ class StreamGenerator extends AbstractObjectsGenerator {
     public Object generate(Context context) {
         final ReflectoType elementType = context.getType().arguments().get(0);
         final List<Object> collection = new ArrayList<>();
-        final int size = context.getSettings().collections().size().generate(generator.getRandom());
+        final int size = context.getConfig().collections().size().generate(generator.getRandom());
         for (int i = 0; i < size; i++) {
             Context nextContext = context.nextContext("[" + i + "]", elementType);
             final Object item = generator.generate(nextContext);

@@ -1,7 +1,7 @@
 package com.cariochi.objecto.generators.model;
 
-import com.cariochi.objecto.ObjectoRandom;
 import com.cariochi.objecto.generators.Context;
+import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameter;
 import com.cariochi.reflecto.types.ReflectoType;

@@ -1,8 +1,8 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.ObjectoRandom;
-import com.cariochi.objecto.generators.model.FieldSettings;
-import com.cariochi.objecto.settings.ObjectoSettings;
+import com.cariochi.objecto.config.ObjectoConfig;
+import com.cariochi.objecto.generators.model.ConfigFunction;
+import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -18,7 +18,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.With;
 
-import static com.cariochi.objecto.settings.ObjectoSettings.DEFAULT_SETTINGS;
+import static com.cariochi.objecto.config.ObjectoConfig.DEFAULT_SETTINGS;
 import static org.apache.commons.lang3.StringUtils.replace;
 import static org.apache.commons.lang3.StringUtils.split;
 
@@ -33,8 +33,8 @@ public class Context {
     private final ReflectoType type;
     private final Context previous;
 
-    @Builder.Default private final ObjectoSettings settings = DEFAULT_SETTINGS;
-    @Builder.Default private final List<FieldSettings> fieldSettings = new ArrayList<>();
+    @Builder.Default private final ObjectoConfig config = DEFAULT_SETTINGS;
+    @Builder.Default private final List<ConfigFunction> fieldConfigs = new ArrayList<>();
 
     private final boolean dirty;
 
@@ -48,21 +48,21 @@ public class Context {
                 .withDirty(false);
     }
 
-    public ObjectoSettings getSettings() {
-        ObjectoSettings settings = this.settings;
-        for (BiFunction<ObjectoSettings, Context, ObjectoSettings> setting : getCurrentFieldSettings()) {
-            settings = setting.apply(settings, this);
+    public ObjectoConfig getConfig() {
+        ObjectoConfig config = this.config;
+        for (BiFunction<ObjectoConfig, Context, ObjectoConfig> func : getCurrentFieldConfigs()) {
+            config = func.apply(config, this);
         }
-        return settings;
+        return config;
     }
 
-    public List<BiFunction<ObjectoSettings, Context, ObjectoSettings>> getCurrentFieldSettings() {
-        return fieldSettings.stream()
-                .filter(setting -> {
-                    final Context parentContext = findPreviousContext(setting.getField()).map(Context::getPrevious).orElse(null);
-                    return parentContext != null && setting.getType().equals(parentContext.getType());
+    public List<BiFunction<ObjectoConfig, Context, ObjectoConfig>> getCurrentFieldConfigs() {
+        return fieldConfigs.stream()
+                .filter(configFunction -> {
+                    final Context parentContext = findPreviousContext(configFunction.getField()).map(Context::getPrevious).orElse(null);
+                    return parentContext != null && configFunction.getType().equals(parentContext.getType());
                 })
-                .map(FieldSettings::getSettings)
+                .map(ConfigFunction::getFunction)
                 .toList();
     }
 

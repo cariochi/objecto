@@ -1,6 +1,6 @@
 package com.cariochi.objecto.generators;
 
-import com.cariochi.objecto.settings.Range;
+import com.cariochi.objecto.config.Range;
 import java.util.List;
 
 class EnumGenerator implements Generator {
