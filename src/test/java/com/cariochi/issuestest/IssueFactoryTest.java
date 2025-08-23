@@ -102,8 +102,7 @@ class IssueFactoryTest {
 
         final BaseIssueFactory modifiedFactory = issueFactory
                 .withKey(key)
-                .withType(type)
-                .withStatus(status)
+                .withTypeAndStatus(type, status)
                 .withAssignee(assignee);
 
         assertThat(modifiedFactory.createIssue())

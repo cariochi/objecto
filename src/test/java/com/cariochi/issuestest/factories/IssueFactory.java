@@ -16,8 +16,7 @@ public interface IssueFactory extends BaseIssueFactory {
     @Modify("setType(?)")
     IssueFactory withType(Type type);
 
-    @Modify("setStatus(?)")
-    IssueFactory withStatus(Status status);
+    IssueFactory withTypeAndStatus(@Modify("setType(?)") Type type, @Modify("setStatus(?)") Status status);
 
     IssueFactory withAssignee(@Modify("setAssignee(?)") User assignee);
 
