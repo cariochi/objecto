@@ -39,8 +39,8 @@ public class NullableTest {
     @Test
     void testSetValue() {
         assertThat(factory.dtoList5())
-                .extracting(Dto::getInteger, Dto::getEnumValue, Dto::getLocalDate)
-                .containsOnly(tuple(123, Enum.B, LocalDate.of(2024, 1, 1)));
+                .extracting(Dto::getInteger, Dto::getEnumValue, Dto::getLocalDate, Dto::getString)
+                .containsOnly(tuple(123, Enum.B, LocalDate.of(2024, 1, 1), "string value"));
     }
 
     @Collections.Size.Range(from = 10, to = 21)
@@ -61,6 +61,7 @@ public class NullableTest {
         @Spec.SetValue(field = "[*].integer", value = "123")
         @Spec.SetValue(field = "[*].enumValue", value = "B")
         @Spec.SetValue(field = "[*].localDate", value = "2024-01-01")
+        @Spec.SetValue(field = "[*].string", value = "string value")
         List<Dto> dtoList5();
 
     }
@@ -72,6 +73,7 @@ public class NullableTest {
         private int intValue;
         private Enum enumValue;
         private LocalDate localDate;
+        private String string;
     }
 
     enum Enum {
