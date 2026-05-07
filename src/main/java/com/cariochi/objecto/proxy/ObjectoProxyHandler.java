@@ -14,13 +14,14 @@ import com.cariochi.reflecto.parameters.ReflectoParameter;
 import com.cariochi.reflecto.parameters.ReflectoParameters;
 import com.cariochi.reflecto.proxy.InvocationHandler;
 import com.cariochi.reflecto.proxy.ProxyType;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.objecto.config.ObjectoConfig.DEFAULT_SETTINGS;
 import static java.util.stream.Collectors.toCollection;
@@ -98,29 +99,30 @@ public class ObjectoProxyHandler implements IsGenerator, ObjectModifier, HasSeed
 
     public Map<String, Object[]> getMethodParameters(ReflectoMethod method, Object[] args) {
         return method.annotations().find(Modify.class)
-                .map(methodModifier -> getParametersFromMethodAnnotation(methodModifier, method.parameters(), args))
-                .orElseGet(() -> getParametersFromParametersAnnotations(method.parameters(), args));
+                .map(methodModifier -> getParametersFromMethodAnnotation(methodModifier, method, args))
+                .orElseGet(() -> getParametersFromParametersAnnotations(method, args));
     }
 
-    private Map<String, Object[]> getParametersFromMethodAnnotation(Modify methodModifier, ReflectoParameters parameters, Object[] args) {
+    private Map<String, Object[]> getParametersFromMethodAnnotation(Modify methodModifier, ReflectoMethod method, Object[] args) {
         final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
         if (methodModifier != null) {
             for (String value : methodModifier.value()) {
                 methodParameters.put(value, args);
             }
         } else {
-            final ReflectoParameter param = parameters.get(0);
+            final ReflectoParameter param = method.parameters().get(0);
             if (param.isNamePresent()) {
                 methodParameters.put(param.name(), args);
             } else {
-                throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modify annotation");
+                throw parameterNameMissing(method, param);
             }
         }
         return methodParameters;
     }
 
-    private Map<String, Object[]> getParametersFromParametersAnnotations(ReflectoParameters parameters, Object[] args) {
+    private Map<String, Object[]> getParametersFromParametersAnnotations(ReflectoMethod method, Object[] args) {
         final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
+        final ReflectoParameters parameters = method.parameters();
         for (int i = 0; i < parameters.size(); i++) {
             final ReflectoParameter param = parameters.get(i);
             final Modify modifierParameter = param.annotations().find(Modify.class).orElse(null);
@@ -128,7 +130,7 @@ public class ObjectoProxyHandler implements IsGenerator, ObjectModifier, HasSeed
                 if (param.isNamePresent()) {
                     methodParameters.put(param.name(), Stream.of(args[i]).toArray());
                 } else {
-                    throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modify annotation");
+                    throw parameterNameMissing(method, param);
                 }
             } else {
                 for (String value : modifierParameter.value()) {
@@ -137,6 +139,13 @@ public class ObjectoProxyHandler implements IsGenerator, ObjectModifier, HasSeed
             }
         }
         return methodParameters;
+    }
+
+    private IllegalArgumentException parameterNameMissing(ReflectoMethod method, ReflectoParameter parameter) {
+        return new IllegalArgumentException(
+                "Cannot resolve parameter name for method '" + method.toGenericString() + "' and parameter type '"
+                        + parameter.type().getTypeName() + "'. Compile with '-parameters' or annotate the parameter/method with @Modify."
+        );
     }
 
     @Override

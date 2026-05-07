@@ -1,9 +1,10 @@
 package com.cariochi.objecto;
 
-import java.util.List;
-import java.util.Map;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,29 +25,29 @@ public class ListGenerationTest {
                 .containsOnly(2);
     }
 
-    @Spec.Collections.Size.Range(from = 10, to = 11)
-    @Spec.Arrays.Size(10)
-    @Spec.Maps.Size(10)
+    @Generate.Collections.Size.Range(from = 10, to = 11)
+    @Generate.Arrays.Size(10)
+    @Generate.Maps.Size(10)
     private interface ObjectFactory {
 
         List<Double> doublesList();
 
-        @Spec.Collections.Size.Range(from = 1, to = 2)
+        @Generate.Collections.Size.Range(from = 1, to = 2)
         List<Integer> integersList();
 
-        @Spec.Arrays.Size(1)
+        @Generate.Arrays.Size(1)
         Integer[] integersArray();
 
 
-        @Spec.Maps.Size(1)
+        @Generate.Maps.Size(1)
         Map<Integer, Integer> integersMap();
 
 
-        @Spec.Collections.Size.Range(from = 3, to = 4)
+        @Generate.Collections.Size.Range(from = 3, to = 4)
         List<Dto> dtos();
 
-        @GenerateField(type = Dto.class, field = "integers")
-        @Spec.Collections.Size.Range(from = 2, to = 3)
+        @FieldGenerator(type = Dto.class, field = "integers")
+        @Generate.Collections.Size.Range(from = 2, to = 3)
         List<Integer> integers();
 
     }

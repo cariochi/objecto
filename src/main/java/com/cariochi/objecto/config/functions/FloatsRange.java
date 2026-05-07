@@ -1,6 +1,6 @@
 package com.cariochi.objecto.config.functions;
 
-import com.cariochi.objecto.Spec.Floats;
+import com.cariochi.objecto.Generate.Floats;
 import com.cariochi.objecto.config.ObjectoConfig;
 import com.cariochi.objecto.config.Range;
 import com.cariochi.objecto.generators.Context;

@@ -1,6 +1,6 @@
 package com.cariochi.objecto.config.functions;
 
-import com.cariochi.objecto.Spec.Dates;
+import com.cariochi.objecto.Generate.Dates;
 import com.cariochi.objecto.config.ObjectoConfig;
 import com.cariochi.objecto.config.Range;
 import com.cariochi.objecto.generators.Context;
@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.function.BiFunction;
 
@@ -40,10 +39,14 @@ public class DatesRange implements ConfigFunctionFactory<Dates.Range> {
 
         try {
             LocalDateTime dateTime = LocalDateTime.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            return dateTime.toInstant(ZoneOffset.of(timezone));
+            return dateTime.atZone(ZoneId.of(timezone)).toInstant();
         } catch (Exception e) {
         }
 
-        return null;
+        throw new IllegalArgumentException(
+                "Invalid @Generate.Dates.Range value '" + dateStr + "' with timezone '" + timezone + "'. "
+                        + "Supported formats: ISO-8601 instant, yyyy-MM-dd, yyyy-MM-dd HH:mm:ss. "
+                        + "Timezone must be a valid ZoneId, for example UTC or America/New_York."
+        );
     }
 }

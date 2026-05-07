@@ -1,6 +1,8 @@
 package com.cariochi.objecto.repeatable;
 
-import com.cariochi.objecto.Spec;
+import com.cariochi.objecto.Datafaker;
+import com.cariochi.objecto.Generate;
+
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -9,14 +11,14 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-public @interface Configs {
+public @interface Repeatable {
 
     @Target({TYPE, METHOD})
     @Retention(RUNTIME)
     @Inherited
     @interface MaxDepth {
 
-        Spec.MaxDepth[] value();
+        Generate.MaxDepth[] value();
 
     }
 
@@ -24,14 +26,14 @@ public @interface Configs {
     @Retention(RUNTIME)
     @Inherited
     @interface MaxRecursionDepth {
-        Spec.MaxRecursionDepth[] value();
+        Generate.MaxRecursionDepth[] value();
     }
 
     @Target({TYPE, METHOD})
     @Retention(RUNTIME)
     @Inherited
     @interface Nullable {
-        Spec.Nullable[] value();
+        Generate.Nullable[] value();
     }
 
     @interface Longs {
@@ -40,7 +42,7 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.Longs.Range[] value();
+            Generate.Longs.Range[] value();
         }
     }
 
@@ -50,7 +52,7 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.Integers.Range[] value();
+            Generate.Integers.Range[] value();
         }
     }
 
@@ -60,7 +62,7 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.Shorts.Range[] value();
+            Generate.Shorts.Range[] value();
         }
     }
 
@@ -70,7 +72,7 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.Bytes.Range[] value();
+            Generate.Bytes.Range[] value();
         }
     }
 
@@ -80,7 +82,7 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.Chars.Range[] value();
+            Generate.Chars.Range[] value();
         }
     }
 
@@ -90,14 +92,14 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.BigDecimals.Range[] value();
+            Generate.BigDecimals.Range[] value();
         }
 
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
         @interface Scale {
-            Spec.BigDecimals.Scale[] value();
+            Generate.BigDecimals.Scale[] value();
         }
     }
 
@@ -107,7 +109,7 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.Doubles.Range[] value();
+            Generate.Doubles.Range[] value();
         }
     }
 
@@ -117,7 +119,7 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.Floats.Range[] value();
+            Generate.Floats.Range[] value();
         }
     }
 
@@ -127,7 +129,7 @@ public @interface Configs {
         @Retention(RUNTIME)
         @Inherited
         @interface Range {
-            Spec.Dates.Range[] value();
+            Generate.Dates.Range[] value();
         }
     }
 
@@ -138,13 +140,13 @@ public @interface Configs {
         @Inherited
         @interface Size {
 
-            Spec.Collections.Size[] value();
+            Generate.Collections.Size[] value();
 
             @Target({TYPE, METHOD})
             @Retention(RUNTIME)
             @Inherited
             @interface Range {
-                Spec.Collections.Size.Range[] value();
+                Generate.Collections.Size.Range[] value();
             }
         }
     }
@@ -156,13 +158,13 @@ public @interface Configs {
         @Inherited
         @interface Size {
 
-            Spec.Arrays.Size[] value();
+            Generate.Arrays.Size[] value();
 
             @Target({TYPE, METHOD})
             @Retention(RUNTIME)
             @Inherited
             @interface Range {
-                Spec.Arrays.Size.Range[] value();
+                Generate.Arrays.Size.Range[] value();
             }
         }
     }
@@ -174,13 +176,13 @@ public @interface Configs {
         @Inherited
         @interface Size {
 
-            Spec.Maps.Size[] value();
+            Generate.Maps.Size[] value();
 
             @Target({TYPE, METHOD})
             @Retention(RUNTIME)
             @Inherited
             @interface Range {
-                Spec.Maps.Size.Range[] value();
+                Generate.Maps.Size.Range[] value();
             }
         }
     }
@@ -192,21 +194,21 @@ public @interface Configs {
         @Inherited
         @interface Length {
 
-            Spec.Strings.Length[] value();
+            Generate.Strings.Length[] value();
 
             @Target({TYPE, METHOD})
             @Retention(RUNTIME)
             @Inherited
             @interface Range {
-                Spec.Strings.Length.Range[] value();
+                Generate.Strings.Length.Range[] value();
             }
         }
 
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
         @Inherited
-        @interface Parameters {
-            Spec.Strings.Parameters[] value();
+        @interface Characters {
+            Generate.Strings.Characters[] value();
         }
 
     }
@@ -215,13 +217,20 @@ public @interface Configs {
     @Retention(RUNTIME)
     @Inherited
     @interface SetNull {
-        Spec.SetNull[] value();
+        Generate.SetNull[] value();
     }
 
     @Target({TYPE, METHOD})
     @Retention(RUNTIME)
     @Inherited
     @interface SetValue {
-        Spec.SetValue[] value();
+        Generate.SetValue[] value();
+    }
+
+    @Target({TYPE, METHOD})
+    @Retention(RUNTIME)
+    @Inherited
+    @interface Datafakers {
+        Datafaker[] value();
     }
 }

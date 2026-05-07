@@ -5,10 +5,11 @@ import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.types.ReflectoType;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import lombok.extern.slf4j.Slf4j;
 
 import static java.util.Comparator.comparingInt;
 import static java.util.Comparator.comparingLong;
@@ -46,7 +47,14 @@ public class StaticMethodProvider extends DefaultProvider {
             log.trace("Static type parameters: `{}({})`", staticConstructor.name(), args.stream().map(String::valueOf).collect(joining(", ")));
             return staticConstructor.invoke(args.toArray());
         } catch (Exception e) {
-            log.warn(e.getMessage(), e);
+            log.debug(
+                    "Static factory method '{}' could not create '{}'. Path: '{}'. Cause: {}",
+                    staticConstructor.toGenericString(),
+                    context.getType().getTypeName(),
+                    context.getPath(),
+                    e.getMessage(),
+                    e
+            );
             return null;
         }
     }

@@ -4,14 +4,38 @@ import com.cariochi.objecto.Seed;
 import com.cariochi.objecto.proxy.HasSeed;
 import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.reflecto.fields.TargetField;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.util.Map;
+
 import static com.cariochi.reflecto.Reflecto.reflect;
 
+/**
+ * JUnit 5 extension that makes Objecto-based randomized tests easier to reproduce.
+ * <p>
+ * Before each test, the extension chooses a seed from the test method's {@link Seed} annotation or
+ * generates a new random seed. It applies that seed to Objecto factories stored in test instance fields,
+ * unless those factories already have an explicit custom seed.
+ *
+ * <pre>{@code
+ * @ExtendWith(ObjectoExtension.class)
+ * class IssueFactoryTest {
+ *
+ *     private final IssueFactory issues = Objecto.create(IssueFactory.class);
+ *
+ *     @Test
+ *     void createsIssue() {
+ *         Issue issue = issues.createIssue();
+ *     }
+ * }
+ * }</pre>
+ *
+ * <p>
+ * If a test fails, the extension publishes a JUnit report entry containing the seed and test method name.
+ */
 @Slf4j
 public class ObjectoExtension implements BeforeEachCallback, AfterEachCallback {
 

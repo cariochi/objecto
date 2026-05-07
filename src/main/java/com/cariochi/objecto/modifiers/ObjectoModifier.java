@@ -1,11 +1,12 @@
 package com.cariochi.objecto.modifiers;
 
 import com.cariochi.reflecto.invocations.model.Reflection;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.stream.Collectors.toMap;
@@ -25,13 +26,17 @@ public class ObjectoModifier {
                 : fieldValues;
 
         values.forEach((expression, value) -> {
+            final String reflectoPath = expression.endsWith(")") || expression.endsWith("?") ? expression : expression + "=?";
             try {
-                final String reflectoPath = expression.endsWith(")") || expression.endsWith("?") ? expression : expression + "=?";
                 reflection.perform(reflectoPath, value);
             } catch (Exception ex) {
-                log.warn(
-                        "Invalid @Modify type '{}'. Please ensure that the specified parameter corresponds to a valid field in the {} class.",
-                        expression, object.getClass().getName()
+                log.debug(
+                        "Cannot apply @Modify expression '{}' to {}. Tried Reflecto path '{}' with {} argument(s). Cause: {}",
+                        expression,
+                        object.getClass().getName(),
+                        reflectoPath,
+                        value == null ? 0 : value.length,
+                        ex.getMessage()
                 );
             }
         });

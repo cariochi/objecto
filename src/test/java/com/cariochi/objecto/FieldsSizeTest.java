@@ -1,9 +1,10 @@
 package com.cariochi.objecto;
 
-import java.util.List;
-import java.util.Map;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,10 +23,10 @@ public class FieldsSizeTest {
 
     interface ObjectFactory {
 
-        @Spec.Arrays.Size(field = "array", value = 10)
-        @Spec.Collections.Size(field = "list", value = 11)
-        @Spec.Maps.Size(field = "map", value = 12)
-        @Spec.Strings.Length(field = "string", value = 13)
+        @Generate.Arrays.Size(field = "array", value = 10)
+        @Generate.Collections.Size(field = "list", value = 11)
+        @Generate.Maps.Size(field = "map", value = 12)
+        @Generate.Strings.Length(field = "string", value = 13)
         Dto createDto();
     }
 

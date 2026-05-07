@@ -1,13 +1,14 @@
 package com.cariochi.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static org.assertj.core.api.Assertions.assertThat;

@@ -4,22 +4,13 @@ import com.cariochi.objecto.config.ObjectoConfig;
 import com.cariochi.objecto.generators.model.ConfigFunction;
 import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.reflecto.types.ReflectoType;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import lombok.*;
+import org.apache.commons.lang3.Strings;
+
+import java.util.*;
 import java.util.function.BiFunction;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.With;
 
 import static com.cariochi.objecto.config.ObjectoConfig.DEFAULT_SETTINGS;
-import static org.apache.commons.lang3.StringUtils.replace;
 import static org.apache.commons.lang3.StringUtils.split;
 
 @Getter
@@ -109,7 +100,7 @@ public class Context {
     }
 
     public Optional<Context> findPreviousContext(String path) {
-        final Deque<String> fields = new LinkedList<>(List.of(split(replace(path, "[", ".["), ".")));
+        final Deque<String> fields = new LinkedList<>(List.of(split(Strings.CS.replace(path, "[", ".["), ".")));
         return findPreviousContext(fields);
     }
 
