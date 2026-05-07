@@ -1,6 +1,6 @@
 package com.cariochi.objecto.config.functions;
 
-import com.cariochi.objecto.Spec.BigDecimals.Scale;
+import com.cariochi.objecto.Generate.BigDecimals.Scale;
 import com.cariochi.objecto.config.ObjectoConfig;
 import com.cariochi.objecto.generators.Context;
 import com.cariochi.objecto.generators.model.ConfigFunction;

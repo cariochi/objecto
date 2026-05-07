@@ -2,13 +2,14 @@ package com.cariochi.objecto;
 
 import com.cariochi.objecto.extension.ObjectoExtension;
 import com.cariochi.objecto.random.ObjectoRandom;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
 
 import static com.cariochi.utils.JsonUtils.assertJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,7 +65,7 @@ class SeedTest {
     @Seed(INTERFACE_LEVEL_SEED)
     private interface DtoFactory extends ParentDtoFactory {
 
-        @DefaultGenerator
+        @PrimaryGenerator
         Dto createDto();
 
         @Seed(METHOD_LEVEL_SEED)
@@ -78,7 +79,7 @@ class SeedTest {
 
     private interface ParentDtoFactory {
 
-        @GenerateField(type = Dto.class, field = "seed")
+        @FieldGenerator(type = Dto.class, field = "seed")
         private long seed(ObjectoRandom random) {
             return random.getSeed();
         }

@@ -1,8 +1,9 @@
 package com.cariochi.objecto;
 
-import java.util.List;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -24,15 +25,15 @@ public class TypeGenerationTest {
 
     interface ObjectFactory {
 
-        @Spec.SetValue(field = "a", value = "1")
+        @Generate.SetValue(field = "a", value = "1")
         Dto dto();
 
-        @DefaultGenerator
-        @Spec.SetValue(field = "[*].b", value = "22")
+        @PrimaryGenerator
+        @Generate.SetValue(field = "[*].b", value = "22")
         List<Dto> list1();
 
-        @Spec.SetValue(field = "[*].a", value = "11")
-        @Spec.SetValue(field = "[*].b", value = "22")
+        @Generate.SetValue(field = "[*].a", value = "11")
+        @Generate.SetValue(field = "[*].b", value = "22")
         List<Dto> list2();
 
     }

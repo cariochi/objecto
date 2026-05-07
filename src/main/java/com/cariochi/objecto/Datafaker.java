@@ -1,8 +1,8 @@
 package com.cariochi.objecto;
 
-import com.cariochi.objecto.repeatable.Fakers;
+import com.cariochi.objecto.repeatable.Repeatable;
+
 import java.lang.annotation.Inherited;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -11,44 +11,51 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * The {@code Faker} annotation is used to specify data generation methods and locales for fields.
+ * Configures generated values with Datafaker expressions.
  * <p>
- * This annotation allows you to define a field name, a data generation expression, and an optional locale for generating random data using the Datafaker library.
+ * Place this annotation on a factory type or method. When {@link #field()} is set, the expression is
+ * applied to that field. When {@link #field()} is empty, the expression or locale is applied to the
+ * generated value as a whole.
+ *
+ * <pre>{@code
+ * interface UserFactory {
+ *
+ *     @Datafaker(field = "fullName", expression = Datafaker.Base.Name.FULL_NAME)
+ *     @Datafaker(field = "city", expression = Datafaker.Base.Address.CITY, locale = "fr")
+ *     User createUser();
+ * }
+ * }</pre>
+ *
  * <p>
- * For more information on Datafaker, visit the
- * <a href="https://www.datafaker.net/documentation/getting-started/">Datafaker Documentation</a>.
+ * Datafaker provider documentation:
+ * <a href="https://www.datafaker.net/documentation/providers/">providers</a>.
+ * Expression syntax documentation:
+ * <a href="https://www.datafaker.net/documentation/expressions/">expressions</a>.
  */
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
-@Repeatable(Fakers.class)
+@java.lang.annotation.Repeatable(Repeatable.Datafakers.class)
 @Inherited
-public @interface Faker {
+public @interface Datafaker {
 
     /**
-     * Specifies the name of the field for which data will be generated.
+     * Field path to which the Datafaker expression should be applied.
      *
-     * @return the field name
+     * @return field path, or an empty string to apply to the generated value itself
      */
     String field() default "";
 
     /**
-     * Specifies the Faker expression to be used for generating data.
-     * <p>
-     * A large number of core expressions are available directly in this annotation, grouped by categories and providers.
-     * <p>
-     * For more details and examples of usage, refer to therefer to the <a href="https://www.datafaker.net/documentation/expressions/">Faker Expressions
-     * Documentation</a>.
+     * Datafaker expression used to generate a value.
      *
-     * @return the Faker expression
+     * @return Datafaker expression, for example {@code "#{address.city}"}
      */
     String expression() default "";
 
     /**
-     * Specifies the locale to be used for data generation.
-     * <p>
-     * If not specified, the default locale will be used.
+     * Locale passed to Datafaker.
      *
-     * @return the locale
+     * @return locale tag, or an empty string to use Objecto's default locale
      */
     String locale() default "";
 

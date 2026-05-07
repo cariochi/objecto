@@ -5,19 +5,8 @@ import com.cariochi.objecto.config.ObjectoConfig.FakerConfig;
 import com.cariochi.objecto.config.Range;
 import com.cariochi.objecto.random.ObjectoRandom;
 import com.cariochi.reflecto.types.ReflectoType;
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Month;
-import java.time.MonthDay;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+
+import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
@@ -43,7 +32,7 @@ class TemporalGenerator implements Generator {
 
         final Instant instant = isEmpty(fakerConfig.expression())
                 ? random.nextInstant(datesSettings.from(), datesSettings.to())
-                : Instant.parse(random.strings().faker(fakerConfig.locale()).nextString(fakerConfig.expression()));
+                : Instant.parse(random.strings().datafaker(fakerConfig.locale()).nextString(fakerConfig.expression()));
 
 
         final ZonedDateTime zonedDateTime = instant.atZone(UTC);

@@ -1,10 +1,11 @@
 package com.cariochi.objecto;
 
-import com.cariochi.objecto.Spec.Collections;
-import java.time.LocalDate;
-import java.util.List;
+import com.cariochi.objecto.Generate.Collections;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -46,22 +47,22 @@ public class NullableTest {
     @Collections.Size.Range(from = 10, to = 21)
     private interface ObjectFactory {
 
-        @DefaultGenerator
+        @PrimaryGenerator
         List<Dto> dtoList1();
 
-        @Spec.Nullable(true)
+        @Generate.Nullable(true)
         List<Dto> dtoList2();
 
-        @Spec.Nullable(field = "[*].integer", value = true)
+        @Generate.Nullable(field = "[*].integer", value = true)
         List<Dto> dtoList3();
 
-        @Spec.SetNull(field = "[*].integer")
+        @Generate.SetNull(field = "[*].integer")
         List<Dto> dtoList4();
 
-        @Spec.SetValue(field = "[*].integer", value = "123")
-        @Spec.SetValue(field = "[*].enumValue", value = "B")
-        @Spec.SetValue(field = "[*].localDate", value = "2024-01-01")
-        @Spec.SetValue(field = "[*].string", value = "string value")
+        @Generate.SetValue(field = "[*].integer", value = "123")
+        @Generate.SetValue(field = "[*].enumValue", value = "B")
+        @Generate.SetValue(field = "[*].localDate", value = "2024-01-01")
+        @Generate.SetValue(field = "[*].string", value = "string value")
         List<Dto> dtoList5();
 
     }

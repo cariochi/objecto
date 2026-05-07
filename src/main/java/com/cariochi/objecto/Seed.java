@@ -9,7 +9,20 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * The Seed annotation is used to specify a seed type for methods or types.
+ * Sets a deterministic seed for Objecto generation.
+ * <p>
+ * The annotation can be placed on a factory type, factory method, or JUnit test method when
+ * {@code ObjectoExtension} is used.
+ *
+ * <pre>{@code
+ * @Seed(42)
+ * interface IssueFactory {
+ *     Issue createIssue();
+ * }
+ * }</pre>
+ *
+ * <p>
+ * Method-level seeds override type-level seeds for that generation call.
  */
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
@@ -17,9 +30,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Seed {
 
     /**
-     * Specifies the seed type.
+     * Seed value used to initialize Objecto-managed random generators.
      *
-     * @return the seed type
+     * @return deterministic seed value
      */
     long value();
 

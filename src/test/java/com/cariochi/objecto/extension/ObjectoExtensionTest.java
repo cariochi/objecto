@@ -1,6 +1,6 @@
 package com.cariochi.objecto.extension;
 
-import com.cariochi.objecto.GenerateField;
+import com.cariochi.objecto.FieldGenerator;
 import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.Seed;
 import com.cariochi.objecto.random.ObjectoRandom;
@@ -36,7 +36,7 @@ class ObjectoExtensionTest {
 
         Dto createDto();
 
-        @GenerateField(type = Dto.class, field = "seed")
+        @FieldGenerator(type = Dto.class, field = "seed")
         private long generateSeed(ObjectoRandom random) {
             return random.getSeed();
         }

@@ -8,16 +8,33 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * This annotation is used to mark a type or parameter and specify what it should modify.
+ * Applies values to generated objects after generation.
+ * <p>
+ * {@code @Modify} can be placed on a factory method or on individual method parameters. Expressions may
+ * be simple field paths, nested paths, collection paths, or method-call expressions.
+ *
+ * <pre>{@code
+ * interface IssueFactory {
+ *
+ *     Issue createIssue(@Modify("type") Issue.Type type);
+ *
+ *     @Modify("setStatus(?)")
+ *     IssueFactory withStatus(Issue.Status status);
+ * }
+ * }</pre>
+ *
+ * <p>
+ * A plain path such as {@code "type"} is treated as field assignment. Use {@code "setType(?)"} or
+ * {@code "dependencies.put(?, ?)"} when you want to call a method explicitly.
  */
 @Target({METHOD, PARAMETER})
 @Retention(RUNTIME)
 public @interface Modify {
 
     /**
-     * Specifies the field or type to which modifications should be applied.
+     * Modification expressions to apply.
      *
-     * @return an array of modification values
+     * @return field paths or method-call expressions
      */
     String[] value();
 

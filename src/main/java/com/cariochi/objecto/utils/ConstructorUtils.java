@@ -3,9 +3,10 @@ package com.cariochi.objecto.utils;
 import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameter;
 import com.cariochi.reflecto.types.ReflectoType;
+import lombok.experimental.UtilityClass;
+
 import java.lang.reflect.Type;
 import java.util.Optional;
-import lombok.experimental.UtilityClass;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 
@@ -38,15 +39,15 @@ public class ConstructorUtils {
     }
 
     public static Class<?> getWrapperClass(Class<?> primitiveType) {
-        if (primitiveType == boolean.class) {return Boolean.class;}
-        if (primitiveType == byte.class) {return Byte.class;}
-        if (primitiveType == char.class) {return Character.class;}
-        if (primitiveType == double.class) {return Double.class;}
-        if (primitiveType == float.class) {return Float.class;}
-        if (primitiveType == int.class) {return Integer.class;}
-        if (primitiveType == long.class) {return Long.class;}
-        if (primitiveType == short.class) {return Short.class;}
-        if (primitiveType == void.class) {return Void.class;}
+        if (primitiveType == boolean.class) return Boolean.class;
+        if (primitiveType == byte.class) return Byte.class;
+        if (primitiveType == char.class) return Character.class;
+        if (primitiveType == double.class) return Double.class;
+        if (primitiveType == float.class) return Float.class;
+        if (primitiveType == int.class) return Integer.class;
+        if (primitiveType == long.class) return Long.class;
+        if (primitiveType == short.class) return Short.class;
+        if (primitiveType == void.class) return Void.class;
         return primitiveType;
     }
 

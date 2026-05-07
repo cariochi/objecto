@@ -57,7 +57,7 @@ class NumberGenerator implements Generator {
     }
 
     private static Object generateDatafaker(ReflectoType type, FakerConfig fakerConfig, ObjectoRandom random) {
-        final String s = random.strings().faker(fakerConfig.locale()).nextString(fakerConfig.expression());
+        final String s = random.strings().datafaker(fakerConfig.locale()).nextString(fakerConfig.expression());
         if (type.is(Integer.class)) {
             return Integer.valueOf(s);
         } else if (type.is(Double.class)) {

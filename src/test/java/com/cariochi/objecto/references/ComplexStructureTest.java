@@ -1,15 +1,17 @@
 package com.cariochi.objecto.references;
 
+import com.cariochi.objecto.Generate;
 import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.Reference;
-import com.cariochi.objecto.Spec;
-import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 
 class ComplexStructureTest {
 
@@ -100,22 +102,22 @@ class ComplexStructureTest {
     private void verifyEnrollment(Enrollment enrollment) {
         assertThat(enrollment)
                 .extracting(Enrollment::getCourse)
-                .extracting(Course::getEnrollments).asList()
+                .extracting(Course::getEnrollments).asInstanceOf(LIST)
                 .contains(enrollment);
 
         assertThat(enrollment)
                 .extracting(Enrollment::getStudent)
-                .extracting(Student::getEnrollments).asList()
+                .extracting(Student::getEnrollments).asInstanceOf(LIST)
                 .contains(enrollment);
     }
 
     private void verifyAssignment(Assignment assignment) {
         assertThat(assignment.getProfessor())
-                .extracting(Professor::getAssignments).asList()
+                .extracting(Professor::getAssignments).asInstanceOf(LIST)
                 .contains(assignment);
     }
 
-    @Spec.MaxDepth(5)
+    @Generate.MaxDepth(5)
     private interface ObjectoFactory {
 
         @Reference({"professor.assignments[*].course", "enrollments[*].course"})

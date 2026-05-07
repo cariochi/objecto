@@ -1,8 +1,7 @@
 package com.cariochi.objecto;
 
-import com.cariochi.objecto.repeatable.Configs;
+import com.cariochi.objecto.repeatable.Repeatable;
 import java.lang.annotation.Inherited;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -11,17 +10,34 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * The Spec annotation is used to define various constraints and configurations for fields and methods in a class. It contains several nested annotations to specify
- * ranges, sizes, and other properties for different data types.
+ * Namespace for Objecto generation constraints.
+ * <p>
+ * Nested {@code @Generate} annotations can be placed on a factory type or factory method. Without a
+ * {@code field} value, the configuration applies to the generated value itself. With a {@code field}
+ * value, it applies to that field path.
+ *
+ * <pre>{@code
+ * @Generate.MaxRecursionDepth(3)
+ * interface IssueFactory {
+ *
+ *     @Generate.Collections.Size(field = "comments", value = 3)
+ *     @Generate.Strings.Length.Range(field = "key", from = 8, to = 12)
+ *     @Generate.SetValue(field = "status", value = "OPEN")
+ *     Issue createIssue();
+ * }
+ * }</pre>
+ *
+ * <p>
+ * Collection-like return values can be configured with paths such as {@code "[*].status"}.
  */
-public @interface Spec {
+public @interface Generate {
 
     /**
      * The MaxDepth annotation is used to specify the maximum depth for nested objects.
      */
     @Target({TYPE, METHOD})
     @Retention(RUNTIME)
-    @Repeatable(Configs.MaxDepth.class)
+    @java.lang.annotation.Repeatable(Repeatable.MaxDepth.class)
     @Inherited
     @interface MaxDepth {
         String field() default "";
@@ -33,7 +49,7 @@ public @interface Spec {
      */
     @Target({TYPE, METHOD})
     @Retention(RUNTIME)
-    @Repeatable(Configs.MaxRecursionDepth.class)
+    @java.lang.annotation.Repeatable(Repeatable.MaxRecursionDepth.class)
     @Inherited
     @interface MaxRecursionDepth {
         String field() default "";
@@ -41,11 +57,11 @@ public @interface Spec {
     }
 
     /**
-     * The Nullable annotation is used to specify whether a field ortype can be null.
+     * Allows generated reference values to be null.
      */
     @Target({TYPE, METHOD})
     @Retention(RUNTIME)
-    @Repeatable(Configs.Nullable.class)
+    @java.lang.annotation.Repeatable(Repeatable.Nullable.class)
     @Inherited
     @interface Nullable {
         String field() default "";
@@ -62,7 +78,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Longs.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.Longs.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -81,7 +97,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Integers.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.Integers.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -100,7 +116,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Shorts.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.Shorts.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -119,7 +135,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Bytes.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.Bytes.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -138,7 +154,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Chars.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.Chars.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -157,7 +173,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.BigDecimals.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.BigDecimals.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -170,7 +186,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.BigDecimals.Scale.class)
+        @java.lang.annotation.Repeatable(Repeatable.BigDecimals.Scale.class)
         @Inherited
         @interface Scale {
             String field() default "";
@@ -188,7 +204,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Doubles.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.Doubles.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -207,7 +223,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Floats.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.Floats.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -222,11 +238,11 @@ public @interface Spec {
     @interface Dates {
 
         /**
-         * The Range annotation is used to specify minimum (inclusive) and maximum (exclusive) values for date fields. The values should be in ISO-8601 format.
+         * Configures the date/time range. Values should be ISO-8601 strings.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Dates.Range.class)
+        @java.lang.annotation.Repeatable(Repeatable.Dates.Range.class)
         @Inherited
         @interface Range {
             String field() default "";
@@ -246,7 +262,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Collections.Size.class)
+        @java.lang.annotation.Repeatable(Repeatable.Collections.Size.class)
         @Inherited
         @interface Size {
 
@@ -258,7 +274,7 @@ public @interface Spec {
              */
             @Target({TYPE, METHOD})
             @Retention(RUNTIME)
-            @Repeatable(Configs.Collections.Size.Range.class)
+            @java.lang.annotation.Repeatable(Repeatable.Collections.Size.Range.class)
             @Inherited
             @interface Range {
                 String field() default "";
@@ -278,7 +294,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Arrays.Size.class)
+        @java.lang.annotation.Repeatable(Repeatable.Arrays.Size.class)
         @Inherited
         @interface Size {
 
@@ -290,7 +306,7 @@ public @interface Spec {
              */
             @Target({TYPE, METHOD})
             @Retention(RUNTIME)
-            @Repeatable(Configs.Arrays.Size.Range.class)
+            @java.lang.annotation.Repeatable(Repeatable.Arrays.Size.Range.class)
             @Inherited
             @interface Range {
                 String field() default "";
@@ -310,7 +326,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Maps.Size.class)
+        @java.lang.annotation.Repeatable(Repeatable.Maps.Size.class)
         @Inherited
         @interface Size {
 
@@ -322,7 +338,7 @@ public @interface Spec {
              */
             @Target({TYPE, METHOD})
             @Retention(RUNTIME)
-            @Repeatable(Configs.Maps.Size.Range.class)
+            @java.lang.annotation.Repeatable(Repeatable.Maps.Size.Range.class)
             @Inherited
             @interface Range {
                 String field() default "";
@@ -342,7 +358,7 @@ public @interface Spec {
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Strings.Length.class)
+        @java.lang.annotation.Repeatable(Repeatable.Strings.Length.class)
         @Inherited
         @interface Length {
 
@@ -354,7 +370,7 @@ public @interface Spec {
              */
             @Target({TYPE, METHOD})
             @Retention(RUNTIME)
-            @Repeatable(Configs.Strings.Length.Range.class)
+            @java.lang.annotation.Repeatable(Repeatable.Strings.Length.Range.class)
             @Inherited
             @interface Range {
                 String field() default "";
@@ -364,18 +380,18 @@ public @interface Spec {
         }
 
         /**
-         * The Parameters annotation is used to specify various properties for string generation.
+         * Configures the character source used for random string generation.
          */
         @Target({TYPE, METHOD})
         @Retention(RUNTIME)
-        @Repeatable(Configs.Strings.Parameters.class)
+        @java.lang.annotation.Repeatable(Repeatable.Strings.Characters.class)
         @Inherited
-        @interface Parameters {
+        @interface Characters {
             String field() default "";
             String chars() default "";
             char from() default 0;
             char to() default 0;
-            boolean useFieldNamePrefix();
+            boolean fieldNamePrefix();
         }
 
     }
@@ -385,7 +401,7 @@ public @interface Spec {
      */
     @Target({TYPE, METHOD})
     @Retention(RUNTIME)
-    @Repeatable(Configs.SetNull.class)
+    @java.lang.annotation.Repeatable(Repeatable.SetNull.class)
     @Inherited
     @interface SetNull {
         String field();
@@ -396,7 +412,7 @@ public @interface Spec {
      */
     @Target({TYPE, METHOD})
     @Retention(RUNTIME)
-    @Repeatable(Configs.SetValue.class)
+    @java.lang.annotation.Repeatable(Repeatable.SetValue.class)
     @Inherited
     @interface SetValue {
         String field();

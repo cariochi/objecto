@@ -3,8 +3,9 @@ package com.cariochi.objecto.generators;
 import com.cariochi.reflecto.fields.ReflectoField;
 import com.cariochi.reflecto.fields.TargetField;
 import com.cariochi.reflecto.types.ReflectoType;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 class CustomObjectGenerator extends AbstractObjectsGenerator {
@@ -44,7 +45,14 @@ class CustomObjectGenerator extends AbstractObjectsGenerator {
                     try {
                         targetField.setValue(fieldValue);
                     } catch (Exception e) {
-                        log.error("Cannot set field type: {}", fieldContext.getPath());
+                        log.debug(
+                                "Cannot set generated value for field '{}'. Path: '{}', owner type: '{}', field type: '{}'. Cause: {}",
+                                field.name(),
+                                fieldContext.getPath(),
+                                context.getType().getTypeName(),
+                                fieldType.getTypeName(),
+                                e.getMessage()
+                        );
                     }
                 }
             }

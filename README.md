@@ -1,462 +1,736 @@
-# Introduction
+# Objecto
 
-**Objecto** is an open-source Java library for generating random objects and data structures. It streamlines unit testing by letting you declare factories for your domain types and automatically produce randomized instances with flexible constraints.
+Objecto is a Java testing library for generating complete object graphs with controlled random data.
+It is designed for tests that need realistic domain objects without large fixture builders, repetitive
+setters, or fragile JSON snapshots.
 
-Key features at a glance:
+With Objecto, you describe how your test data should be generated in a factory interface or abstract
+class. Objecto creates an implementation at runtime and uses your annotations, custom generator methods,
+constructors, modifiers, references, and post-processors to build objects.
 
-* **Factory interfaces:** Define interfaces or abstract classes that describe how objects should be created, then call `Objecto.create()` to obtain a factory implementation. This instance provides methods to build random objects and collections.
-* **`@Spec` annotation:** Configure global and field-specific rules such as value ranges, collection sizes, nullability and maximum depth via one unified annotation. `@Spec` replaces the previous `@Settings`/`@Fields` annotations and supports nested configuration elements.
-* **Datafaker integration:** The `@Faker` annotation binds a field to a [Datafaker](https://www.datafaker.net/) expression (e.g. `Name.FULL_NAME` or `PhoneNumber.CELL_PHONE`) to populate realistic values. You can explore all available expressions in the [Datafaker documentation](https://www.datafaker.net/documentation/providers/).
-* **Custom generators:** Use `@DefaultGenerator` to create bespoke instances of a type and `@GenerateField` to supply field-level random generators.
-* **Modifiers and references:** The `@Modify` annotation and modifier methods let you set specific values or call methods on generated objects. With `@Reference` you can link entities together, ensuring bidirectional relationships.
-* **Seeds and reproducibility:** Annotate a method or factory with `@Seed` to fix the random seed, or configure seeds at the factory instance or test level to reproduce test failures.
-* **Post processing:** Apply additional logic after an object is created by marking a method with `@PostGenerate`.
+# What Objecto Helps With
 
-# Getting Started
+- Generate POJOs, collections, maps, arrays, optionals, streams, enums, primitives, numbers, strings,
+  UUIDs, dates, and nested object graphs.
+- Configure ranges, sizes, nullability, recursion depth, string generation, dates, and constant values
+  through annotations.
+- Use [Datafaker](https://www.datafaker.net/) expressions for realistic names, addresses, company names,
+  dates, phone numbers, and other domain-like values.
+- Define reusable factories for test models.
+- Override generated fields through method parameters or fluent modifier methods.
+- Link bidirectional and nested references after generation.
+- Make random generation reproducible with seeds.
+- Print failing test seeds with the JUnit 5 extension.
 
-## Maven Dependency
+# Requirements
+
+- Java 17 or newer.
+- Maven-compatible dependency management.
+- JUnit 5 if you want to use `ObjectoExtension`.
+
+# Installation
 
 ```xml
 <dependency>
     <groupId>com.cariochi.objecto</groupId>
     <artifactId>objecto</artifactId>
-    <version>2.0.3</version>
+    <version>2.1.0</version>
+    <scope>test</scope>
 </dependency>
 ```
 
-## Defining a Factory
+Use test scope unless your application intentionally needs generated objects outside tests.
 
-A factory is an interface or abstract class that declares methods for creating your domain objects. You annotate these methods to describe how random instances should be generated.
+# Quick Start
+
+Create a factory interface:
 
 ```java
-import com.cariochi.objecto.Spec;
-import com.cariochi.objecto.Faker;
-import com.cariochi.objecto.GenerateField;
-import com.cariochi.objecto.Modify;
-import com.cariochi.objecto.Reference;
-import com.cariochi.objecto.DefaultGenerator;
-import com.cariochi.objecto.Construct;
+import com.cariochi.objecto.Datafaker;
+import com.cariochi.objecto.Generate;
 
-public interface IssueFactory {
+import static com.cariochi.objecto.Datafaker.Base.Company;
+import static com.cariochi.objecto.Datafaker.Base.Name;
 
-    // Link subtasks back to their parent issue
-    @Reference("subtasks[*].parent")
-    @Faker(field = "key", expression = "#{numerify 'ID-####'}")
-    @Faker(field = "creationDate", expression = Faker.Base.TimeAndDate.PAST)
-    Issue createIssue();
+interface UserFactory {
 
-    // Allow type to be modified via parameter
-    @Faker(field = "key", expression = "#{numerify 'ID-####'}")
-    Issue createIssue(@Modify("type") Type type);
-
-    // Provide a custom constructor when a public constructor is unavailable
-    @Construct
-    private Attachment<?> newAttachment() {
-        return Attachment.builder().fileContent(new byte[0]).build();
-    }
-
-    // Provide a custom generator for a specific field
-    @GenerateField(type = Attachment.class, field = "fileName")
-    @Faker(expression = Faker.Base.File.FILE_NAME)
-    String attachmentFileNameGenerator();
-
-    // Expose fluent modifier methods
-    @Modify("type")
-    IssueFactory withType(Type type);
-
-    @Modify("setStatus(?)")
-    IssueFactory withStatus(Status status);
-
-    // Limit recursion depth and set default Faker expressions when creating users
-    @Spec.MaxDepth(5)
-    @Faker(field = "fullName", expression = Faker.Base.Name.FULL_NAME)
-    @Faker(field = "phone", expression = Faker.Base.PhoneNumber.CELL_PHONE)
+    @Generate.Strings.Length(field = "username", value = 12)
+    @Datafaker(field = "fullName", expression = Name.FULL_NAME)
+    @Datafaker(field = "companyName", expression = Company.NAME)
     User createUser();
 }
 ```
 
-To obtain a factory implementation, call `Objecto.create()`:
+Ask Objecto for an implementation:
 
 ```java
-IssueFactory issueFactory = Objecto.create(IssueFactory.class);
-Issue randomIssue = issueFactory.createIssue();
+UserFactory users = Objecto.create(UserFactory.class);
+
+User user = users.createUser();
 ```
 
-You can modify objects by supplying parameters to factory methods or by chaining modifier methods:
+Objecto will instantiate `User`, generate values for its fields, apply `@Generate` constraints, and use
+[Datafaker](https://www.datafaker.net/) for the annotated fields.
+
+# Factory Basics
+
+A factory can be an interface or an abstract class. Factory methods usually return the type you want to
+generate:
 
 ```java
-// Using a method parameter to set the issue type
-Issue bug = issueFactory.createIssue(Type.BUG);
+interface IssueFactory {
 
-// Using modifier methods
-Issue openBug = issueFactory
-        .withType(Type.BUG)
-        .withStatus(Status.OPEN)
-        .createIssue();
-```
-
-# Annotations and Configuration
-
-## @Spec – Unified Configuration
-
-`@Spec` is a single annotation for declaring constraints on random generation. You can place it on the factory interface or on individual methods. Nested annotations specify ranges, sizes, nullability and more. For field-specific rules, supply the `field` attribute.
-
-Example of global constraints:
-
-```java
-@Spec.MaxDepth(5)
-@Spec.MaxRecursionDepth(5)
-@Spec.Nullable(true)
-@Spec.Collections.Size(5)
-@Spec.Integers.Range(from = 1, to = 10)
-@Spec.Strings.Length(5)
-Issue createIssue();
-```
-
-Field-specific configuration:
-
-```java
-@Spec.Nullable(field = "description", value = true)
-@Spec.SetNull(field = "id")
-@Spec.SetValue(field = "status", value = "OPEN")
-@Spec.Collections.Size(field = "subtasks", value = 5)
-Issue createIssue();
-```
-
-These constraints replace the older `@Settings` and `@Fields` annotations.
-
-## @Faker – Realistic Data
-
-The `@Faker` annotation binds a field to a [Datafaker](https://www.datafaker.net/) expression. Expressions are grouped into categories such as `Name`, `PhoneNumber`, `Company`, `TimeAndDate` and many more. You can also specify a locale. A full list of available providers and expressions can be found in the [Datafaker documentation](https://www.datafaker.net/documentation/providers/).
-
-```java
-@Faker(field = "fullName", expression = Faker.Base.Name.FULL_NAME)
-@Faker(field = "phone", expression = Faker.Base.PhoneNumber.CELL_PHONE)
-@Faker(field = "companyName", expression = Faker.Base.Company.NAME)
-Issue createIssue();
-```
-
-Custom expressions can also be specified using the `#{...}` syntax, for example:
-
-```java
-@Faker(field = "key", expression = "#{numerify 'ID-####'}")
-```
-
-## @DefaultGenerator – Type Generators
-
-Use `@DefaultGenerator` to define a factory method that returns a fully initialized instance of a type. This method is used whenever an instance of that type is required (unless overridden by field generators, modifiers, etc.).
-
-### Abstract method
-
-```java
-@DefaultGenerator
-@Reference("subtasks[*].parent")
-@Faker(field = "key", expression = "#{numerify 'ID-####'}")
-Issue createIssue();
-```
-
-### Custom implementation
-
-**Parameters & seeding:** supported signatures are no-arg, `com.cariochi.objecto.random.ObjectoRandom`, or `java.util.Random`. See [Random Parameters and Seed Behavior](#random-parameters-and-seed-behavior) in the [@Seed – Reproducible Randomness](#seed--reproducible-randomness) section for details.
-
-```java
-@DefaultGenerator
-default Issue createIssue(ObjectoRandom random) {
-    return Issue.builder()
-        .key("ID-" + random.nextInt(1000, 9999))
-        .name(random.nextString())
-        .build();
-}
-```
-
-## @GenerateField – Field Generators
-
-`@GenerateField` defines a factory method for a specific field.
-
-It is useful for fine-grained control of how individual fields are generated.
-
-### Abstract method
-
-```java
-@GenerateField(type = Attachment.class, field = "fileName")
-@Faker(expression = Faker.Base.File.FILE_NAME)
-String attachmentFileNameGenerator();
-```
-
-### Custom implementation
-
-**Parameters & seeding:** the generator method may be no-arg, accept `com.cariochi.objecto.random.ObjectoRandom`, or `java.util.Random`. See [Random Parameters and Seed Behavior](#random-parameters-and-seed-behavior) in the [@Seed – Reproducible Randomness](#seed--reproducible-randomness) section for details.
-
-```java
-@GenerateField(type = Comment.class, field = "commenter")
-private User commenterGenerator(ObjectoRandom random) {
-    return User.builder()
-            .fullName("Vadym Deineka")
-            .companyName(random.strings().faker().nextString(Company.NAME))
-            .build();
-}
-```
-
-## @Construct – Custom Constructors
-
-If an object cannot be instantiated via a public constructor or static factory, annotate a method with `@Construct` to supply a custom creation method. This method must return an instance of the type.
-
-```java
-@Construct
-private Attachment<?> newAttachment() {
-    return Attachment.builder().fileContent(new byte[0]).build();
-}
-```
-
-## @Modify – Modifiers
-
-The `@Modify` annotation is a powerful way to adjust generated objects. It can be applied in different contexts depending on whether you want to influence a single generation or configure a reusable factory.
-
-### 1. As a parameter of a factory method
-
-This approach creates a random object but overrides selected values directly through method parameters.
-
-```java
-Issue createIssue(@Modify("type") Type type);
-```
-
-**Usage:**
-
-```java
-Issue bug = factory.createIssue(Type.BUG);
-```
-
-### 2. As a factory interface method
-
-Here, the modifier is declared as part of the factory interface. Such methods must return the factory type itself, enabling fluent configuration chains.
-
-```java
-@Modify("type")
-IssueFactory withType(Type type);
-
-@Modify("setStatus(?)")
-IssueFactory withStatus(Status status);
-```
-
-**Usage:**
-
-```java
-Issue issue = factory.withType(Type.BUG).withStatus(Status.OPEN).createIssue();
-```
-
-### 3. Calling methods on generated objects
-
-`@Modify` can also invoke setter or custom methods during object creation.
-
-```java
-@Modify("setAssignee(?)")
-IssueFactory withAssignee(User assignee);
-```
-
-### 4. Multiple arguments
-
-You can combine several `@Modify` annotations on different parameters of the same method.
-
-```java
-IssueFactory withTypeAndStatus(
-        @Modify("setType(?)") Type type,
-        @Modify("setStatus(?)") Status status
-);
-```
-
-### 5. Nested and collection modifications
-
-Expressions support deep navigation and collections.
-
-```java
-// Modify all subtasks' status
-@Modify("subtasks[*].status")
-IssueFactory withAllSubtaskStatuses(Status status);
-
-// Modify the commenter of the first comment
-@Modify("comments[0].commenter=?")
-IssueFactory withFirstCommenter(User commenter);
-```
-
-### 6. Fluent chaining
-
-All factory interface methods annotated with `@Modify` return the factory itself. This allows combining multiple modifications before generating the final object.
-
-```java
-Issue inProgressBug = factory
-        .withType(Type.BUG)
-        .withStatus(Status.IN_PROGRESS)
-        .withAssignee(new User("qa"))
-        .createIssue();
-```
-
-## @Reference – Linking Entities
-
-`@Reference` ensures relationships between generated objects are maintained. The value is an expression pointing to the fields that should refer back to the parent.
-
-```java
-@Reference("subtasks[*].parent")
-Issue createIssue();
-```
-
-Multiple references can be specified in one annotation.
-
-## @Seed – Reproducible Randomness
-
-The `@Seed` annotation makes random generation reproducible. You can apply it at different levels:
-
-* **On a factory method** – fixes the random seed for objects created by that method.
-
-  ```java
-  @Seed(12345)
-  Issue createIssue();
-  ```
-
-* **On the factory interface** – sets a global seed for all generated objects in that factory.
-
-  ```java
-  @Seed(999)
-  public interface IssueFactory {
     Issue createIssue();
-  }
-  ```
 
-* **Programmatically** – supply a seed when creating a factory:
+    List<Issue> createIssues();
 
-  ```java
-  IssueFactory factory = Objecto.create(IssueFactory.class, 100L);
-  ```
-
-### Random Parameters and Seed Behavior
-
-Several annotations support generator methods that can take different parameters:
-- **No parameters** — you can use any random inside the body. If you rely on your own random source, Objecto's `@Seed` does not apply to that source.
-- **`com.cariochi.objecto.random.ObjectoRandom` parameter** — Objecto-managed random. `@Seed` applies (Objecto controls this RNG).
-- **`java.util.Random` parameter** — standard Java RNG provided by Objecto. `@Seed` applies (Objecto seeds the provided `Random`).
-
-This logic is the same for methods annotated with `@DefaultGenerator`, `@GenerateField`, and `@PostGenerate`.
-
-### Using JUnit 5 Extension
-
-When you run tests with JUnit 5, you can register the `ObjectoExtension`. The extension has a simple purpose: **if a test fails, it automatically prints the current random seed to the console**.
-
-This allows you to copy that seed and rerun the same test with it to reproduce the failure and debug it deterministically.
-
-The console output is provided via JUnit report entries. A typical log line looks like (this is a JUnit report entry that appears in the test logs):
-
-```text
-2025-08-23T12:04:22.349083  Objecto Seed = 4676741460335224710  Test Method = testCreateUser
+    Map<String, Issue> createIssueMap();
+}
 ```
 
-This is implemented in the extension’s `afterEach` hook using `context.publishReportEntry(...)`.
+Create a factory with:
 
 ```java
+IssueFactory factory = Objecto.create(IssueFactory.class);
+```
+
+You can also create it with a fixed seed:
+
+```java
+IssueFactory factory = Objecto.create(IssueFactory.class, 42L);
+```
+
+Factory methods may be abstract or implemented. Implemented methods are invoked normally, and Objecto
+still applies configured modifiers to their result.
+
+```java
+interface IssueFactory {
+
+    default Issue createDefaultIssue() {
+        return Issue.builder()
+                .key("DEFAULT")
+                .status(Status.OPEN)
+                .build();
+    }
+}
+```
+
+# Generation Coverage
+
+Objecto generates common Java values out of the box: primitives and boxed types, strings, numbers,
+`BigDecimal`, booleans, UUIDs, enums, arrays, collections, maps, optionals, streams, `java.util.Date`,
+Java time types, and nested custom objects.
+
+For collection interfaces such as `List`, `Set`, `Queue`, `Collection`, and `Map`, Objecto creates
+default concrete implementations. For custom classes, it tries constructors and supported static factory
+methods, generating arguments where needed. If a type needs special construction logic, provide it with
+`@Provider`.
+
+# Configuration With `@Generate`
+
+`@Generate` annotations can be placed on a factory type or on a factory method.
+
+Type-level configuration applies to methods declared by that type, inherited interfaces, and supertypes.
+Method-level configuration applies only to that method and can override or narrow the behavior for a
+specific generation call.
+
+```java
+@Generate.MaxDepth(5)
+@Generate.MaxRecursionDepth(3)
+interface IssueFactory {
+
+    @Generate.Collections.Size(field = "comments", value = 3)
+    @Generate.Strings.Length.Range(field = "key", from = 8, to = 12)
+    @Generate.Integers.Range(field = "priority", from = 1, to = 6)
+    Issue createIssue();
+}
+```
+
+Field-specific annotations use the `field` attribute:
+
+```java
+interface IssueFactory {
+
+    @Generate.SetValue(field = "status", value = "OPEN")
+    @Generate.SetNull(field = "closedAt")
+    @Generate.Nullable(field = "assignee", value = true)
+    Issue createIssue();
+}
+```
+
+For collection-like return values, use `[*]` to configure generated elements:
+
+```java
+interface IssueFactory {
+
+    @Generate.SetValue(field = "[*].status", value = "OPEN")
+    List<Issue> createOpenIssues();
+}
+```
+
+## Available `@Generate` Annotations
+
+| Annotation                                                          | Purpose                                                         |
+|---------------------------------------------------------------------|-----------------------------------------------------------------|
+| `@Generate.MaxDepth(value)`                                         | Maximum object graph depth.                                     |
+| `@Generate.MaxRecursionDepth(value)`                                | Maximum recursion depth for the same type.                      |
+| `@Generate.Nullable(value)`                                         | Allows generated reference values to be randomly null.          |
+| `@Generate.SetNull(field)`                                          | Always sets a field to null.                                    |
+| `@Generate.SetValue(field, value)`                                  | Parses and assigns a constant string value.                     |
+| `@Generate.Longs.Range(from, to)`                                   | Range for `long` and `Long`.                                    |
+| `@Generate.Integers.Range(from, to)`                                | Range for `int` and `Integer`.                                  |
+| `@Generate.Shorts.Range(from, to)`                                  | Range for `short` and `Short`.                                  |
+| `@Generate.Bytes.Range(from, to)`                                   | Range for `byte` and `Byte`.                                    |
+| `@Generate.Chars.Range(from, to)`                                   | Range for `char` and `Character`.                               |
+| `@Generate.BigDecimals.Range(from, to)`                             | Range for `BigDecimal`.                                         |
+| `@Generate.BigDecimals.Scale(value)`                                | Scale for generated `BigDecimal` values.                        |
+| `@Generate.Doubles.Range(from, to)`                                 | Range for `double` and `Double`.                                |
+| `@Generate.Floats.Range(from, to)`                                  | Range for `float` and `Float`.                                  |
+| `@Generate.Dates.Range(from, to, timezone)`                         | Date/time range. Values are ISO-8601 strings.                   |
+| `@Generate.Collections.Size(value)`                                 | Exact collection size.                                          |
+| `@Generate.Collections.Size.Range(from, to)`                        | Collection size range.                                          |
+| `@Generate.Arrays.Size(value)`                                      | Exact array size.                                               |
+| `@Generate.Arrays.Size.Range(from, to)`                             | Array size range.                                               |
+| `@Generate.Maps.Size(value)`                                        | Exact map size.                                                 |
+| `@Generate.Maps.Size.Range(from, to)`                               | Map size range.                                                 |
+| `@Generate.Strings.Length(value)`                                   | Exact string length.                                            |
+| `@Generate.Strings.Length.Range(from, to)`                          | String length range.                                            |
+| `@Generate.Strings.Characters(chars, from, to, fieldNamePrefix)`    | Character source and optional field-name prefixing for strings. |
+
+For range annotations, `from` is the lower bound and `to` is the upper bound.
+
+# Datafaker With `@Datafaker`
+
+Objecto integrates with [Datafaker](https://www.datafaker.net/). Use `@Datafaker` when a field should contain
+realistic data instead of random letters or numbers. Datafaker organizes generated values by
+[providers](https://www.datafaker.net/documentation/providers/), and Objecto passes
+[Datafaker expressions](https://www.datafaker.net/documentation/expressions/) to those providers.
+
+```java
+import static com.cariochi.objecto.Datafaker.Base.Address;
+import static com.cariochi.objecto.Datafaker.Base.Name;
+import static com.cariochi.objecto.Datafaker.Base.PhoneNumber;
+
+interface UserFactory {
+
+    @Datafaker(field = "fullName", expression = Name.FULL_NAME)
+    @Datafaker(field = "phone", expression = PhoneNumber.CELL_PHONE)
+    @Datafaker(field = "city", expression = Address.CITY, locale = "fr")
+    User createUser();
+}
+```
+
+You can also apply a default Datafaker expression or locale to the whole generated object:
+
+```java
+@Datafaker(expression = Datafaker.Base.Lorem.PARAGRAPH, locale = "fr")
+interface TextFactory {
+
+    Article createArticle();
+}
+```
+
+Custom [Datafaker expressions](https://www.datafaker.net/documentation/expressions/) are supported:
+
+```java
+interface IssueFactory {
+
+    @Datafaker(field = "key", expression = "#{numerify 'ID-####'}")
+    Issue createIssue();
+}
+```
+
+Objecto exposes many common [Datafaker provider](https://www.datafaker.net/documentation/providers/)
+expressions as constants under `com.cariochi.objecto.Datafaker`. For expressions not exposed as constants,
+use [Datafaker expression syntax](https://www.datafaker.net/documentation/expressions/) directly.
+
+# Type Generators
+
+Any factory method that returns a type and has no parameters can become a generator for that return type.
+When Objecto needs that type inside another generated object, it may call the method.
+
+If several methods return the same type, mark the primary one with `@PrimaryGenerator`:
+
+```java
+interface UserFactory {
+
+    @PrimaryGenerator
+    @Datafaker(field = "fullName", expression = Datafaker.Base.Name.FULL_NAME)
+    User createUser();
+
+    default User createEmptyUser() {
+        return User.builder().build();
+    }
+}
+```
+
+Custom generator methods can accept one supported random parameter:
+
+```java
+import com.cariochi.objecto.random.ObjectoRandom;
+
+interface UserFactory {
+
+    @PrimaryGenerator
+    default User createUser(ObjectoRandom random) {
+        return User.builder()
+                .username("user-" + random.nextInt(1000, 10_000))
+                .build();
+    }
+}
+```
+
+Supported custom generator signatures are:
+
+- no parameters
+- one `com.cariochi.objecto.random.ObjectoRandom` parameter
+- one `java.util.Random` parameter
+
+The same signature rules apply to `@FieldGenerator` and `@PostProcess` methods.
+
+# Field Generators
+
+Use `@FieldGenerator` for one field of one generated type:
+
+```java
+import com.cariochi.objecto.FieldGenerator;
+import com.cariochi.objecto.random.ObjectoRandom;
+
+interface IssueFactory {
+
+    @FieldGenerator(type = Issue.class, field = "key")
+    default String issueKey(ObjectoRandom random) {
+        return "ID-" + random.nextInt(1000, 10_000);
+    }
+}
+```
+
+Field generators can also target nested fields or setter-like method calls:
+
+```java
+interface IssueFactory {
+
+    @FieldGenerator(type = Issue.class, field = "properties.value")
+    default String propertyValue() {
+        return "PROP";
+    }
+
+    @FieldGenerator(type = Issue.class, field = "properties.setSize(?)")
+    default int propertySize() {
+        return 101;
+    }
+}
+```
+
+You can combine `@FieldGenerator` and `@Datafaker`:
+
+```java
+interface AttachmentFactory {
+
+    @FieldGenerator(type = Attachment.class, field = "fileName")
+    @Datafaker(expression = Datafaker.Base.File.FILE_NAME)
+    String fileName();
+}
+```
+
+# Custom Construction With `@Provider`
+
+Use `@Provider` when Objecto cannot or should not instantiate a type through its constructors or static
+factory methods.
+
+```java
+interface AttachmentFactory {
+
+    @Provider
+    private Attachment<?> newAttachment() {
+        return Attachment.builder()
+                .fileContent(new byte[0])
+                .build();
+    }
+}
+```
+
+The annotated method must return the type it constructs. Private interface methods are supported.
+
+# Reusing Other Factories With `@ImportFactory`
+
+Factories can import generators, providers, references, field generators, and post-processors from other
+factories:
+
+```java
+@ImportFactory({UserFactory.class, DatesFactory.class})
+interface IssueFactory {
+
+    Issue createIssue();
+}
+```
+
+This is useful when multiple domain factories need the same user, date, ID, or post-processing rules.
+
+# Modifying Generated Objects With `@Modify`
+
+`@Modify` applies values after an object has been generated. It supports direct field assignment, nested
+paths, collection wildcards, indexed paths, and method calls.
+
+## Method Parameters
+
+Annotate a factory method parameter to override a value for that call:
+
+```java
+interface IssueFactory {
+
+    Issue createIssue(@Modify("type") Issue.Type type);
+
+    List<Issue> createIssues(@Modify("setType(?)") Issue.Type type);
+}
+```
+
+If the Java parameter name is the same as the field path, `@Modify` can be omitted:
+
+```java
+interface IssueFactory {
+
+    Issue createIssue(Issue.Type type);
+}
+```
+
+Usage:
+
+```java
+Issue bug = factory.createIssue(Issue.Type.BUG);
+
+List<Issue> bugs = factory.createIssues(Issue.Type.BUG);
+```
+
+When the generated result is a collection or array, Objecto applies the modifier to every element.
+
+## Fluent Modifier Methods
+
+A modifier method can return the factory type. Objecto returns a configured factory copy, so calls can be
+chained:
+
+```java
+interface IssueFactory {
+
+    @Modify("key")
+    IssueFactory withKey(String key);
+
+    @Modify("setStatus(?)")
+    IssueFactory withStatus(Issue.Status status);
+
+    @Modify("type")
+    IssueFactory withType(Issue.Type type);
+
+    Issue createIssue();
+}
+```
+
+For simple field names, fluent modifier methods can also omit `@Modify` when the parameter name matches
+the target field:
+
+```java
+interface IssueFactory {
+
+    IssueFactory withType(Issue.Type type);
+}
+```
+
+Usage:
+
+```java
+Issue issue = factory
+        .withKey("AUTH-123")
+        .withStatus(Issue.Status.OPEN)
+        .createIssue();
+```
+
+You can also keep a configured factory and reuse it:
+
+```java
+IssueFactory bugsFactory = issueFactory.withType(Issue.Type.BUG);
+
+Issue bug = bugsFactory.createIssue();
+```
+
+For direct field assignment, a plain field path such as `type` or `comments[*].commenter` is enough.
+Objecto treats it as assignment to that field. Use the `method(?)` form when you want to call a setter or
+another method explicitly.
+
+When `@Modify` is omitted, Objecto relies on Java parameter names being available at runtime. If your
+build does not retain them, compile with `-parameters` or use `@Modify` explicitly.
+
+## Multiple Arguments
+
+Method-level `@Modify` passes all method arguments into the expression:
+
+```java
+interface IssueFactory {
+
+    @Modify("dependencies.put(?, ?)")
+    IssueFactory withDependency(Issue.DependencyType type, Issue issue);
+}
+```
+
+Parameter-level `@Modify` maps each parameter separately:
+
+```java
+interface IssueFactory {
+
+    IssueFactory withTypeAndStatus(
+            @Modify("setType(?)") Issue.Type type,
+            @Modify("setStatus(?)") Issue.Status status
+    );
+}
+```
+
+## Nested Paths And Collections
+
+```java
+interface IssueFactory {
+
+    @Modify("comments[*].commenter")
+    IssueFactory withAllCommenters(User user);
+
+    @Modify("comments[0].setCommenter(?)")
+    IssueFactory withFirstCommenter(User user);
+
+    @Modify("comments[?].commenter")
+    IssueFactory withCommenter(int index, User user);
+}
+```
+
+If Objecto cannot apply a modifier path, it logs the failure at debug level and leaves the object unchanged.
+
+# References With `@Reference`
+
+`@Reference` links generated objects back to the object currently being generated. It is useful for
+bidirectional relationships and nested domain graphs.
+
+```java
+interface IssueFactory {
+
+    @Reference("subtasks[*].parent")
+    Issue createIssue();
+}
+```
+
+When `Issue` is generated, every generated subtask receives the parent issue in its `parent` field.
+
+Multiple references are supported:
+
+```java
+interface CourseFactory {
+
+    @Reference({
+            "professor.assignments[*].course",
+            "enrollments[*].course"
+    })
+    Course createCourse();
+}
+```
+
+Reference paths use the same path style as modifiers.
+
+# Post-Processing With `@PostProcess`
+
+`@PostProcess` methods run after an instance of their first parameter type is generated.
+
+```java
+import com.cariochi.objecto.Datafaker;
+import com.cariochi.objecto.PostProcess;
+import com.cariochi.objecto.random.ObjectoRandom;
+
+interface UserFactory {
+
+    @PostProcess
+    private void normalizeUser(User user, ObjectoRandom random) {
+        String username = user.getFullName()
+                .toLowerCase()
+                .replace(".", "")
+                .replace(" ", ".");
+
+        user.setUsername(username);
+        user.setEmail(username + "@" +
+                random.strings().datafaker().nextString(Datafaker.Base.Internet.DOMAIN_NAME));
+    }
+}
+```
+
+The method must:
+
+- be annotated with `@PostProcess`
+- return `void`
+- accept the generated object as the first parameter
+- optionally accept `ObjectoRandom` or `java.util.Random` as the second parameter
+
+# Reproducible Randomness With `@Seed`
+
+Use `@Seed` to make random generation deterministic.
+
+```java
+@Seed(123)
+interface UserFactory {
+
+    User createUser();
+}
+```
+
+Method-level seed:
+
+```java
+interface UserFactory {
+
+    @Seed(320)
+    User createUser();
+}
+```
+
+Programmatic seed:
+
+```java
+UserFactory factory = Objecto.create(UserFactory.class, 100L);
+```
+
+Seed precedence in normal factory usage:
+
+1. Method-level `@Seed`.
+2. Seed passed to `Objecto.create(factoryClass, seed)`.
+3. Type-level `@Seed`.
+4. Random seed generated by Objecto.
+
+Custom generators that accept `ObjectoRandom` or `java.util.Random` use Objecto-managed randomness and
+therefore follow Objecto seeds.
+
+# JUnit 5 Extension
+
+`ObjectoExtension` helps reproduce failing randomized tests. Register it on a test class:
+
+```java
+import com.cariochi.objecto.Objecto;
+import com.cariochi.objecto.extension.ObjectoExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 @ExtendWith(ObjectoExtension.class)
 class IssueFactoryTest {
 
+    private final IssueFactory issues = Objecto.create(IssueFactory.class);
+
     @Test
-    void shouldCreateDeterministicIssue(IssueFactory factory) {
-        Issue issue = factory.createIssue();
+    void createsIssue() {
+        Issue issue = issues.createIssue();
+
         // assertions
     }
 }
 ```
 
-In this example, if the test fails, the console will show the seed used. You can then rerun the test with that seed by applying `@Seed` on the factory or method, or by passing the seed programmatically to `Objecto.create(...)`. Seeds specified on methods override seeds defined on the factory.
+When a test fails, the extension publishes a JUnit report entry with the seed and test method name:
 
-## @PostGenerate – Post Processing
+```text
+Objecto Seed = 4676741460335224710
+Test Method = createsIssue
+```
 
-Methods annotated with `@PostGenerate` run after an object is fully generated and can perform additional transformations.
-
-**Parameters & seeding:** post-processing methods can be no-arg or accept `com.cariochi.objecto.random.ObjectoRandom` or `java.util.Random`. See [Random Parameters and Seed Behavior](#random-parameters-and-seed-behavior) in the [@Seed – Reproducible Randomness](#seed--reproducible-randomness) section for details.
+To reproduce the failure, apply the printed seed to the test method or factory:
 
 ```java
-@PostGenerate
-private void userPostProcessor(User user, ObjectoRandom random) {
-    String username = replace(replace(lowerCase(user.getFullName()), ".", ""), " ", ".");
-    user.setUsername(username);
-    user.setEmail(username + "@" + random.strings().faker().nextString(Internet.DOMAIN_NAME));
+@Test
+@Seed(4676741460335224710L)
+void createsIssue() {
+    Issue issue = issues.createIssue();
 }
 ```
 
-# Quick Recipes
+The extension also sets that test seed on Objecto factories stored in test instance fields, unless the
+factory was already created with an explicit custom seed.
 
-## Create a factory and generate an object
-
-```java
-IssueFactory factory = Objecto.create(IssueFactory.class);
-Issue issue = factory.createIssue();
-```
-
-## Generate with specific values
+# Complete Example
 
 ```java
-Issue bug = factory.createIssue(Type.BUG);
+import com.cariochi.objecto.Datafaker;
+import com.cariochi.objecto.FieldGenerator;
+import com.cariochi.objecto.Generate;
+import com.cariochi.objecto.ImportFactory;
+import com.cariochi.objecto.Modify;
+import com.cariochi.objecto.Objecto;
+import com.cariochi.objecto.PostProcess;
+import com.cariochi.objecto.PrimaryGenerator;
+import com.cariochi.objecto.Provider;
+import com.cariochi.objecto.Reference;
+import com.cariochi.objecto.random.ObjectoRandom;
 
-Issue inProgressBug = factory
-        .withType(Type.BUG)
-        .withStatus(Status.IN_PROGRESS)
-        .createIssue();
-```
+import java.util.ArrayList;
+import java.util.List;
 
-## Set constraints with @Spec
+@ImportFactory(UserFactory.class)
+@Generate.MaxRecursionDepth(3)
+interface IssueFactory {
 
-```java
-@Spec.Integers.Range(from = 1, to = 10)
-@Spec.Collections.Size(field = "subtasks", value = 3)
-Issue createIssue();
-```
+    @PrimaryGenerator
+    @Reference("subtasks[*].parent")
+    @Datafaker(field = "key", expression = "#{numerify 'ID-####'}")
+    Issue createIssue();
 
-## Use Datafaker via @Faker
+    Issue createIssue(@Modify("type") Issue.Type type);
 
-```java
-@Faker(field = "fullName", expression = Faker.Base.Name.FULL_NAME)
-@Faker(field = "creationDate", expression = Faker.Base.TimeAndDate.PAST)
-Issue createIssue();
-```
+    List<Issue> createIssues(@Modify("setType(?)") Issue.Type type);
 
-## Provide custom generators
+    @Modify("key")
+    IssueFactory withKey(String key);
 
-```java
-@DefaultGenerator
-default User createUser(ObjectoRandom random) {
-return User.builder()
-        .fullName(random.strings().faker().nextString(Faker.Base.Name.FULL_NAME))
-        .build();
+    @Modify("setStatus(?)")
+    IssueFactory withStatus(Issue.Status status);
+
+    @FieldGenerator(type = Comment.class, field = "commenter")
+    private User commenter(ObjectoRandom random) {
+        return User.builder()
+                .fullName("Test User")
+                .companyName(random.strings().datafaker().nextString(Datafaker.Base.Company.NAME))
+                .build();
+    }
+
+    @FieldGenerator(type = Issue.class, field = "labels")
+    private List<String> labels() {
+        return List.of("generated");
+    }
+
+    @PostProcess
+    private void addIssueKeyLabel(Issue issue) {
+        List<String> labels = new ArrayList<>(issue.getLabels());
+        labels.add(0, issue.getKey());
+        issue.setLabels(labels);
+    }
+
+    @Provider
+    private Attachment<?> attachment() {
+        return Attachment.builder()
+                .fileContent(new byte[0])
+                .build();
+    }
 }
 
-@GenerateField(type = Issue.class, field = "key")
-String generateKey(ObjectoRandom random) {
-    return "ID-" + random.nextInt(1000, 10000);
+interface UserFactory {
+
+    @PrimaryGenerator
+    @Datafaker(field = "fullName", expression = Datafaker.Base.Name.FULL_NAME)
+    @Datafaker(field = "phone", expression = Datafaker.Base.PhoneNumber.CELL_PHONE)
+    User createUser();
 }
-```
 
-## Link related entities
+class Example {
 
-```java
-@Reference("subtasks[*].parent")
-Issue createIssue();
-```
+    void run() {
+        IssueFactory issues = Objecto.create(IssueFactory.class);
 
-## Control randomness
-
-```java
-@Seed(42)
-Issue createIssue();
-
-IssueFactory factory = Objecto.create(IssueFactory.class, 42L);
-```
-
-## Post-process objects
-
-```java
-@PostGenerate
-private void normalize(User user) {
-    user.setUsername(user.getFullName().toLowerCase().replace(" ", "."));
+        Issue bug = issues
+                .withKey("AUTH-100")
+                .withStatus(Issue.Status.OPEN)
+                .createIssue(Issue.Type.BUG);
+    }
 }
 ```
 
 # License
 
 Objecto is distributed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-
